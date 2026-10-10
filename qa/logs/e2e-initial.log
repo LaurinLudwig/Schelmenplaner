@@ -1,0 +1,11 @@
+npm notice run schelmeplaner@0.1.0 test:e2e
+npm notice run playwright test
+[WebServer] npm notice run schelmeplaner@0.1.0 dev
+[WebServer] npm notice run vite
+
+Running 2 tests using 2 workers
+
+  ✓  1 [chromium] › tests/e2e/smoke.spec.ts:4:3 › Smoke › App startet ohne Fehler und zeigt die Tab-Leiste (560ms)
+  ✓  2 [webkit] › tests/e2e/smoke.spec.ts:4:3 › Smoke › App startet ohne Fehler und zeigt die Tab-Leiste (752ms)
+
+  2 passed (1.6s)
