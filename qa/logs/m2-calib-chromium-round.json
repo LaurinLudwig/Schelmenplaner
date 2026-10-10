@@ -1,0 +1,142 @@
+{
+ "browserName": "chromium",
+ "out": [
+  {
+   "file": "raster-10m.png",
+   "viewScalePxPerM": 10.491071428571427,
+   "k1": 0.10006082725060826,
+   "k1errPct": "0.061",
+   "m1": [
+    "soll 60.00 m, angezeigt 60.10 m, Abw. 0.100 m",
+    "soll 78.10 m, angezeigt 78.18 m, Abw. 0.078 m"
+   ],
+   "k2": 0.09989878542510121,
+   "k2errPct": "-0.101",
+   "m2": [
+    "soll 60.00 m, angezeigt 60.00 m, Abw. 0.000 m",
+    "soll 78.10 m, angezeigt 78.05 m, Abw. -0.052 m"
+   ],
+   "locked": true,
+   "tool": "select",
+   "history": [
+    "Hintergrund importieren",
+    "Hintergrund kalibrieren",
+    "Hintergrund kalibrieren"
+   ]
+  },
+  {
+   "file": "raster-10m.jpg",
+   "viewScalePxPerM": 10.491071428571427,
+   "k1": 0.10006082725060826,
+   "k1errPct": "0.061",
+   "m1": [
+    "soll 60.00 m, angezeigt 60.10 m, Abw. 0.100 m",
+    "soll 78.10 m, angezeigt 78.18 m, Abw. 0.078 m"
+   ],
+   "k2": 0.09989878542510121,
+   "k2errPct": "-0.101",
+   "m2": [
+    "soll 60.00 m, angezeigt 60.00 m, Abw. 0.000 m",
+    "soll 78.10 m, angezeigt 78.05 m, Abw. -0.052 m"
+   ],
+   "locked": true,
+   "tool": "select",
+   "history": [
+    "Hintergrund importieren",
+    "Hintergrund kalibrieren",
+    "Hintergrund kalibrieren"
+   ]
+  },
+  {
+   "file": "raster-10m.svg",
+   "viewScalePxPerM": 10.491071428571427,
+   "k1": 0.10006082725060826,
+   "k1errPct": "0.061",
+   "m1": [
+    "soll 60.00 m, angezeigt 60.10 m, Abw. 0.100 m",
+    "soll 78.10 m, angezeigt 78.18 m, Abw. 0.078 m"
+   ],
+   "k2": 0.09989878542510121,
+   "k2errPct": "-0.101",
+   "m2": [
+    "soll 60.00 m, angezeigt 60.00 m, Abw. 0.000 m",
+    "soll 78.10 m, angezeigt 78.05 m, Abw. -0.052 m"
+   ],
+   "locked": true,
+   "tool": "select",
+   "history": [
+    "Hintergrund importieren",
+    "Hintergrund kalibrieren",
+    "Hintergrund kalibrieren"
+   ]
+  },
+  {
+   "file": "raster-10m-viewbox.svg",
+   "viewScalePxPerM": 10.491071428571427,
+   "k1": 0.10006082725060826,
+   "k1errPct": "0.061",
+   "m1": [
+    "soll 60.00 m, angezeigt 60.10 m, Abw. 0.100 m"
+   ],
+   "k2": 0.09989878542510121,
+   "k2errPct": "-0.101",
+   "m2": [
+    "soll 60.00 m, angezeigt 60.00 m, Abw. 0.000 m"
+   ],
+   "locked": true,
+   "tool": "select",
+   "history": [
+    "Hintergrund importieren",
+    "Hintergrund kalibrieren",
+    "Hintergrund kalibrieren"
+   ]
+  },
+  {
+   "file": "plan-1zu1000.pdf",
+   "viewScalePxPerM": 11.479591836734693,
+   "k1": 0.3539349703481148,
+   "k1errPct": "0.328",
+   "m1": [
+    "soll 150.00 m, angezeigt 150.33 m, Abw. 0.330 m",
+    "soll 165.53 m, angezeigt 165.91 m, Abw. 0.381 m"
+   ],
+   "k2": 0.35432605871314027,
+   "k2errPct": "0.439",
+   "m2": [
+    "soll 150.00 m, angezeigt 150.50 m, Abw. 0.500 m",
+    "soll 165.53 m, angezeigt 166.10 m, Abw. 0.571 m"
+   ],
+   "locked": true,
+   "tool": "select",
+   "history": [
+    "Hintergrund importieren",
+    "Hintergrund kalibrieren",
+    "Hintergrund kalibrieren"
+   ]
+  },
+  {
+   "file": "plan-2seiten.pdf",
+   "viewScalePxPerM": 11.479591836734693,
+   "k1": 0.17655782857411897,
+   "k1errPct": "0.096",
+   "m1": [
+    "soll 60.00 m, angezeigt 60.05 m, Abw. 0.050 m",
+    "soll 156.20 m, angezeigt 156.28 m, Abw. 0.075 m"
+   ],
+   "k2": 0.17655782857411897,
+   "k2errPct": "0.096",
+   "m2": [
+    "soll 60.00 m, angezeigt 60.05 m, Abw. 0.050 m",
+    "soll 156.20 m, angezeigt 156.28 m, Abw. 0.075 m"
+   ],
+   "locked": true,
+   "tool": "select",
+   "history": [
+    "Hintergrund importieren",
+    "Hintergrund kalibrieren",
+    "Hintergrund kalibrieren"
+   ]
+  }
+ ],
+ "allErrors": []
+}

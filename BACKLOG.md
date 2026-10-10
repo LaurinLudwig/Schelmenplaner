@@ -20,6 +20,13 @@ ungefragt umgesetzt; erst nach Freigabe wandert ein Eintrag in einen Meilenstein
 - E-05 (Hinweis) Im Browser-Dev-Modus fängt der Browser einige Shortcuts selbst ab (z. B. Cmd/Strg+N, Cmd/Strg+Shift+N). Betrifft nur `npm run dev`, nicht die Desktop-App.
 - E-06 (Hinweis) Die Tab-Taste blendet wie in Illustrator die Panels aus und steht damit nicht mehr zum Springen zwischen Bedienelementen zur Verfügung (Barrierefreiheit). In Textfeldern funktioniert Tab normal.
 - E-07 (Hinweis) Die Tauri-Dateirechte erlauben Lesen und Schreiben im gesamten Dateisystem (`**`), damit Projekte überall liegen dürfen, auch auf USB-Sticks. Enger fassen, falls gewünscht.
+- E-10 (Idee) Plandatei per Drag & Drop auf die Zeichenfläche ziehen, um sie zu importieren.
+- E-11 (Hinweis) Autosave schreibt alle 30 s die ganze Datei inklusive Pläne. Bei sehr großen Projekten (> 100 MB) optimieren, z. B. Pläne nur einmal sichern und danach nur `project.json`.
+- E-12 (Idee) Gespeicherte Kalibrierpunkte anzeigen bzw. beim erneuten Kalibrieren als Startpunkte anbieten (werden bereits gespeichert).
+- E-13 (Lücke, M3) Zwei Sperren für den Hintergrund: `background.locked` (M2) und die Ebenen-Sperre `layers.background.locked` (M3-14). In M3 zu einer zusammenführen.
+- E-14 (Idee) Hintergrund per Griff drehen oder per zwei Punkten waagerecht ausrichten (bisher nur Zahlenfeld).
+- E-15 (Idee) Mess- und Kalibrierpunkte fangen an Linien des Plans (Vektor-PDF/SVG). Bisher Fang nur an Objekten (ab M3).
+- E-16 (Hinweis) Kennwortgeschützte PDFs werden mit einer Meldung abgelehnt (Seitenextraktion nicht möglich).
 - E-09 (Idee) Wischrichtung des Trackpads folgt der macOS-Einstellung „Natürliche Scrollrichtung“. Falls gewünscht: eigene Einstellung „Wischrichtung umkehren“ in der App.
 - E-08 (Hinweis) Browser-Autosave nutzt localStorage (ca. 5 MB). Mit eingebetteten Hintergründen (M2) reicht das nicht; betrifft nur den Browser-Dev-Modus.
 - [x] [QA] QA-M1-01 (gering, erledigt: Abschluss M1 korrigiert) Abschluss M1 widersprüchlich/veraltet: „M1-01 bleibt `[~]`“ vs. Status `[x]`; „24 Unit-Tests“, tatsächlich 28; der erwähnte „automatisierte Klicktest im Browser über alle obigen Funktionen“ liegt nicht im Repo (nur `tests/e2e/smoke.spec.ts`). Siehe `qa/M1.md`. (QA ✓ M1 Nachprüfung)
@@ -34,6 +41,11 @@ ungefragt umgesetzt; erst nach Freigabe wandert ein Eintrag in einen Meilenstein
 - [QA] QA-M1-10 (gering, Risiko; QA-M1-05) Die Lint-Sperre für `src/core/` ist eine Verbotsliste und lässt weitere DOM-Zugriffe durch: `globalThis.document`, `DOMParser`, `Image`, `self`, `fetch`, DOM-Typen wie `HTMLDivElement`. Robuster wäre eine eigene `tsconfig` für `src/core/` ohne `lib: DOM`. Test: `tests/e2e/m1-recheck-lint.spec.ts` (`test.fail`).
 - [QA] QA-M1-11 (gering, Dokumentation/Prozess) Die Entwicklung hat QA-Artefakte geändert: Abschnitt „Behoben“ an `qa/M1.md` angehängt und die Erwartung des QA-Tests „M1-24: Zwei-Finger-Wischen“ umgedreht (`tests/e2e/m1-canvas.spec.ts:104-107`, begründet). Dazu Widersprüche: QA-M1-02 steht hier als „erledigt“, in `qa/M1.md` als „teilweise“; die Einträge QA-M1-03/-04 nennen noch `test.fail`, obwohl die Markierungen entfernt sind.
 - [QA] QA-M1-12 (gering, Test-Infrastruktur) `tests/e2e/m1-file.spec.ts:193` schreibt bei jedem E2E-Lauf `qa/screenshots/m1-recovery-dialog.png` neu. Der Dialog enthält Datum und Uhrzeit, deshalb ist die Arbeitskopie nach jedem Lauf verändert. Screenshots nur auf Anforderung schreiben, z. B. über eine Umgebungsvariable.
+- [QA] QA-M2-03 (mittel; M2-02) WebKit/macOS: Zoomen großer Rasterbilder ruckelt. PNG 8000 × 6000: 50–53 Bilder/s mit Einzelbildern bis 170 ms; JPEG 12000 × 9000: 37–40 Bilder/s, Einzelbilder bis 344 ms. Chromium und PDFs ≈ 60 Bilder/s, Pan überall flüssig. Siehe `qa/M2.md`.
+- [QA] QA-M2-04 (gering) Dieselbe Seite eines mehrseitigen PDFs wird mehrfach eingebettet: pdf-lib schreibt beim Herauslösen ein sekundengenaues Erstelldatum, der Inhalts-Hash unterscheidet sich (`src/app/backgroundImport.ts:22-30`). Test: `tests/e2e/m2-qa.spec.ts` („QA-M2-04 …“, `test.fail`).
+- [QA] QA-M2-05 (gering, Klärung; M2-09) „Raster ein/aus“ ist ein Undo-Schritt und markiert das Projekt als ungespeichert (`src/state/pageSettings.ts:25-31`). In Illustrator ist das eine reine Ansichtsoption. Gewollt?
+- [QA] QA-M2-06 (gering, Klärung; M2-04) Ein gesperrter Hintergrund lässt sich weiter über das Zahlenfeld drehen (und per Planmaßstab umskalieren); die Sperre wirkt nur auf das Ziehen. Soll sie auch Drehen schützen?
+- [QA] QA-M2-07 (gering; M2-06) Keine Plausibilitätsprüfung der Kalibrierung (0,001 m oder 1.000.000 m werden still übernommen); „An Fenster anpassen“ zeigt Pläne über ca. 5 km wegen der Zoomgrenze 0,2 px/m nicht vollständig. Ein Hinweis bei ungewöhnlichen Planmaßen würde Faktor-1000-Fehler (vgl. QA-M2-01) auffangen.
 
 ---
 
@@ -75,16 +87,17 @@ ungefragt umgesetzt; erst nach Freigabe wandert ein Eintrag in einen Meilenstein
 - [x] M1-23 Tooltips mit Name und Shortcut beim Hovern über Buttons (Tastaturkürzel) (QA ✓ M1)
 
 ## M2 – Hintergrund, Maßstab, Raster, Messen
-- [ ] M2-01 Hintergrundplan pro Festplatz-Page importieren: PDF mit Seitenauswahl bei mehrseitigen PDFs (§1)
-- [ ] M2-02 Hintergrund-Import SVG, JPEG, PNG (§1)
-- [ ] M2-03 Deckkraft des Hintergrunds einstellbar (§1)
-- [ ] M2-04 Hintergrund sperrbar (§1)
-- [ ] M2-05 Hintergrund austauschbar ohne Verlust der gezeichneten Objekte (§1)
-- [ ] M2-06 Kalibrierungs-Werkzeug: zwei Punkte klicken, realen Abstand in m eingeben, Hintergrund wird skaliert; jederzeit wiederholbar (§1, Layout)
-- [ ] M2-07 Hintergrund verschieben und drehen (§1)
-- [ ] M2-08 Nordrichtung pro Festplatz-Page einstellbar (§1)
-- [ ] M2-09 Raster mit einstellbarer Weite; Umschalter „Raster ein/aus“ in der Werkzeugleiste (§1, Layout)
-- [ ] M2-10 Messwerkzeug: zwei Punkte klicken, Abstand in m; bleibt bis zum nächsten Werkzeugwechsel sichtbar (Messwerkzeug, Layout)
+- [!] M2-01 Hintergrundplan pro Festplatz-Page importieren: PDF mit Seitenauswahl bei mehrseitigen PDFs; eingebettet wird nur die gewählte Seite (§1) (QA M2: Nacharbeit, QA-M2-02 in `qa/M2.md`)
+- [!] M2-02 Hintergrund-Import SVG, JPEG, PNG (§1) (QA M2: Nacharbeit, QA-M2-02 in `qa/M2.md`)
+- [x] M2-03 Deckkraft des Hintergrunds einstellbar (§1) (QA ✓ M2)
+- [x] M2-04 Hintergrund sperrbar (§1) (QA ✓ M2)
+- [x] M2-05 Hintergrund austauschbar ohne Verlust der gezeichneten Objekte (§1) (QA ✓ M2)
+- [!] M2-06 Kalibrierungs-Werkzeug: zwei Punkte klicken, realen Abstand in m eingeben, Hintergrund wird skaliert; jederzeit wiederholbar; danach automatisch gesperrt (§1, Layout) (QA M2: Nacharbeit, QA-M2-01 in `qa/M2.md`)
+- [!] M2-11 Planmaßstab 1:n direkt eingeben (nur PDF), als Alternative zur 2-Punkt-Kalibrierung (§1, Entscheidung 2026-10-10) (QA M2: Nacharbeit, QA-M2-01 in `qa/M2.md`)
+- [x] M2-07 Hintergrund verschieben und drehen (§1) (QA ✓ M2)
+- [x] M2-08 Nordrichtung pro Festplatz-Page einstellbar (§1) (QA ✓ M2)
+- [!] M2-09 Raster mit einstellbarer Weite; Umschalter „Raster ein/aus“ in der Werkzeugleiste (§1, Layout) (QA M2: Nacharbeit, QA-M2-01 in `qa/M2.md`)
+- [x] M2-10 Messwerkzeug: zwei Punkte klicken, Abstand in m; bleibt bis zum nächsten Werkzeugwechsel sichtbar (Messwerkzeug, Layout) (QA ✓ M2)
 
 ## M3 – Grundflächen, Geschäfte, Seitenleiste, Steuerungsleiste, Beschriftung
 - [ ] M3-01 Grundfläche = Rechteck, frei rotierbar, Breite = Länge der Vorderseite, Tiefe senkrecht dazu; nur Rechtecke (Begriffe)
@@ -246,3 +259,58 @@ Befunde aus `qa/M1.md` abgearbeitet; Details im Abschnitt „Behoben“ des Beri
 - QA-M1-06: `tip()` kennt `ariaLabel`. Die Karte heißt für Screenreader „Neuer Festplatz – Leere Festplatz-Page anlegen“ (sichtbarer Inhalt), der „+“-Button „Festplatz-Tab hinzufügen“.
 - QA-M1-02: Pinch funktioniert laut Laurin; das Verschieben lief invertiert und ist umgedreht (`src/ui/canvas/wheel.ts`). Der E2E-Test „M1-24: Zwei-Finger-Wischen“ prüfte die alte Richtung und ist angepasst (Begründung siehe Bericht).
 - QA-M1-01: Abschluss M1 oben korrigiert.
+
+---
+
+## Abschluss M2 (2026-10-10)
+
+Abgleich mit `spec.md` vor diesem Abschluss: §1 (Hintergrund & Maßstab), Messwerkzeug und die
+Werkzeugleisten-Einträge Messen, Kalibrierung und Raster ein/aus sind vollständig auf M2-01 bis
+M2-11 abgebildet. Deine Entscheidungen aus der Planung (nur gewählte PDF-Seite einbetten,
+automatische Sperre nach Kalibrierung, Planmaßstab 1:n) stehen jetzt in `spec.md` §1.
+Unverändert offen und richtig zugeordnet: Messwerkzeug-Fang an Objekten (M3-18), Nordpfeil im PDF (M8-04).
+
+### Umgesetzt
+- **Import** (Cmd/Strg+Shift+P, Seitenleiste „Hintergrund importieren …“): PDF, SVG, PNG, JPEG. Der Typ wird am Dateiinhalt erkannt, nicht an der Endung. Bei mehrseitigen PDFs gibt es eine Seitenauswahl mit Vorschaubildern; mit pdf-lib wird **nur die gewählte Seite** herausgelöst und eingebettet. Ab 50 MB fragt die App nach, über 300 MB lehnt sie ab.
+- **Einbettung:** Die Originaldatei liegt unter `assets/<Inhalts-Hash>.<Endung>` in der `.schelme`-Datei. Gleiche Dateien werden nur einmal gespeichert. Gespeichert werden nur Pläne, die noch verwendet werden; ersetzte bleiben bis zum Speichern im Speicher, damit Undo funktioniert. SVG wird im ZIP komprimiert, PDF, PNG und JPEG nicht (bereits komprimiert).
+- **PDF-Darstellung:** pdf.js im Worker, lokal mitgelieferte Schriften, CMaps und Wasm (`scripts/copy-pdfjs-assets.mjs`, läuft vor `dev`/`build`). Grundbild höchstens 8 MP. Steht die Ansicht 150 ms still und ist stark vergrößert, wird der sichtbare Ausschnitt in Bildschirmauflösung (× Retina-Faktor, höchstens 12 MP) gerendert und darübergelegt.
+- **Deckkraft** (Schieberegler, ein Undo-Schritt pro Ziehen), **Sperren**, **Verschieben** per Ziehen mit dem Auswahlwerkzeug (nur entsperrt, ein Undo-Schritt), **Drehen** numerisch um die Planmitte, **Ersetzen** mit gleicher Position, Drehung und Breite in Metern plus Hinweis „Kalibrierung prüfen“, **Entfernen** (rückgängig machbar).
+- **Kalibrieren (K):** zwei Punkte klicken (Shift = 45°), beide Punkte bis zur Bestätigung verschiebbar, realen Abstand eingeben. Ungültige Eingaben (0, negativ, Text, leer, gleiche Punkte) werden mit Meldung abgelehnt; Esc bricht ab. Danach ist der Plan gesperrt und das Auswahlwerkzeug aktiv. Nur die Hintergrund-Transformation ändert sich, Objekte nie. Ohne Hintergrund ist das Werkzeug ausgegraut; per Taste K kommt ein Hinweis.
+- **Planmaßstab 1:n** für PDFs (1 pt = 1/72 Zoll Papier); sperrt ebenfalls und wird als „Maßstab 1:n“ angezeigt.
+- **Raster:** Weite pro Festplatz in der Seitenleiste (0,1–1000 m), ein/aus über die Werkzeugleiste (Cmd/Strg+#). Über einem Plan heben sich die Linien farblich vom Untergrund ab.
+- **Nordrichtung** pro Festplatz (Zahlenfeld, normiert auf 0–360°) mit Nordpfeil oben rechts.
+- **Messen (M):** klicken–klicken oder ziehen; Abstand in m und Winkel. Die Messung bleibt bis zum Werkzeug- oder Seitenwechsel stehen, Esc löscht sie, Shift = 45°.
+- **Fang vorbereitet für M3:** `src/core/snap.ts` (Ecken vor Kanten, erweiterbar über `SnapSource`). Das Messwerkzeug nutzt ihn bereits für alle Rechtecke der Page; sobald es in M3 Objekte gibt, fängt es ohne Änderung. Werkzeuge sind als Hooks mit gemeinsamer Schnittstelle gebaut (`src/ui/canvas/tools/types.ts`).
+- „An Fenster anpassen“ (Cmd/Strg+0) bezieht den Hintergrund mit ein.
+- **Kernlogik** in `src/core/background.ts` (Transformation, Kalibrierung, Planmaßstab, Drehen, Ersetzen, sichtbarer Ausschnitt), `measure.ts`, `snap.ts`: 19 neue Unit-Tests, zusammen 47.
+- **Testdateien** `tests/fixtures/` (Erzeuger `scripts/make-fixtures.mjs`, Maße im README dort) und **44 neue E2E-Tests** (`tests/e2e/m2-background.spec.ts`, Chromium + WebKit). Dazu gehören exakte Kalibrierung (50 m kalibriert ⇒ 60 m gemessen), Planmaßstab 1:1000 (5 Kästchen = 50 m) und „nur eine Seite eingebettet“.
+- **Lasttest** (nicht eingecheckt): A0-PDF mit 15.000 Linien und 3.000 Texten importiert in ca. 0,8 s, Verschieben mit ca. 60 Bildern/s, Detailbild nach 0,25–0,3 s (Chromium und WebKit, Retina). PNG mit 8000 × 6000 px: Verschieben mit 48–58 Bildern/s.
+
+### Nicht umgesetzt / verschoben
+- Nichts aus M2.
+- Messwerkzeug-Fang an Ecken/Kanten von Objekten: wie geplant M3-18. Die Technik steht, es fehlen nur die Objekte.
+
+### Abweichungen von SPEC.md bzw. vom Plan
+- Zusatz Planmaßstab 1:n (M2-11, von dir freigegeben).
+- Browser-Modus: Die Sicherung nutzt localStorage und weicht bei großen Projekten auf IndexedDB aus (statt komplett auf IndexedDB umzustellen). So bleiben die bestehenden QA-Tests gültig, die den localStorage-Schlüssel prüfen.
+- Hintergrund drehen nur numerisch (kein Drehgriff), siehe E-14.
+- Kalibrierpunkte werden gespeichert, aber nicht angezeigt (E-12).
+- Im Entwicklungsmodus ist der Store als `window.__schelmeStore` erreichbar (Fehlersuche, Tests); im Produktions-Build nicht.
+- CSP der Desktop-App erweitert um `'wasm-unsafe-eval'` und `worker-src 'self' blob:` für pdf.js. Nichts davon erlaubt externe Quellen.
+
+### Bekannte Bugs und Einschränkungen
+- **Desktop-App nicht im Lauf getestet:** native Dateiauswahl für Pläne, pdf.js-Worker und Wasm unter der Tauri-CSP. Bitte manuell prüfen (Checkliste unten).
+- Die Genauigkeit der Kalibrierung hängt davon ab, wie genau man klickt (ein Bildschirmpixel). Für exakte Werte stark hineinzoomen; bei PDFs mit bekanntem Maßstab ist 1:n exakt.
+- Sehr große Rasterbilder (> 50 MP) können in WebKit langsam dekodieren; es gibt keine Kachelung für Rasterbilder.
+- Ein Ersetzen durch einen inhaltlich anderen Plan braucht eine neue Kalibrierung (Hinweis erscheint).
+
+### Manuell testen (Desktop-App)
+- [ ] Cmd+Shift+P öffnet den nativen Dialog mit Filter PDF/SVG/PNG/JPEG.
+- [ ] Mehrseitiges PDF: Vorschaubilder erscheinen, gewählte Seite wird angezeigt.
+- [ ] Hineinzoomen in ein PDF: Nach kurzer Pause wird der Plan scharf (pdf.js-Worker läuft unter der Tauri-CSP).
+- [ ] Speichern, schließen, öffnen: Plan, Kalibrierung, Deckkraft und Sperre sind wieder da. Die `.schelme`-Datei ist etwa so groß wie die eingebetteten Pläne.
+- [ ] Kalibrieren an einem echten Lageplan mit bekanntem Maß; danach Messen gegenprüfen.
+
+### Offene Fragen
+1. QA-Nachprüfung M1 (`qa/M1-nachpruefung.md`): sechs neue Befunde QA-M1-07 bis -12, M1-19 steht auf `[!]`. Soll ich sie abarbeiten? Für QA-M1-07 (Wischrichtung) brauche ich deine Angabe, ob unter macOS „Natürliche Scrollrichtung“ bei dir eingeschaltet ist.
+2. Soll ich M2 committen und pushen?
