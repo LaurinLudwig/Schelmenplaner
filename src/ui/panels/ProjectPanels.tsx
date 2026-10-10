@@ -1,0 +1,143 @@
+import { confirm } from '../../app/dialogs';
+import { LABEL_PLACEHOLDERS } from '../../core/label';
+import type { Category, FestplatzPage, LayerId } from '../../core/model/types';
+import { addCategory, categoryUsage, deleteCategory, setLabelFontSize, setLabelTemplate, updateCategory } from '../../state/objects';
+import { setLayer } from '../../state/pageSettings';
+import { useStore } from '../../state/store';
+import { Icon } from '../icons/Icon';
+import { tip } from '../shortcuts/tip';
+import { NativeColor } from './ColorField';
+import { NumberField } from './NumberField';
+import { TextField } from './TextField';
+
+/** Projektweite Beschriftung (bis M6 hier, danach zusätzlich in den Projekteinstellungen). */
+export function LabelPanel() {
+  const template = useStore((s) => s.project.settings.labelTemplate);
+  const fontSize = useStore((s) => s.project.settings.labelFontSize);
+  return (
+    <section className="panel" aria-label="Beschriftung">
+      <div className="panel-head">
+        <span>Beschriftung</span>
+        <span className="panel-badge muted">projektweit</span>
+      </div>
+      <div className="panel-body form">
+        <TextField id="label-template" label="Vorlage für Geschäfte" value={template} multiline rows={3} onCommit={setLabelTemplate} />
+        <p className="hint">Platzhalter: {LABEL_PLACEHOLDERS.map((p) => `{${p}}`).join(' ')}. Leere Zeilen entfallen. Cmd/Strg+Enter übernimmt.</p>
+        <div className="fields-2">
+          <NumberField id="label-size" label="Schriftgröße" unit="m" value={fontSize} min={0.05} max={20} step={0.1} onCommit={setLabelFontSize} />
+          <p className="hint align-end">in Planeinheiten, gilt auch für Grundflächen</p>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+/** Kategorien (projektweit): anlegen, umbenennen, umfärben, löschen. */
+export function CategoryPanel() {
+  const categories = useStore((s) => s.project.categories);
+  return (
+    <section className="panel" aria-label="Kategorien">
+      <div className="panel-head">
+        <span>Kategorien</span>
+        <span className="panel-badge muted">projektweit</span>
+        <div className="spacer" />
+        <button type="button" className="icon-btn" onClick={() => addCategory()} {...tip({ label: 'Kategorie anlegen', side: 'bottom' })}>
+          <Icon name="add" size={16} />
+        </button>
+      </div>
+      <div className="panel-body form">
+        {!categories.length && <p>Noch keine Kategorien. Mit „+“ anlegen; Geschäfte übernehmen die Farbe ihrer Kategorie.</p>}
+        {categories.map((c) => (
+          <CategoryRow key={c.id} cat={c} />
+        ))}
+      </div>
+    </section>
+  );
+}
+
+async function confirmDeleteCategory(cat: Category) {
+  const n = categoryUsage(useStore.getState().project, cat.id);
+  if (n > 0) {
+    const ok = await confirm(
+      'Kategorie löschen',
+      `„${cat.name}“ wird von ${n} ${n === 1 ? 'Geschäft' : 'Geschäften'} verwendet. Diese verlieren die Kategorie (Farbe: eigene Farbe bzw. Grau). Rückgängig mit Strg/Cmd+Z möglich.`,
+      'Löschen',
+      true,
+    );
+    if (!ok) return;
+  }
+  deleteCategory(cat.id);
+}
+
+function CategoryRow({ cat }: { cat: Category }) {
+  return (
+    <div className="cat-row" data-testid="category-row">
+      <NativeColor id={`cat-color-${cat.id}`} value={cat.color} label={`Farbe von „${cat.name}“`} onCommit={(color) => updateCategory(cat.id, { color })} />
+      <TextField id={`cat-name-${cat.id}`} className="grow" label="Name" value={cat.name} onCommit={(name) => name.trim() && updateCategory(cat.id, { name: name.trim() })} />
+      <button type="button" className="icon-btn" onClick={() => void confirmDeleteCategory(cat)} {...tip({ label: `Kategorie „${cat.name}“ löschen`, side: 'top' })}>
+        <Icon name="delete" size={16} />
+      </button>
+    </div>
+  );
+}
+
+const LAYER_LABEL: Record<LayerId, string> = {
+  background: 'Hintergrund',
+  areas: 'Grundflächen',
+  free: 'Freiflächen',
+  stands: 'Geschäfte',
+  infra: 'Infrastruktur',
+  labels: 'Beschriftung',
+};
+
+/** Ebenen der Page: ein-/ausblenden und sperren (Ansichtseinstellung; Hintergrund-Sperre wie in §1). */
+export function LayersPanel({ page }: { page: FestplatzPage }) {
+  const present: LayerId[] = [];
+  if (page.background) present.push('background');
+  if (page.areas.length) present.push('areas');
+  // Freiflächen ab M4
+  if (page.stands.length) present.push('stands');
+  if (page.infra.length) present.push('infra');
+  if (page.areas.length || page.stands.length) present.push('labels');
+  return (
+    <section className="panel" aria-label="Ebenen">
+      <div className="panel-head">Ebenen</div>
+      <div className="panel-body">
+        {!present.length && <p>Ebenen erscheinen, sobald es Objekte gibt.</p>}
+        <ul className="layers">
+          {present.map((id) => {
+            const l = page.layers[id];
+            const locked = id === 'background' ? !!page.background?.locked : l.locked;
+            return (
+              <li key={id} className={l.visible ? '' : 'off'}>
+                <button
+                  type="button"
+                  className="icon-btn"
+                  aria-pressed={l.visible}
+                  onClick={() => setLayer(page.id, id, { visible: !l.visible })}
+                  {...tip({ label: `${LAYER_LABEL[id]} ${l.visible ? 'ausblenden' : 'einblenden'}`, side: 'top' })}
+                >
+                  <Icon name={l.visible ? 'visible' : 'hidden'} size={16} />
+                </button>
+                {id === 'labels' ? (
+                  <span className="icon-btn-placeholder" />
+                ) : (
+                  <button
+                    type="button"
+                    className="icon-btn"
+                    aria-pressed={locked}
+                    onClick={() => setLayer(page.id, id, { locked: !locked })}
+                    {...tip({ label: `${LAYER_LABEL[id]} ${locked ? 'entsperren' : 'sperren'}`, side: 'top' })}
+                  >
+                    <Icon name={locked ? 'lock' : 'unlock'} size={16} />
+                  </button>
+                )}
+                <span className="layer-name">{LAYER_LABEL[id]}</span>
+              </li>
+            );
+          })}
+        </ul>
+      </div>
+    </section>
+  );
+}

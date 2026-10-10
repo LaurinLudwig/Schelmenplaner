@@ -18,6 +18,14 @@ function activePage(): FestplatzPage | null {
   return s.project.pages.find((p) => p.id === s.ui.activePage) ?? null;
 }
 
+/** Sichtbarer Ausschnitt der aktiven Page in Weltkoordinaten. */
+export function visibleBounds(): Bounds | null {
+  const v = currentView();
+  if (!v) return null;
+  const { w, h } = useStore.getState().ui.viewport;
+  return { minX: -v.tx / v.scale, minY: -v.ty / v.scale, maxX: (w - v.tx) / v.scale, maxY: (h - v.ty) / v.scale };
+}
+
 /** Zoomt um die Mitte der Zeichenfläche. */
 export function zoomBy(factor: number) {
   const page = activePage();

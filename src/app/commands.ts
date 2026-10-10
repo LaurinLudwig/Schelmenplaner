@@ -1,11 +1,12 @@
 import { addPage, cyclePage, deletePage, duplicatePage, gotoPage } from '../state/pages';
 import { saveInvertPan, saveTheme, selectCanRedo, selectCanUndo, START_PAGE, useStore, type ToolId } from '../state/store';
 import { setGridVisible } from '../state/pageSettings';
+import { copySelection, cutSelection, deleteSelection, duplicateSelection, hasClipboard, nudge, paste, selectAll, selectedIds } from '../state/objects';
 import { importBackground } from './backgroundImport';
 import { confirm } from './dialogs';
 import { notify } from './notify';
 import { newProject, openProject, saveProject } from './fileActions';
-import { fitView, zoomBy } from './view';
+import { fitView, visibleBounds, zoomBy } from './view';
 
 /**
  * Befehle, die über Shortcuts, Menüs und Buttons ausgelöst werden. Der Schlüssel entspricht
@@ -23,6 +24,8 @@ const onDrawingPage = () => s().ui.activePage !== START_PAGE;
 const activePage = () => s().project.pages.find((p) => p.id === s().ui.activePage) ?? null;
 const hasBackground = () => !!activePage()?.background;
 const setTool = (tool: ToolId) => () => s().setUi({ tool });
+const hasObjects = () => onDrawingPage() && selectedIds().length > 0;
+const nudgeCmd = (dx: number, dy: number): Command => ({ run: () => nudge(dx, dy), enabled: hasObjects });
 
 export async function confirmDeletePage(id: string) {
   const page = s().project.pages.find((p) => p.id === id);
@@ -52,10 +55,27 @@ export const COMMANDS: Record<string, Command> = {
 
   'edit.undo': { run: () => s().undo(), enabled: () => selectCanUndo(s()) },
   'edit.redo': { run: () => s().redo(), enabled: () => selectCanRedo(s()) },
+  'edit.cut': { run: cutSelection, enabled: hasObjects },
+  'edit.copy': { run: copySelection, enabled: hasObjects },
+  'edit.paste': { run: () => paste(visibleBounds()), enabled: () => onDrawingPage() && hasClipboard() },
+  'edit.duplicate': { run: duplicateSelection, enabled: hasObjects },
+  'edit.delete': { run: deleteSelection, enabled: hasObjects },
+  'edit.selectAll': { run: selectAll, enabled: onDrawingPage },
+  'edit.deselect': { run: () => s().setUi({ selection: null }), enabled: () => onDrawingPage() && !!s().ui.selection },
+  'edit.nudgeLeft': nudgeCmd(-0.1, 0),
+  'edit.nudgeRight': nudgeCmd(0.1, 0),
+  'edit.nudgeUp': nudgeCmd(0, -0.1),
+  'edit.nudgeDown': nudgeCmd(0, 0.1),
+  'edit.nudgeLeftBig': nudgeCmd(-1, 0),
+  'edit.nudgeRightBig': nudgeCmd(1, 0),
+  'edit.nudgeUpBig': nudgeCmd(0, -1),
+  'edit.nudgeDownBig': nudgeCmd(0, 1),
 
   'tool.select': { run: setTool('select'), enabled: onDrawingPage },
   'tool.hand': { run: setTool('hand'), enabled: onDrawingPage },
   'tool.zoom': { run: setTool('zoom'), enabled: onDrawingPage },
+  'tool.area': { run: setTool('area'), enabled: onDrawingPage },
+  'tool.stand': { run: setTool('stand'), enabled: onDrawingPage },
   'tool.measure': { run: setTool('measure'), enabled: onDrawingPage },
   'tool.calibrate': {
     run: setTool('calibrate'),

@@ -1,7 +1,9 @@
+import { normAngle } from '../geometry/rect';
+import { newId } from '../id';
 import { UserError } from '../errors';
 import { createPage, defaultLayers, DEFAULT_INFRA_TYPES, DEFAULT_SETTINGS } from './defaults';
 import { CURRENT_SCHEMA_VERSION, migrate } from './migrations';
-import { LAYER_IDS, type Background, type FestplatzPage, type Project, type ProjectFile, type Vec } from './types';
+import { LAYER_IDS, type Area, type Background, type Category, type Connection, type FestplatzPage, type Project, type ProjectFile, type Stand, type Vec } from './types';
 
 export class ProjectFileError extends UserError {
   override name = 'ProjectFileError';
@@ -49,6 +51,9 @@ function normalizeProject(p: Obj): Project {
   const snap = isObj(s.snap) ? s.snap : {};
   const tb = isObj(p.titleBlock) ? p.titleBlock : {};
   const ids = new Set<string>();
+  const objectIds = new Set<string>();
+  const categories = normalizeCategories(p.categories);
+  const categoryIds = new Set(categories.map((c) => c.id));
   return {
     id: p.id,
     name: str(p.name, 'Projekt'),
@@ -67,8 +72,8 @@ function normalizeProject(p: Obj): Project {
         neighbors: bool(snap.neighbors, DEFAULT_SETTINGS.snap.neighbors),
       },
     },
-    pages: p.pages.map((pg, i) => normalizePage(pg, i, ids)),
-    categories: arr(p.categories),
+    pages: p.pages.map((pg, i) => normalizePage(pg, i, ids, objectIds, categoryIds)),
+    categories,
     infraTypes: Array.isArray(p.infraTypes) && p.infraTypes.length ? (p.infraTypes as Project['infraTypes']) : structuredClone(DEFAULT_INFRA_TYPES),
     exportProfiles: arr(p.exportProfiles),
     titleBlock: { dateText: str(tb.dateText, ''), version: str(tb.version, '') },
@@ -76,7 +81,7 @@ function normalizeProject(p: Obj): Project {
   };
 }
 
-function normalizePage(raw: unknown, index: number, ids: Set<string>): FestplatzPage {
+function normalizePage(raw: unknown, index: number, ids: Set<string>, objectIds: Set<string>, categoryIds: Set<string>): FestplatzPage {
   if (!isObj(raw) || typeof raw.id !== 'string' || ids.has(raw.id)) {
     throw new ProjectFileError(`Festplatz-Page Nr. ${index + 1} ist beschädigt (fehlende oder doppelte ID).`);
   }
@@ -92,6 +97,10 @@ function normalizePage(raw: unknown, index: number, ids: Set<string>): Festplatz
   const view = isObj(raw.view) ? raw.view : null;
   const tbp = isObj(raw.titleBlockPos) ? raw.titleBlockPos : {};
   const mode = raw.numberingMode;
+  const background = normalizeBackground(raw.background);
+  // E-13: Es gibt nur eine Hintergrund-Sperre (`background.locked`); eine alte Ebenen-Sperre wird übernommen.
+  if (background && layers.background.locked) background.locked = true;
+  layers.background.locked = false;
   return {
     ...base,
     id: raw.id,
@@ -103,9 +112,9 @@ function normalizePage(raw: unknown, index: number, ids: Set<string>): Festplatz
     northAngle: num(raw.northAngle, 0),
     grid: { size: num(grid.size, base.grid.size), visible: bool(grid.visible, base.grid.visible) },
     layers,
-    background: normalizeBackground(raw.background),
-    areas: arr(raw.areas),
-    stands: arr(raw.stands),
+    background,
+    areas: arr(raw.areas).map((a) => normalizeArea(a, objectIds)).filter((a): a is Area => !!a),
+    stands: arr(raw.stands).map((st) => normalizeStand(st, objectIds, categoryIds)).filter((st): st is Stand => !!st),
     infra: arr(raw.infra),
     titleBlockPos: { x: num(tbp.x, 0), y: num(tbp.y, 0) },
     titleBlockText: str(raw.titleBlockText, ''),
@@ -142,5 +151,67 @@ function normalizeBackground(raw: unknown): Background | null {
     ...(typeof raw.paperScale === 'number' && raw.paperScale > 0 ? { paperScale: raw.paperScale } : {}),
     opacity: Math.min(1, Math.max(0, num(raw.opacity, 1))),
     locked: bool(raw.locked, false),
+  };
+}
+
+const isColor = (v: unknown): v is string => typeof v === 'string' && /^#[0-9a-fA-F]{6}$/.test(v);
+
+function normalizeCategories(raw: unknown): Category[] {
+  const seen = new Set<string>();
+  const out: Category[] = [];
+  for (const c of arr(raw)) {
+    if (!isObj(c) || typeof c.id !== 'string' || !c.id || seen.has(c.id)) continue;
+    seen.add(c.id);
+    out.push({ id: c.id, name: str(c.name, 'Kategorie'), color: isColor(c.color) ? c.color : '#a7adb3' });
+  }
+  return out;
+}
+
+/** Rechteckfelder prüfen; null, wenn Position oder Maße unbrauchbar sind. */
+function rectOf(o: Obj) {
+  const cx = num(o.cx, NaN);
+  const cy = num(o.cy, NaN);
+  const w = num(o.w, NaN);
+  const d = num(o.d, NaN);
+  if (![cx, cy].every(Number.isFinite) || !(w > 0) || !(d > 0)) return null;
+  return { cx, cy, w, d, rot: normAngle(num(o.rot, 0)) };
+}
+
+/** Eindeutige Objekt-ID; doppelte oder fehlende IDs werden neu vergeben. */
+function objectId(raw: unknown, ids: Set<string>): string {
+  const id = typeof raw === 'string' && raw && !ids.has(raw) ? raw : newId();
+  ids.add(id);
+  return id;
+}
+
+/** Grundfläche prüfen; ein unbrauchbarer Eintrag wird verworfen statt die Datei abzulehnen. */
+function normalizeArea(raw: unknown, ids: Set<string>): Area | null {
+  if (!isObj(raw)) return null;
+  const r = rectOf(raw);
+  if (!r) return null;
+  return { id: objectId(raw.id, ids), name: str(raw.name, ''), ...r };
+}
+
+const CONNECTIONS: readonly Connection[] = ['230V', 'CEE16', 'CEE32'];
+
+function normalizeStand(raw: unknown, ids: Set<string>, categoryIds: Set<string>): Stand | null {
+  if (!isObj(raw)) return null;
+  const r = rectOf(raw);
+  if (!r) return null;
+  const cat = typeof raw.categoryId === 'string' && categoryIds.has(raw.categoryId) ? raw.categoryId : null;
+  return {
+    id: objectId(raw.id, ids),
+    nr: str(raw.nr, ''),
+    nrLocked: bool(raw.nrLocked, false),
+    name: str(raw.name, ''),
+    owner: str(raw.owner, ''),
+    ware: str(raw.ware, ''),
+    powerKw: Math.max(0, num(raw.powerKw, 0)),
+    connection: CONNECTIONS.includes(raw.connection as Connection) ? (raw.connection as Connection) : null,
+    note: str(raw.note, ''),
+    categoryId: cat,
+    color: isColor(raw.color) ? raw.color : null,
+    suppressOutsideWarning: bool(raw.suppressOutsideWarning, false),
+    ...r,
   };
 }

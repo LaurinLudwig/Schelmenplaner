@@ -1,4 +1,5 @@
-import type { Background, FestplatzPage, Id } from '../core/model/types';
+import { LAYER_OF } from '../core/objects';
+import type { Background, FestplatzPage, Id, LayerId } from '../core/model/types';
 import { useStore } from './store';
 
 /** Änderungen an einer Festplatz-Page (Hintergrund, Raster, Norden). Alle rückgängig machbar. */
@@ -43,4 +44,33 @@ export function setNorthAngle(pageId: Id, angle: number) {
   updatePage(pageId, 'Nordrichtung ändern', (page) => {
     page.northAngle = a;
   });
+}
+
+/**
+ * Ebene ein-/ausblenden oder sperren: Ansichtseinstellung ohne Undo-Schritt (wie Raster ein/aus).
+ * Die Sperre des Hintergrunds ist `background.locked` (E-13) und bleibt wie in M2 rückgängig machbar.
+ * Objekte einer ausgeblendeten oder gesperrten Ebene werden aus der Auswahl genommen.
+ */
+export function setLayer(pageId: Id, layer: LayerId, patch: { visible?: boolean; locked?: boolean }) {
+  const s = useStore.getState();
+  const page = s.project.pages.find((p) => p.id === pageId);
+  if (!page) return;
+  if (layer === 'background' && patch.locked !== undefined) {
+    if (page.background) updateBackground(pageId, patch.locked ? 'Hintergrund sperren' : 'Hintergrund entsperren', { locked: patch.locked });
+    return;
+  }
+  s.changeView((p) => {
+    const pg = p.pages.find((x) => x.id === pageId);
+    if (pg) Object.assign(pg.layers[layer], patch);
+  });
+  const after = useStore.getState();
+  const pg = after.project.pages.find((p) => p.id === pageId)!;
+  const sel = after.ui.selection;
+  if (layer === 'background' && sel?.kind === 'background' && !pg.layers.background.visible) after.setUi({ selection: null });
+  if (sel?.kind === 'objects' && after.ui.activePage === pageId) {
+    const blocked = (kind: 'area' | 'stand') => !pg.layers[LAYER_OF[kind]].visible || pg.layers[LAYER_OF[kind]].locked;
+    const drop = new Set([...(blocked('area') ? pg.areas : []), ...(blocked('stand') ? pg.stands : [])].map((o) => o.id));
+    const ids = sel.ids.filter((id) => !drop.has(id));
+    if (ids.length !== sel.ids.length) after.setUi({ selection: ids.length ? { kind: 'objects', ids } : null });
+  }
 }

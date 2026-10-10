@@ -1,12 +1,19 @@
 import { runCommand } from '../../app/commands';
 import { useStore } from '../../state/store';
 import { Icon } from '../icons/Icon';
+import { ObjectPanel } from '../panels/ObjectPanel';
 import { PagePanel } from '../panels/PagePanel';
+import { CategoryPanel, LabelPanel, LayersPanel } from '../panels/ProjectPanels';
+import { useSelectedObjects } from '../panels/selection';
 import { tip } from '../shortcuts/tip';
 
-/** Rechte Seitenleiste: Eigenschaften der Auswahl bzw. der Festplatz-Page, später Ebenen (M3). */
+/**
+ * Rechte Seitenleiste: Eigenschaften der Auswahl (sonst die Einstellungen der Festplatz-Page),
+ * darunter die projektweiten Bereiche Beschriftung und Kategorien (bis M6) und die Ebenen.
+ */
 export function Sidebar() {
   const page = useStore((s) => s.project.pages.find((p) => p.id === s.ui.activePage) ?? null);
+  const sel = useSelectedObjects();
   return (
     <aside className="sidebar" aria-label="Seitenleiste">
       <div className="sidebar-head">
@@ -17,13 +24,10 @@ export function Sidebar() {
         </button>
       </div>
       <div className="sidebar-scroll">
-        {page && <PagePanel page={page} />}
-        <section className="panel">
-          <div className="panel-head">Ebenen</div>
-          <div className="panel-body">
-            <p>Ebenen erscheinen, sobald es Objekte gibt (ab Meilenstein 3).</p>
-          </div>
-        </section>
+        {sel ? <ObjectPanel key={sel.objects.map((o) => o.obj.id).join(',')} sel={sel} /> : page && <PagePanel page={page} />}
+        <LabelPanel />
+        <CategoryPanel />
+        {page && <LayersPanel page={page} />}
       </div>
     </aside>
   );

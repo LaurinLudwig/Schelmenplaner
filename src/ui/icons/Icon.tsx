@@ -31,6 +31,11 @@ import i_copy from '@material-symbols/svg-400/outlined/content_copy.svg?raw';
 import i_edit from '@material-symbols/svg-400/outlined/edit.svg?raw';
 import i_delete from '@material-symbols/svg-400/outlined/delete.svg?raw';
 import i_home from '@material-symbols/svg-400/outlined/home.svg?raw';
+import i_visible from '@material-symbols/svg-400/outlined/visibility.svg?raw';
+import i_hidden from '@material-symbols/svg-400/outlined/visibility_off.svg?raw';
+import i_lock from '@material-symbols/svg-400/outlined/lock.svg?raw';
+import i_unlock from '@material-symbols/svg-400/outlined/lock_open.svg?raw';
+import i_colorReset from '@material-symbols/svg-400/outlined/format_color_reset.svg?raw';
 
 const RAW = {
   select: i_select,
@@ -65,6 +70,11 @@ const RAW = {
   edit: i_edit,
   delete: i_delete,
   home: i_home,
+  visible: i_visible,
+  hidden: i_hidden,
+  lock: i_lock,
+  unlock: i_unlock,
+  colorReset: i_colorReset,
 };
 
 export type IconName = keyof typeof RAW;

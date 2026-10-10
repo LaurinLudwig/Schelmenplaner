@@ -55,7 +55,7 @@ describe('Page-Hilfen', () => {
 
   it('clonePage vergibt neue IDs und teilt keine Objekte', () => {
     const page = createPage('A');
-    page.areas.push({ id: 'a1', name: '', cx: 0, cy: 0, w: 10, d: 5, rot: 0, front: 2 });
+    page.areas.push({ id: 'a1', name: '', cx: 0, cy: 0, w: 10, d: 5, rot: 0 });
     const copy = clonePage(page, 'B');
     expect(copy.id).not.toBe(page.id);
     expect(copy.areas[0]!.id).not.toBe('a1');

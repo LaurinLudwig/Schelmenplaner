@@ -1,22 +1,29 @@
 import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { runCommand } from '../../app/commands';
-import { moveBy, type BgTransform } from '../../core/background';
+import { effectivePage } from '../../core/derive';
 import { fmt } from '../../core/format';
-import type { FestplatzPage, Vec, View } from '../../core/model/types';
+import type { FestplatzPage, Rect, Vec, View } from '../../core/model/types';
 import { findSnap, rectSnapSource } from '../../core/snap';
 import { defaultView, screenToWorld, worldToScreen, zoomAt } from '../../core/viewport';
-import { updateBackground } from '../../state/pageSettings';
 import { useStore } from '../../state/store';
 import { Icon } from '../icons/Icon';
 import { tip } from '../shortcuts/tip';
 import { BackgroundLayer } from './background/BackgroundLayer';
+import { ObjectsLayer } from './objects/ObjectsLayer';
 import type { ToolContext, ToolPointer } from './tools/types';
 import { useCalibrateTool } from './tools/useCalibrateTool';
+import { useCreateTool } from './tools/useCreateTool';
 import { useMeasureTool } from './tools/useMeasureTool';
+import { useSelectTool } from './tools/useSelectTool';
 import { interpretWheel } from './wheel';
 
 /** Fangradius in Bildschirmpixeln. */
 const SNAP_PX = 8;
+/** Unter dieser Schrifthöhe (px) wird die Beschriftung ausgeblendet. */
+const MIN_LABEL_PX = 3;
+/** Ab dieser Schrifthöhe (px) bekommt die Beschriftung einen hellen Rand (siehe ObjectsLayer). */
+const HALO_LABEL_PX = 12;
+const NO_SELECTION: ReadonlySet<string> = new Set();
 
 const isTextField = (t: EventTarget | null) =>
   t instanceof HTMLElement && (t.isContentEditable || /^(INPUT|TEXTAREA|SELECT)$/.test(t.tagName));
@@ -29,18 +36,17 @@ interface PanDrag {
   view0: View;
 }
 
-interface BackgroundDrag {
-  kind: 'background';
-  pointerId: number;
-  start: Vec;
-  transform0: BgTransform;
-}
-
 /**
  * Zeichenfläche (SVG). Weltkoordinaten in Metern; die Ansicht `view` bildet sie auf Pixel ab.
- * M1: Zoom und Pan, Orientierungsraster, Statusleiste. Objekte folgen ab M3.
+ * Zoom und Pan, Raster, Hintergrund, Objekte (M3) und Werkzeuge. Während einer Geste zeigt sie die
+ * Page mit eingesetzter Vorschau (core/derive.ts).
  */
-export function Canvas({ page }: { page: FestplatzPage }) {
+export function Canvas({ page: storedPage }: { page: FestplatzPage }) {
+  const preview = useStore((s) => s.preview);
+  const page = useMemo(() => effectivePage(storedPage, preview), [storedPage, preview]);
+  const categories = useStore((s) => s.project.categories);
+  const labelTemplate = useStore((s) => s.project.settings.labelTemplate);
+  const labelFontSize = useStore((s) => s.project.settings.labelFontSize);
   const svgRef = useRef<SVGSVGElement>(null);
   const size = useStore((s) => s.ui.viewport);
   const storedView = useStore((s) => s.views[page.id]);
@@ -58,35 +64,45 @@ export function Canvas({ page }: { page: FestplatzPage }) {
   const [spaceDown, setSpaceDown] = useState(false);
   const [altDown, setAltDown] = useState(false);
   const [panning, setPanning] = useState(false);
-  const drag = useRef<PanDrag | BackgroundDrag | null>(null);
+  const drag = useRef<PanDrag | null>(null);
   const selection = useStore((s) => s.ui.selection);
   const assets = useStore((s) => s.assets);
-  const setSelection = (sel: typeof selection) => setUi({ selection: sel });
+  const selectedIds = useMemo(() => (selection?.kind === 'objects' ? new Set(selection.ids) : NO_SELECTION), [selection]);
 
   // ---------- Werkzeuge ----------
+  // Fang nur an sichtbaren Ebenen (M3-18); Quelle einmal pro Objektänderung aufbauen
+  const snapSource = useMemo(() => {
+    const rects: Rect[] = [];
+    if (page.layers.areas.visible) rects.push(...page.areas);
+    if (page.layers.stands.visible) rects.push(...page.stands);
+    if (page.layers.infra.visible) rects.push(...page.infra);
+    return rectSnapSource(rects);
+  }, [page.areas, page.stands, page.infra, page.layers]);
   const ctx: ToolContext = {
     page,
     view,
     toScreen: (p) => worldToScreen(view, p),
-    snap: (p) => findSnap(p, [rectSnapSource([...page.areas, ...page.stands, ...page.infra])], SNAP_PX / view.scale),
+    toWorld: (p) => screenToWorld(view, p),
+    snap: (p) => findSnap(p, [snapSource], SNAP_PX / view.scale),
   };
   const measureTool = useMeasureTool(ctx, tool === 'measure');
   const calibrateTool = useCalibrateTool(ctx, tool === 'calibrate');
-  const activeTool = tool === 'measure' ? measureTool : tool === 'calibrate' ? calibrateTool : null;
+  const selectTool = useSelectTool(ctx, tool === 'select' && !spaceDown);
+  const areaTool = useCreateTool(ctx, 'area', tool === 'area' && !spaceDown);
+  const standTool = useCreateTool(ctx, 'stand', tool === 'stand' && !spaceDown);
+  const activeTool =
+    tool === 'measure' ? measureTool : tool === 'calibrate' ? calibrateTool : tool === 'select' ? selectTool : tool === 'area' ? areaTool : tool === 'stand' ? standTool : null;
   const activeToolRef = useRef(activeTool);
   useLayoutEffect(() => {
     activeToolRef.current = activeTool;
   });
 
-  // Esc und weitere Tasten zuerst dem Werkzeug anbieten; im Auswahlwerkzeug hebt Esc die Auswahl auf
+  // Esc und weitere Tasten zuerst dem Werkzeug anbieten (bricht z. B. eine Geste ab); sonst greifen
+  // die zentralen Shortcuts (Esc hebt dann die Auswahl auf, siehe edit.deselect)
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
       if (e.defaultPrevented || isTextField(e.target)) return;
-      if (activeToolRef.current?.onKeyDown(e)) {
-        e.preventDefault();
-        return;
-      }
-      if (e.key === 'Escape' && useStore.getState().ui.selection) useStore.getState().setUi({ selection: null });
+      if (activeToolRef.current?.onKeyDown(e)) e.preventDefault();
     };
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
@@ -196,7 +212,7 @@ export function Canvas({ page }: { page: FestplatzPage }) {
 
   const toolPointer = (e: React.PointerEvent): ToolPointer => {
     const screen = localPoint(e);
-    return { screen, world: screenToWorld(viewRef.current, screen), shiftKey: e.shiftKey, altKey: e.altKey };
+    return { screen, world: screenToWorld(viewRef.current, screen), shiftKey: e.shiftKey, altKey: e.altKey, target: e.target as Element | null };
   };
 
   const onPointerDown = (e: React.PointerEvent<SVGSVGElement>) => {
@@ -214,21 +230,7 @@ export function Canvas({ page }: { page: FestplatzPage }) {
       if (activeTool.onPointerDown(toolPointer(e))) e.currentTarget.setPointerCapture(e.pointerId);
       return;
     }
-    if (tool === 'zoom') {
-      setView(page.id, zoomAt(viewRef.current, e.altKey ? 0.5 : 2, localPoint(e)));
-      return;
-    }
-    // Auswahlwerkzeug: nicht gesperrten Hintergrund auswählen und verschieben
-    const bg = page.background;
-    const onBackground = (e.target as Element).closest('[data-kind="background"]');
-    if (bg && onBackground && !bg.locked) {
-      setSelection({ kind: 'background' });
-      e.currentTarget.setPointerCapture(e.pointerId);
-      useStore.getState().beginTransaction('Hintergrund verschieben');
-      drag.current = { kind: 'background', pointerId: e.pointerId, start: toolPointer(e).world, transform0: bg.transform };
-      return;
-    }
-    if (selection) setSelection(null);
+    if (tool === 'zoom') setView(page.id, zoomAt(viewRef.current, e.altKey ? 0.5 : 2, localPoint(e)));
   };
 
   const onPointerMove = (e: React.PointerEvent<SVGSVGElement>) => {
@@ -237,18 +239,16 @@ export function Canvas({ page }: { page: FestplatzPage }) {
     activeTool?.onPointerMove(p);
     const d = drag.current;
     if (!d || d.pointerId !== e.pointerId) return;
-    if (d.kind === 'pan') {
-      setView(page.id, { ...d.view0, tx: d.view0.tx + e.clientX - d.x0, ty: d.view0.ty + e.clientY - d.y0 });
-    } else {
-      updateBackground(page.id, 'Hintergrund verschieben', { transform: moveBy(d.transform0, p.world.x - d.start.x, p.world.y - d.start.y) });
-    }
+    setView(page.id, { ...d.view0, tx: d.view0.tx + e.clientX - d.x0, ty: d.view0.ty + e.clientY - d.y0 });
   };
 
   const endDrag = (e: React.PointerEvent<SVGSVGElement>) => {
+    if (drag.current) {
+      drag.current = null;
+      setPanning(false);
+      return;
+    }
     activeTool?.onPointerUp(toolPointer(e));
-    if (drag.current?.kind === 'background') useStore.getState().commitTransaction();
-    drag.current = null;
-    setPanning(false);
   };
 
   const grid = useMemo(
@@ -263,6 +263,7 @@ export function Canvas({ page }: { page: FestplatzPage }) {
   if (spaceDown || panning) classes.push('panning');
   if (panning) classes.push('dragging');
   if (altDown) classes.push('alt');
+  if (activeTool?.cursor && !spaceDown && !panning) classes.push(activeTool.cursor);
 
   return (
     <main className={classes.join(' ')}>
@@ -292,7 +293,17 @@ export function Canvas({ page }: { page: FestplatzPage }) {
         <path className="grid-minor" d={grid.minor} />
         <path className="grid-major" d={grid.major} />
         <path className="origin" d={`M${origin.x - 8} ${origin.y}H${origin.x + 8}M${origin.x} ${origin.y - 8}V${origin.y + 8}`} />
-        <g transform={worldTransform}>{/* Objekte ab M3 */}</g>
+        <g transform={worldTransform} className="world">
+          <ObjectsLayer
+            page={page}
+            categories={categories}
+            template={labelTemplate}
+            fontSize={labelFontSize}
+            selected={selectedIds}
+            labelsTiny={labelFontSize * view.scale < MIN_LABEL_PX}
+            labelHalo={labelFontSize * view.scale >= HALO_LABEL_PX}
+          />
+        </g>
         {activeTool?.overlay}
       </svg>
       {activeTool?.panel && <div className="tool-panel-host">{activeTool.panel}</div>}

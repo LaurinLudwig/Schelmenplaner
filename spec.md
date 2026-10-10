@@ -25,6 +25,11 @@ Freiflächen-Logik wurde bereits erfolgreich getestet (prototype/freiflaechen.ht
 - **Grundfläche**: Rechteck, frei rotierbar, mit einer markierten **Vorderseite**.
   Breite = Länge der Vorderseite, Tiefe = senkrecht dazu. [ANPASSEN: nur Rechtecke, keine Polygone]
 - **Geschäft (Stand)**: Rechteck B × T in Metern, Position, Rotation, Attribute (siehe unten).
+- Position ist der Mittelpunkt; gedreht wird um den Mittelpunkt (Grad im Uhrzeigersinn, 0–360).
+  Positionen und Maße werden auf 0,01 m gerundet, Drehungen auf 0,1° (beim Übernehmen, nicht während
+  des Ziehens). Intern ist die Vorderseite immer die lokale Unterkante; so ist die Breite immer die
+  Länge der Vorderseite (Entscheidung 2026-10-10).
+- **Kategorie**: Name und Farbe, projektweit. Ein Geschäft hat höchstens eine Kategorie.
 - **Freifläche**: wird immer automatisch berechnet, nie manuell gezeichnet.
 - **Infrastruktur-Objekte**: mobile Sperre, feste Sperre, Sanitätsdienst, RTW-Platz, Toilette,
   Müllcontainer, enge Durchfahrt (mit Maß der lichten Breite), freier Marker mit Text.
@@ -53,12 +58,23 @@ Freiflächen-Logik wurde bereits erfolgreich getestet (prototype/freiflaechen.ht
 
 ### 2. Grundflächen
 - Rechteck mit dem Grundflächen-Werkzeug aufziehen, drehen, Vorderseite per Klick auf eine Kante
-  festlegen (deutlich markiert).
-- Beschriftung automatisch mit Maßen, z. B. „50 × 10 m“.
+  festlegen (deutlich markiert). Klick ohne Ziehen legt eine Grundfläche 20 × 8 m an.
+- Vorderseite wechseln: Die Fläche bleibt optisch exakt an derselben Stelle, nur die Markierung der
+  Vorderseite wandert. Breite und Tiefe beziehen sich danach auf die neue Vorderseite (können tauschen),
+  die angezeigte Drehung kann um 90°/180° springen. Zusätzlich Kantenwähler in der Seitenleiste.
+- Größe zusätzlich per Ziehen an 8 Griffen (Ecken, Kantenmitten) änderbar; die gegenüberliegende
+  Kante bzw. Ecke bleibt fest. Drehen per Drehgriff (Shift = 15°-Schritte) und numerisch.
+- Verschieben: Ein Klick wählt die Grundfläche aus; nur eine bereits ausgewählte Grundfläche wird per
+  Ziehen verschoben. Ziehen auf einer nicht ausgewählten Grundfläche zieht ein Auswahlrechteck auf.
+- Beschriftung automatisch mit Name und Maßen, z. B. „Grundfläche Nord · 50 × 10 m“: horizontal, feste
+  Schriftgröße wie die Standbeschriftung, außerhalb der Fläche vor der Mitte der Vorderseite (kollidiert
+  so nicht mit Ständen und Freiflächen).
 
 ### 3. Geschäfte
-- Mit dem Geschäfts-Werkzeug anlegen, frei verschieben und drehen (Drehung auch numerisch,
-  Einrasten in 15°-Schritten mit gedrückter Shift-Taste).
+- Mit dem Geschäfts-Werkzeug anlegen (Klick: Standardmaß, anfangs 3 × 3 m, danach das zuletzt
+  angelegte Maß; Ziehen: Rechteck aufziehen), frei verschieben und drehen (Drehgriff und numerisch,
+  Einrasten in 15°-Schritten mit gedrückter Shift-Taste). Die Größe eines Stands ändert sich nur über
+  Zahlenfelder, nicht per Griff.
 - Fang an der Vorderseite: Beim Ziehen in eine Grundfläche rastet der Stand an der Vorderseite ein
   und übernimmt deren Ausrichtung. Ein-/ausschaltbar über die Werkzeugleiste (siehe UI),
   temporär umkehrbar mit gedrückter Alt-Taste.
@@ -68,8 +84,17 @@ Freiflächen-Logik wurde bereits erfolgreich getestet (prototype/freiflaechen.ht
 - Attribute (Seitenleiste rechts): Platznummer, Geschäftsname, Eigentümer, Typ/Ware,
   Breite, Tiefe, Stromverbrauch in kW [ANPASSEN], Anschlussart (230 V / CEE 16 A / CEE 32 A),
   Notiz, Farbe/Kategorie.
+- Farbe: aus der Kategorie; optional eine eigene Farbe pro Stand, die die Kategoriefarbe überschreibt.
+  Ohne beides neutrales Grau.
+- Kategorien werden in der Seitenleiste im Bereich „Kategorien“ angelegt, umbenannt, umgefärbt und
+  gelöscht (bis M6; danach zusätzlich in den Projekteinstellungen). Beim Löschen einer verwendeten
+  Kategorie fragt die App nach; die Stände verlieren die Kategorie (Farbe fällt auf die eigene Farbe
+  bzw. Grau zurück), alles rückgängig machbar.
 - Beschriftung mittig auf dem Stand aus konfigurierbarer Vorlage, z. B.
-  `{nr}` / `{name}` / `{breite}×{tiefe} m`.
+  `{nr}` / `{name}` / `{breite}×{tiefe} m`. Platzhalter: `{nr}`, `{name}`, `{eigentuemer}`, `{ware}`,
+  `{breite}`, `{tiefe}`, `{strom}`, `{anschluss}`, `{kategorie}`. Zeilen, die nach dem Einsetzen leer
+  sind oder deren Platzhalter alle leer sind (z. B. „{strom} kW“ ohne Stromangabe), entfallen. Vorlage und Schriftgröße sind projektweit; bis M6 in einem eigenen Bereich
+  „Beschriftung“ der Seitenleiste (nicht bei den Eigenschaften eines Stands).
 - Die Beschriftung ist IMMER horizontal, unabhängig von der Drehung des Stands, und wird über
   dem Stand gezeichnet (oberste Ebene).
 - Feste Schriftgröße in Planeinheiten (skaliert mit dem Zoom und erscheint im PDF in passender
@@ -180,9 +205,19 @@ Freiflächen-Logik wurde bereits erfolgreich getestet (prototype/freiflaechen.ht
 
 ### Allgemein
 - Ebenen (Hintergrund, Grundflächen, Freiflächen, Geschäfte, Infrastruktur, Beschriftung)
-  ein-/ausblendbar und sperrbar.
+  ein-/ausblendbar und sperrbar. Ein-/Ausblenden und Sperren sind Ansichtseinstellungen (kein
+  Undo-Schritt). Gesperrte Ebenen sind sichtbar, aber nicht auswählbar; ausgeblendete fangen nicht.
+  Die Sperre der Ebene „Hintergrund“ ist dieselbe wie die Hintergrund-Sperre aus §1 und bleibt wie
+  dort rückgängig machbar (sie gehört mit zur Kalibrierung).
 - Mehrfachauswahl (Shift+Klick, Auswahlrechteck), Kopieren/Einfügen, Duplizieren,
   Verschieben per Pfeiltasten (0,1 m, mit Shift 1 m), Entf zum Löschen.
+  - Auswahlrechteck wählt nur Objekte, die vollständig darin liegen; Shift ergänzt.
+  - Steuerungsleiste und Seitenleiste bei Mehrfachauswahl: unterschiedliche Werte erscheinen als
+    leeres Feld; eine Eingabe gilt für alle ausgewählten Objekte (Drehgriff dreht um die gemeinsame Mitte).
+  - Kopieren/Einfügen über eine interne Zwischenablage, auch zwischen Pages. Kopien erhalten eine leere,
+    nicht fixierte Platznummer. Duplizieren (Cmd/Strg+D) setzt die Kopie um 1 m nach rechts unten versetzt.
+  - Ein Ziehen, Drehen oder Aufziehen ist genau ein Undo-Schritt; ebenso eine Feldänderung in der
+    Seiten- oder Steuerungsleiste und eine gedrückt gehaltene Pfeiltaste.
 - Oberfläche auf Deutsch, auch alle Fehlermeldungen.
 - Zahleneingaben: Komma als Dezimaltrennzeichen, Punkt wird ebenfalls als Dezimaltrennzeichen
   akzeptiert. Eingabefelder zeigen keine Tausendertrennzeichen (nur reine Anzeigen).
@@ -190,7 +225,9 @@ Freiflächen-Logik wurde bereits erfolgreich getestet (prototype/freiflaechen.ht
 ## Nicht-funktionale Anforderungen
 - Läuft auf Windows und macOS, komplett offline, kein Server, kein Account.
 - Personenbezogene Händlerdaten bleiben lokal (DSGVO).
-- Flüssig mit mind. 500 Ständen über alle Festplätze.
+- Flüssig mit mind. 500 Ständen über alle Festplätze. Abnahmekriterium (ab M3): mit 500 Ständen
+  auf einer Page mindestens 50 Bilder/s beim Zoomen, beim Verschieben der Ansicht und beim Ziehen
+  eines Stands, in Chromium und WebKit.
 - TypeScript strict, Unit-Tests für die Geometrie- und Nummerierungslogik.
 
 ## Tech-Stack (Vorschlag)

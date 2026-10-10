@@ -18,8 +18,9 @@ export function startKeyboard(): () => void {
     const inText = isTextField(e.target);
     for (const { id, combo } of compiled) {
       if (!COMMANDS[id] || !matches(combo, e, IS_MAC)) continue;
-      // In Textfeldern nur Kombinationen mit Strg/Cmd (Speichern usw.), aber kein Undo – das gehört dem Feld.
-      if (inText && (!(combo.mod || combo.ctrl) || id === 'edit.undo' || id === 'edit.redo')) return;
+      // In Textfeldern nur Kombinationen mit Strg/Cmd (Speichern usw.), aber keine Bearbeiten-Befehle:
+      // Undo, Kopieren, Einfügen, Alles auswählen usw. gehören dem Feld.
+      if (inText && (!(combo.mod || combo.ctrl) || id.startsWith('edit.'))) return;
       e.preventDefault();
       runCommand(id);
       return;

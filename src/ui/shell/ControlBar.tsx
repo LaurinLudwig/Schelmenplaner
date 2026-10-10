@@ -1,16 +1,28 @@
 import { runCommand } from '../../app/commands';
+import { roundRect } from '../../core/geometry/rect';
+import { LIMITS } from '../../core/objects';
+import { groupCenter } from '../../core/transform';
+import { moveGroupTo, setRectField } from '../../state/objects';
 import { useStore } from '../../state/store';
 import { Icon } from '../icons/Icon';
+import { NumberField } from '../panels/NumberField';
+import { common, selectionTitle, useSelectedObjects } from '../panels/selection';
 import { tip } from '../shortcuts/tip';
 
-/** Kontextabhängige Steuerungsleiste. Ab M3 erscheinen hier X, Y, Breite, Tiefe und Drehung der Auswahl. */
+/**
+ * Kontextabhängige Steuerungsleiste: X, Y (Mittelpunkt), Breite, Tiefe und Drehung der Auswahl.
+ * Bei Mehrfachauswahl verschieben X/Y die Mitte der Auswahl; unterschiedliche Werte bleiben leer,
+ * eine Eingabe gilt für alle ausgewählten Objekte. Jede Eingabe ist ein Undo-Schritt.
+ */
 export function ControlBar() {
   const pageName = useStore((s) => s.project.pages.find((p) => p.id === s.ui.activePage)?.name ?? '');
   const sidebarOpen = useStore((s) => s.ui.sidebarOpen);
+  const bgSelected = useStore((s) => s.ui.selection?.kind === 'background');
+  const sel = useSelectedObjects();
   return (
     <div className="controlbar">
       <span className="title">{pageName}</span>
-      <span>Keine Auswahl</span>
+      {sel ? <SelectionFields sel={sel} /> : <span>{bgSelected ? 'Hintergrund ausgewählt' : 'Keine Auswahl'}</span>}
       <div className="spacer" />
       <button
         type="button"
@@ -21,6 +33,26 @@ export function ControlBar() {
       >
         <Icon name={sidebarOpen ? 'sidebarClose' : 'sidebarOpen'} />
       </button>
+    </div>
+  );
+}
+
+function SelectionFields({ sel }: { sel: NonNullable<ReturnType<typeof useSelectedObjects>> }) {
+  const { page, objects } = sel;
+  const ids = objects.map((o) => o.obj.id);
+  const rects = objects.map((o) => roundRect(o.obj));
+  const c = groupCenter(rects)!;
+  const onlyStands = objects.every((o) => o.kind === 'stand');
+  const min = onlyStands ? LIMITS.stand.min : LIMITS.area.min;
+  const max = objects.some((o) => o.kind === 'area') ? LIMITS.area.max : LIMITS.stand.max;
+  return (
+    <div className="cb-fields" aria-label="Steuerungsleiste">
+      <span className="cb-kind">{selectionTitle(objects)}</span>
+      <NumberField className="inline" id="cb-x" label="X" unit="m" value={c.x} step={0.1} onCommit={(x) => moveGroupTo(page.id, ids, { x })} />
+      <NumberField className="inline" id="cb-y" label="Y" unit="m" value={c.y} step={0.1} onCommit={(y) => moveGroupTo(page.id, ids, { y })} />
+      <NumberField className="inline" id="cb-w" label="Breite" unit="m" value={common(rects.map((r) => r.w))} min={min} max={max} step={0.1} onCommit={(v) => setRectField(page.id, ids, 'w', v)} />
+      <NumberField className="inline" id="cb-d" label="Tiefe" unit="m" value={common(rects.map((r) => r.d))} min={min} max={max} step={0.1} onCommit={(v) => setRectField(page.id, ids, 'd', v)} />
+      <NumberField className="inline" id="cb-rot" label="Drehung" unit="°" value={common(rects.map((r) => r.rot))} min={-360} max={360} step={1} digits={1} onCommit={(v) => setRectField(page.id, ids, 'rot', v)} />
     </div>
   );
 }

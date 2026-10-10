@@ -8,6 +8,8 @@ export interface ToolContext {
   view: View;
   /** Weltpunkt → Bildschirmpunkt (relativ zur Zeichenfläche). */
   toScreen: (p: Vec) => Vec;
+  /** Bildschirmpunkt → Weltpunkt. */
+  toWorld: (p: Vec) => Vec;
   /** Fang am nächsten Objekt-Eckpunkt bzw. an der nächsten Kante (siehe core/snap.ts). */
   snap: (p: Vec) => SnapResult | null;
 }
@@ -17,9 +19,11 @@ export interface ToolPointer {
   screen: Vec;
   shiftKey: boolean;
   altKey: boolean;
+  /** Getroffenes DOM-Element (z. B. Hintergrund); Objekte werden geometrisch getroffen (core/hit.ts). */
+  target: Element | null;
 }
 
-/** Schnittstelle der Werkzeug-Hooks (useMeasureTool, useCalibrateTool, …). */
+/** Schnittstelle der Werkzeug-Hooks (useMeasureTool, useCalibrateTool, useSelectTool, useCreateTool). */
 export interface ToolHandlers {
   /** true = Ereignis verarbeitet (Zeichenfläche macht dann nichts weiter). */
   onPointerDown(p: ToolPointer): boolean;
@@ -31,4 +35,6 @@ export interface ToolHandlers {
   overlay: ReactNode;
   /** HTML über der Zeichenfläche (Eingabefelder, Hinweise). */
   panel: ReactNode;
+  /** Zusätzliche CSS-Klasse für die Zeichenfläche (Mauszeiger). */
+  cursor?: string;
 }

@@ -4,7 +4,8 @@ import { fmtInput, parseNum } from '../../core/format';
 interface Props {
   id: string;
   label: string;
-  value: number;
+  /** null = unterschiedliche Werte (Mehrfachauswahl): das Feld bleibt leer, eine Eingabe gilt für alle. */
+  value: number | null;
   unit?: string;
   min?: number;
   max?: number;
@@ -13,11 +14,15 @@ interface Props {
   /** Wird erst bei Enter, Verlassen des Feldes oder Pfeiltasten aufgerufen (ein Undo-Schritt pro Eingabe). */
   onCommit: (value: number) => void;
   disabled?: boolean;
+  /** Beschriftung nur für Screenreader (z. B. in der kompakten Steuerungsleiste). */
+  className?: string;
 }
 
 /** Zahlenfeld mit deutscher Eingabe (Komma), Einheit, Grenzen und Pfeiltasten (Shift = ×10). */
-export function NumberField({ id, label, value, unit, min, max, step = 1, digits = 2, onCommit, disabled }: Props) {
-  const [text, setText] = useState(fmtInput(value, digits));
+const show = (v: number | null, digits: number) => (v === null ? '' : fmtInput(v, digits));
+
+export function NumberField({ id, label, value, unit, min, max, step = 1, digits = 2, onCommit, disabled, className }: Props) {
+  const [text, setText] = useState(show(value, digits));
   const [bad, setBad] = useState(false);
   const [focused, setFocused] = useState(false);
   /** Hat der Nutzer seit dem Fokussieren getippt? Nur dann übernimmt das Verlassen den Text. */
@@ -28,7 +33,7 @@ export function NumberField({ id, label, value, unit, min, max, step = 1, digits
   const [shown, setShown] = useState(value);
   if (value !== shown && !focused) {
     setShown(value);
-    setText(fmtInput(value, digits));
+    setText(show(value, digits));
     setBad(false);
   }
 
@@ -49,7 +54,7 @@ export function NumberField({ id, label, value, unit, min, max, step = 1, digits
   };
 
   return (
-    <div className="field">
+    <div className={`field${className ? ` ${className}` : ''}`}>
       <label htmlFor={id}>{label}</label>
       <span className="inp">
         <input
@@ -61,6 +66,7 @@ export function NumberField({ id, label, value, unit, min, max, step = 1, digits
           spellCheck={false}
           disabled={disabled}
           aria-invalid={bad}
+          title={value === null ? 'Unterschiedliche Werte – eine Eingabe gilt für alle ausgewählten Objekte' : undefined}
           onFocus={() => setFocused(true)}
           onBlur={() => {
             setFocused(false);
@@ -79,7 +85,7 @@ export function NumberField({ id, label, value, unit, min, max, step = 1, digits
               // Verlassen des Feldes übernimmt den Wert (genau ein Undo-Schritt)
               (e.target as HTMLInputElement).blur();
             } else if (e.key === 'Escape') {
-              setText(fmtInput(value, digits));
+              setText(show(value, digits));
               setBad(false);
               setEdited(false);
               skipBlurCommit.current = true;
@@ -87,6 +93,7 @@ export function NumberField({ id, label, value, unit, min, max, step = 1, digits
             } else if (e.key === 'ArrowUp' || e.key === 'ArrowDown') {
               e.preventDefault();
               const base = Number.isFinite(parseNum(text)) ? parseNum(text) : value;
+              if (base === null) return;
               let n = Math.round((base + (e.key === 'ArrowUp' ? 1 : -1) * step * (e.shiftKey ? 10 : 1)) * 1e6) / 1e6;
               if (min !== undefined) n = Math.max(min, n);
               if (max !== undefined) n = Math.min(max, n);

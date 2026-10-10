@@ -5,8 +5,10 @@
  * - Einheit Meter, x nach rechts, y nach unten.
  * - Drehung in Grad, positiv = im Uhrzeigersinn auf dem Bildschirm.
  * - Rechteck { cx, cy, w, d, rot }: Mittelpunkt, Breite (lokale x-Achse), Tiefe (lokale y-Achse).
- * - Kanten: 0 = oben, 1 = rechts, 2 = unten, 3 = links (ungedreht). Ein Geschäft hat seine
- *   Vorderseite an Kante 2.
+ * - Kanten: 0 = oben, 1 = rechts, 2 = unten, 3 = links (ungedreht). Grundfläche und Geschäft haben
+ *   ihre Vorderseite immer an Kante 2; `w` ist damit stets die Länge der Vorderseite. Wird eine
+ *   andere Kante zur Vorderseite, wird das Rechteck umorientiert (siehe geometry/rect.ts `setFront`).
+ * - Gespeicherte Positionen und Maße sind auf 0,01 m gerundet, Drehungen auf 0,1° (`roundRect`).
  *
  * Abgeleitete Daten (Freiflächen, Warnungen, Summen) werden nie gespeichert.
  */
@@ -61,10 +63,13 @@ export interface InfraTypeDef {
   occupiesArea: boolean;
 }
 
+/** Index einer Rechteckkante (lokal, ungedreht): 0 oben, 1 rechts, 2 unten, 3 links. */
+export type EdgeIndex = 0 | 1 | 2 | 3;
+
+/** Grundfläche. Vorderseite = Kante 2. */
 export interface Area extends Rect {
   id: Id;
   name: string;
-  front: 0 | 1 | 2 | 3;
 }
 
 export type Connection = '230V' | 'CEE16' | 'CEE32';
@@ -80,6 +85,8 @@ export interface Stand extends Rect {
   connection: Connection | null;
   note: string;
   categoryId: Id | null;
+  /** Eigene Farbe; überschreibt die Kategoriefarbe. null = Farbe der Kategorie bzw. Grau. */
+  color: string | null;
   suppressOutsideWarning: boolean;
 }
 

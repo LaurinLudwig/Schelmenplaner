@@ -20,8 +20,8 @@ export const TOOL_GROUPS: ToolbarItem[][] = [
     { shortcut: 'tool.zoom', icon: 'zoom', kind: 'tool', tool: 'zoom', description: 'Klicken vergrößert, mit Alt verkleinert' },
   ],
   [
-    { shortcut: 'tool.area', icon: 'area', kind: 'tool', milestone: 'M3', description: 'Grundfläche als Rechteck aufziehen' },
-    { shortcut: 'tool.stand', icon: 'stand', kind: 'tool', milestone: 'M3', description: 'Neuen Stand auf der Zeichenfläche aufziehen' },
+    { shortcut: 'tool.area', icon: 'area', kind: 'tool', tool: 'area', description: 'Grundfläche als Rechteck aufziehen' },
+    { shortcut: 'tool.stand', icon: 'stand', kind: 'tool', tool: 'stand', description: 'Neuen Stand auf der Zeichenfläche aufziehen' },
     { shortcut: 'tool.infra', icon: 'infra', kind: 'tool', milestone: 'M7', description: 'Sperren, Sanität, Toiletten und weitere Objekte platzieren' },
   ],
   [

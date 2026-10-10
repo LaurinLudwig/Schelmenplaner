@@ -1,5 +1,6 @@
 import { produce } from 'immer';
 import { create } from 'zustand';
+import type { Preview } from '../core/derive';
 import type { Assets, ProjectBundle } from '../core/fileFormat';
 import { createProject } from '../core/model/defaults';
 import type { Id, Project, View } from '../core/model/types';
@@ -8,10 +9,10 @@ import * as H from './history';
 export const START_PAGE = 'start';
 export type PageRef = typeof START_PAGE | Id;
 
-export type ToolId = 'select' | 'hand' | 'zoom' | 'measure' | 'calibrate';
+export type ToolId = 'select' | 'hand' | 'zoom' | 'measure' | 'calibrate' | 'area' | 'stand';
 
-/** Auswahl auf der aktiven Page. M2: nur der Hintergrund; ab M3 kommen Objekte hinzu. */
-export type Selection = { kind: 'background' } | null;
+/** Auswahl auf der aktiven Page: der Hintergrund oder Objekte (Grundflächen und Geschäfte gemischt). */
+export type Selection = { kind: 'background' } | { kind: 'objects'; ids: Id[] } | null;
 export type Theme = 'dark' | 'light';
 
 export interface UiState {
@@ -42,8 +43,14 @@ export interface AppState {
   /** Ansicht je Page. Gehört nicht zur Undo-Historie. */
   views: Record<Id, View>;
   ui: UiState;
+  /**
+   * Flüchtige Vorschau während einer Geste (Ziehen, Drehen, Größe ändern). Nicht in der Historie;
+   * beim Loslassen wird sie mit genau einem `change` übernommen (siehe core/derive.ts).
+   */
+  preview: Preview | null;
 
-  change: (label: string, recipe: H.Recipe) => boolean;
+  change: (label: string, recipe: H.Recipe, opts?: H.RecordOptions) => boolean;
+  setPreview: (preview: Preview | null) => void;
   /**
    * Ansichtseinstellung im Projekt ändern (z. B. Raster ein/aus): kein Undo-Schritt, markiert das
    * Projekt nicht als ungespeichert, wird beim nächsten Speichern aber mitgeschrieben (QA-M2-05).
@@ -98,7 +105,12 @@ export function saveTheme(t: Theme) {
 function validSelection(project: Project, active: PageRef, sel: Selection): Selection {
   if (!sel) return null;
   const page = project.pages.find((p) => p.id === active);
-  return sel.kind === 'background' && page?.background ? sel : null;
+  if (!page) return null;
+  if (sel.kind === 'background') return page.background ? sel : null;
+  const exists = new Set([...page.areas.map((a) => a.id), ...page.stands.map((st) => st.id)]);
+  const ids = sel.ids.filter((id) => exists.has(id));
+  if (!ids.length) return null;
+  return ids.length === sel.ids.length ? sel : { kind: 'objects', ids };
 }
 
 /** Sorgt dafür, dass die aktive Page nach Undo/Löschen noch existiert. */
@@ -141,13 +153,17 @@ export const useStore = create<AppState>()((set, get) => {
       invertPan: loadPref(INVERT_PAN_KEY) === '1',
       viewport: { w: 0, h: 0 },
     },
+    preview: null,
 
-    change(label, recipe) {
+    change(label, recipe, opts) {
       const s = get();
-      const r = H.record(s.project, s.history, label, recipe);
+      const r = H.record(s.project, s.history, label, recipe, opts);
       if (!r) return false;
       set({ project: r.project, history: r.history, ui: normalizeUi(r.project, s.ui) });
       return true;
+    },
+    setPreview(preview) {
+      set({ preview });
     },
     changeView(recipe) {
       set({ project: produce(get().project, recipe) });
@@ -178,6 +194,7 @@ export const useStore = create<AppState>()((set, get) => {
         fileName: file.name,
         savedHead: file.dirty ? -1 : 0,
         views,
+        preview: null,
         ui: { ...get().ui, activePage: project.pages[0]?.id ?? START_PAGE, tool: 'select', selection: null },
       });
     },
@@ -189,7 +206,9 @@ export const useStore = create<AppState>()((set, get) => {
       const next = { ...ui, ...patch };
       // Auswahl gehört zur Page: beim Seitenwechsel aufheben
       if (patch.activePage !== undefined && patch.activePage !== ui.activePage && patch.selection === undefined) next.selection = null;
-      set({ ui: next });
+      // Eine laufende Geste endet mit Werkzeug- oder Seitenwechsel ohne Übernahme
+      const reset = (patch.tool !== undefined && patch.tool !== ui.tool) || next.activePage !== ui.activePage;
+      set(reset ? { ui: next, preview: null } : { ui: next });
     },
     addAsset(id, bytes) {
       if (get().assets[id]) return;

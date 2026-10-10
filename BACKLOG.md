@@ -23,13 +23,20 @@ ungefragt umgesetzt; erst nach Freigabe wandert ein Eintrag in einen Meilenstein
 - E-10 (Idee) Plandatei per Drag & Drop auf die Zeichenfläche ziehen, um sie zu importieren.
 - E-11 (Hinweis) Autosave schreibt alle 30 s die ganze Datei inklusive Pläne. Bei sehr großen Projekten (> 100 MB) optimieren, z. B. Pläne nur einmal sichern und danach nur `project.json`.
 - E-12 (Idee) Gespeicherte Kalibrierpunkte anzeigen bzw. beim erneuten Kalibrieren als Startpunkte anbieten (werden bereits gespeichert).
-- E-13 (Lücke, M3) Zwei Sperren für den Hintergrund: `background.locked` (M2) und die Ebenen-Sperre `layers.background.locked` (M3-14). In M3 zu einer zusammenführen.
+- ~~E-13 Zwei Sperren~~ → erledigt mit M3-14 (eine Sperre `background.locked`). Ursprünglich: Zwei Sperren für den Hintergrund: `background.locked` (M2) und die Ebenen-Sperre `layers.background.locked` (M3-14). In M3 zu einer zusammenführen.
 - E-14 (Idee) Hintergrund per Griff drehen oder per zwei Punkten waagerecht ausrichten (bisher nur Zahlenfeld).
 - E-15 (Idee) Mess- und Kalibrierpunkte fangen an Linien des Plans (Vektor-PDF/SVG). Bisher Fang nur an Objekten (ab M3).
 - E-16 (Hinweis) Kennwortgeschützte PDFs werden mit einer Meldung abgelehnt (Seitenextraktion nicht möglich).
 - ~~E-09 Einstellung „Wischrichtung umkehren“~~ → umgesetzt mit QA-M1-07 (Menü).
 - E-17 (Idee, Laurin) Lupe bzw. Vergrößerung beim Setzen der Kalibrierpunkte, um die Klickgenauigkeit zu verbessern.
 - E-18 (Hinweis) Der QA-Test „abgeschnittenes PNG“ (`m2-qa.spec.ts`) wird in WebKit übersprungen mit der Begründung „WebKit importiert das Teilbild“. Seit QA-M2-02 weist auch WebKit abgeschnittene Bilder ab; der Skip kann entfallen (nicht geändert, da kein `test.fail`).
+- E-19 (Lücke) Undo stellt die Auswahl nicht wieder her: Nach „Löschen“ und Rückgängig ist das Objekt wieder da, aber nicht ausgewählt (Illustrator wählt es wieder aus).
+- E-20 (Idee) Shift beim Verschieben beschränkt auf waagerecht/senkrecht/45°; Alt+Ziehen dupliziert (Illustrator-Konventionen). Alt ist ab M4 für die Fang-Umkehr vorgesehen, also abstimmen.
+- E-21 (Idee) Taste zum Drehen um 90° (der Prototyp hatte R).
+- E-22 (Hinweis) Die Grundflächen-Beschriftung wird über eine geschätzte Textbreite (0,56 em pro Zeichen) vor die Vorderseite gesetzt, nicht gemessen. Bei stark gedrehten Flächen mit langem Namen kann der Abstand zur Fläche etwas größer oder kleiner ausfallen.
+- E-23 (Hinweis, M8) Der helle Rand um die Beschriftung erscheint erst ab 12 px Schrifthöhe (Leistung WebKit, siehe Abschluss M3). Für den PDF-Export (weißes Papier) separat entscheiden.
+- E-24 (Idee) Kopieren/Einfügen zwischen zwei geöffneten Projekten (System-Zwischenablage). Bisher nur innerhalb des Projekts.
+- E-25 (Hinweis, M5) „Festplatz duplizieren“ übernimmt die Platznummern der Stände; die Kopie hat dann doppelte Nummern. Beim Kopieren/Duplizieren einzelner Stände wird die Nummer geleert.
 - E-08 (Hinweis) Browser-Autosave nutzt localStorage (ca. 5 MB). Mit eingebetteten Hintergründen (M2) reicht das nicht; betrifft nur den Browser-Dev-Modus.
 - [x] [QA] QA-M1-01 (gering, erledigt: Abschluss M1 korrigiert) Abschluss M1 widersprüchlich/veraltet: „M1-01 bleibt `[~]`“ vs. Status `[x]`; „24 Unit-Tests“, tatsächlich 28; der erwähnte „automatisierte Klicktest im Browser über alle obigen Funktionen“ liegt nicht im Repo (nur `tests/e2e/smoke.spec.ts`). Siehe `qa/M1.md`. (QA ✓ M1 Nachprüfung)
 - [x] [QA] QA-M1-02 (gering, Risiko; erledigt: Pinch auf echter Hardware bestätigt, Wischrichtung nach Laurins Test umgedreht; echtes Mausrad bleibt auf der manuellen Checkliste) Maus/Trackpad-Erkennung ist eine Heuristik (`src/ui/canvas/wheel.ts:26-31`): In Playwright-WebKit wird ein synthetisches Mausrad (`wheelDeltaY` 300) als Trackpad gedeutet und verschiebt statt zu zoomen. Mit echter Hardware vermutlich korrekt, nur manuell prüfbar; umgekehrt kann ein Trackpad-Wischen mit glattem Delta (z. B. 120) einmal zoomen. Mausrad-E2E-Test läuft nur in Chromium. Siehe `qa/M1.md`. (QA M1-Nachprüfung: nur teilweise – Heuristik unverändert, Mausrad-Test weiter nur Chromium `tests/e2e/m1-canvas.spec.ts:53`, Restrisiko dokumentiert; die neue Wischrichtung ist klärungsbedürftig, siehe QA-M1-07 in `qa/M1-nachpruefung.md`) **Erledigt 2026-10-10:** Wischrichtung geklärt und umgesetzt (QA-M1-07). Die Maus/Trackpad-Heuristik bleibt; Prüfung mit echter Maus steht auf der manuellen Checkliste.
@@ -55,9 +62,9 @@ ungefragt umgesetzt; erst nach Freigabe wandert ein Eintrag in einen Meilenstein
 - [ ] Q-01 Läuft auf Windows und macOS (NFA)
 - [ ] Q-02 Komplett offline, kein Server, kein Account (NFA)
 - [~] Q-03 Personenbezogene Händlerdaten bleiben lokal; nichts wird von fremden Servern nachgeladen, auch keine Schriften oder Icons (NFA, DSGVO, Gestaltung) – bisher eingehalten: Schriften über @fontsource, Icons über npm, CSP erlaubt nur `self`
-- [ ] Q-04 Flüssig mit mindestens 500 Ständen über alle Festplätze (NFA)
+- [~] Q-04 Flüssig mit mindestens 500 Ständen über alle Festplätze (NFA) – M3: Lasttest 500 Stände auf einer Page ≥ 55 Bilder/s in Chromium und WebKit (M3-23)
 - [~] Q-05 TypeScript strict (NFA) – aktiv seit M1 (`strict`, `noUncheckedIndexedAccess`)
-- [ ] Q-06 Geometrie-, Freiflächen- und Nummerierungslogik als reine, UI-unabhängige Module mit Unit-Tests (Vorgehen 4, NFA)
+- [~] Q-06 Geometrie-, Freiflächen- und Nummerierungslogik als reine, UI-unabhängige Module mit Unit-Tests (Vorgehen 4, NFA) – M3: Rechteck-Geometrie, Treffer, Gruppen-Transformation, Beschriftung in `src/core/` mit Tests
 - [ ] Q-07 Builds für Windows und macOS über GitHub Actions (Tech-Stack)
 - [~] Q-08 Oberfläche komplett auf Deutsch (UI/Allgemein) – bisher eingehalten
 - [ ] Q-09 Jedes Werkzeug, jede Page und jeder wichtige Button hat einen Shortcut; neue Funktionen tragen sich in die zentrale Shortcut-Konfiguration ein (Tastaturkürzel)
@@ -102,24 +109,30 @@ ungefragt umgesetzt; erst nach Freigabe wandert ein Eintrag in einen Meilenstein
 - [x] M2-10 Messwerkzeug: zwei Punkte klicken, Abstand in m; bleibt bis zum nächsten Werkzeugwechsel sichtbar (Messwerkzeug, Layout) (QA ✓ M2)
 
 ## M3 – Grundflächen, Geschäfte, Seitenleiste, Steuerungsleiste, Beschriftung
-- [ ] M3-01 Grundfläche = Rechteck, frei rotierbar, Breite = Länge der Vorderseite, Tiefe senkrecht dazu; nur Rechtecke (Begriffe)
-- [ ] M3-02 Grundflächen-Werkzeug: Rechteck aufziehen und drehen (§2, Layout)
-- [ ] M3-03 Vorderseite per Klick auf eine Kante festlegen, deutlich markiert (§2)
-- [ ] M3-04 Automatische Grundflächen-Beschriftung mit Maßen, z. B. „50 × 10 m“ (§2)
-- [ ] M3-05 Geschäfts-Werkzeug: Stand B × T anlegen (§3, Layout)
-- [ ] M3-06 Geschäfte frei verschieben und drehen; Drehung numerisch; Shift rastet in 15°-Schritten ein (§3)
-- [ ] M3-07 Geschäfts-Attribute in der Seitenleiste: Platznummer, Geschäftsname, Eigentümer, Typ/Ware, Breite, Tiefe, Strom in kW, Anschlussart (230 V / CEE 16 A / CEE 32 A), Notiz (§3)
-- [ ] M3-08 Farbe/Kategorie pro Geschäft; Kategorien mit Name und Farbe im Projekt (§3)
-- [ ] M3-09 Standbeschriftung mittig aus konfigurierbarer Vorlage, z. B. `{nr}` / `{name}` / `{breite}×{tiefe} m` (§3)
-- [ ] M3-10 Standbeschriftung immer horizontal, unabhängig von der Drehung, auf oberster Ebene (§3)
-- [ ] M3-11 Feste Schriftgröße in Planeinheiten, skaliert mit dem Zoom; Text darf über den Stand ragen, nichts wird gekürzt oder verkleinert (§3)
-- [ ] M3-12 Steuerungsleiste: X, Y, Breite, Tiefe, Drehung des ausgewählten Objekts direkt bearbeitbar (Layout)
-- [ ] M3-13 Seitenleiste: Eigenschaften des ausgewählten Objekts (Layout)
-- [ ] M3-14 Ebenen-Panel: Ebenen (Hintergrund, Grundflächen, Freiflächen, Geschäfte, Infrastruktur, Beschriftung) ein-/ausblendbar und sperrbar; jede Ebene erscheint, sobald ihre Objekte existieren (Layout, Allgemein)
-- [ ] M3-15 Mehrfachauswahl: Shift+Klick, Auswahlrechteck (Allgemein)
-- [ ] M3-16 Kopieren/Einfügen, Duplizieren (Allgemein)
-- [ ] M3-17 Verschieben per Pfeiltasten (0,1 m, mit Shift 1 m), Entf löscht (Allgemein)
-- [ ] M3-18 Messwerkzeug fängt an Ecken und Kanten von Objekten (Messwerkzeug)
+Entscheidungen aus der Planung (2026-10-10) stehen in `spec.md` (Begriffe, §2, §3, Allgemein, NFA).
+- [x] M3-01 Grundfläche = Rechteck, frei rotierbar, Breite = Länge der Vorderseite, Tiefe senkrecht dazu; nur Rechtecke; Position = Mittelpunkt, Drehung um den Mittelpunkt (Begriffe)
+- [x] M3-02 Grundflächen-Werkzeug: Rechteck aufziehen (Klick = 20 × 8 m), drehen per Drehgriff (Shift 15°) und numerisch (§2, Layout)
+- [x] M3-03 Vorderseite per Klick auf eine Kante festlegen, deutlich markiert; zusätzlich Kantenwähler in der Seitenleiste. Beim Wechsel bleibt die Fläche optisch exakt an derselben Stelle, nur die Markierung wandert (mit Test abgesichert) (§2)
+- [x] M3-04 Automatische Grundflächen-Beschriftung mit Name und Maßen, z. B. „50 × 10 m“: horizontal, feste Schriftgröße, außerhalb der Fläche vor der Mitte der Vorderseite (§2)
+- [x] M3-05 Geschäfts-Werkzeug: Klick legt Stand mit Standardmaß an (3 × 3 m, danach zuletzt angelegtes Maß), Ziehen zieht ihn auf (§3, Layout)
+- [x] M3-06 Geschäfte frei verschieben und drehen: Drehgriff und numerisch, Shift rastet in 15°-Schritten ein; Größe nur über Zahlen (§3)
+- [x] M3-07 Geschäfts-Attribute in der Seitenleiste: Platznummer, Geschäftsname, Eigentümer, Typ/Ware, Breite, Tiefe, Strom in kW, Anschlussart (230 V / CEE 16 A / CEE 32 A), Notiz (§3)
+- [x] M3-08 Kategorien (Name + Farbe, projektweit) im Seitenleisten-Bereich „Kategorien“ anlegen, umbenennen, umfärben, löschen; Löschen einer verwendeten Kategorie mit Rückfrage, Stände verlieren die Kategorie (§3)
+- [x] M3-19 Eigene Farbe pro Stand, überschreibt die Kategoriefarbe; ohne beides neutrales Grau (§3)
+- [x] M3-09 Standbeschriftung mittig aus konfigurierbarer Vorlage mit Platzhaltern; leere Zeilen entfallen. Vorlage und Schriftgröße projektweit in einem eigenen Seitenleisten-Bereich „Beschriftung“ (bis M6) (§3)
+- [x] M3-10 Standbeschriftung immer horizontal, unabhängig von der Drehung, auf oberster Ebene (§3)
+- [x] M3-11 Feste Schriftgröße in Planeinheiten, skaliert mit dem Zoom; Text darf über den Stand ragen, nichts wird gekürzt oder verkleinert (§3)
+- [x] M3-12 Steuerungsleiste: X, Y, Breite, Tiefe, Drehung des ausgewählten Objekts direkt bearbeitbar; bei Mehrfachauswahl unterschiedliche Werte als leeres Feld, Eingabe gilt für alle (Layout, Allgemein)
+- [x] M3-13 Seitenleiste: Eigenschaften des ausgewählten Objekts; bei Mehrfachauswahl gemeinsame Felder, unterschiedliche Werte leer, Eingabe gilt für alle (Layout, Allgemein)
+- [x] M3-14 Ebenen-Panel: Ebenen (Hintergrund, Grundflächen, Freiflächen, Geschäfte, Infrastruktur, Beschriftung) ein-/ausblendbar und sperrbar (Ansichtseinstellung, kein Undo); jede Ebene erscheint, sobald ihre Objekte existieren; eine einzige Hintergrund-Sperre (aus E-13) (Layout, Allgemein)
+- [x] M3-15 Mehrfachauswahl: Shift+Klick, Auswahlrechteck (nur vollständig enthaltene Objekte); Ziehen auf nicht ausgewählter Grundfläche = Auswahlrechteck (Allgemein, §2)
+- [x] M3-16 Kopieren/Einfügen (interne Zwischenablage, auch zwischen Pages), Duplizieren um 1 m versetzt; Kopien mit leerer Platznummer (Allgemein)
+- [x] M3-17 Verschieben per Pfeiltasten (0,1 m, mit Shift 1 m), Entf/Backspace löscht (Allgemein)
+- [x] M3-18 Messwerkzeug fängt an Ecken und Kanten von Objekten (nur sichtbare Ebenen) (Messwerkzeug)
+- [x] M3-20 Größe von Grundflächen per Ziehen an 8 Griffen ändern; gegenüberliegende Kante/Ecke bleibt fest (§2)
+- [x] M3-21 Undo: Ziehen, Drehen, Aufziehen, Größe ändern = genau ein Schritt; Feldänderung = ein Schritt; gedrückt gehaltene Pfeiltaste = ein Schritt; Esc bricht eine laufende Geste ab (Allgemein)
+- [x] M3-22 Rundung beim Übernehmen: Positionen und Maße 0,01 m, Drehung 0,1° (Begriffe)
+- [x] M3-23 Lasttest 500 Stände auf einer Page: ≥ 50 Bilder/s beim Zoomen, Verschieben der Ansicht und Ziehen eines Stands, Chromium und WebKit (NFA, Abnahmekriterium; Teil von Q-04)
 
 ## M4 – Freiflächen, Fang, Warnungen
 - [ ] M4-01 Freiflächen-Kernlogik aus dem Prototyp mit Unit-Tests: Achse entlang der Vorderseite [0, Breite], belegtes Intervall = Projektion der Schnittmenge, Freiflächen = [0, Breite] minus Vereinigung, volle Tiefe, nie hinter einem Stand (§4)
@@ -183,6 +196,7 @@ Zuordnungen, die in der Meilensteinliste der Spec nicht ausdrücklich stehen:
 - Autosave (M1-19) und Undo/Redo (M1-20) → M1, weil Store und Dateiformat sie von Anfang an tragen müssen.
 - Ebenen-Panel (M3-14), Mehrfachauswahl/Kopieren/Pfeiltasten (M3-15 bis M3-17) → M3, sobald es Objekte gibt.
 - Messwerkzeug-Fang an Objekten (M3-18) → M3, weil es in M2 noch keine Objekte gibt.
+- Größe von Grundflächen per Griff (M3-20), Undo pro Geste (M3-21), Rundung (M3-22), Lasttest (M3-23): Entscheidungen der M3-Planung (2026-10-10). Lasttest als M3-Abnahmekriterium, Q-04 bleibt für alle Meilensteine offen.
 - Legende auf der Zeichenfläche (M7-04) → M7, im PDF → M8-04.
 - Strom auf der Start-Page → M6-01, auf der Festplatz-Page → M5-08.
 - CSV/XLSX-Export der Tabellen (§7) → M9-04, wie in der Meilensteinliste.
@@ -329,3 +343,92 @@ Abgearbeitet nach `qa/M2.md` und `qa/M1-nachpruefung.md`; Details im Abschnitt �
 - **QA-M1-12** ebenfalls erledigt (siehe Eingang). **Offen im Eingang (auf Wunsch):** QA-M1-11 und E-18.
 - Die Abweichung „Planmaßstab sperrt nicht automatisch, nur die 2-Punkt-Kalibrierung“ hat Laurin akzeptiert (2026-10-10).
 - `.gitignore`: `*.schelme` (außer `tests/fixtures/**/*.schelme`), `local-fixtures/`, `test-artifacts/`.
+
+---
+
+## Abschluss M3 (2026-10-10)
+
+Abgleich mit `spec.md` vor diesem Abschluss: Die Entscheidungen der M3-Planung und deine Ergänzungen
+stehen in `spec.md` (Begriffe, §2, §3, Allgemein, NFA) und sind auf M3-01 bis M3-23 abgebildet:
+Grundflächen-Beschriftung außerhalb vor der Vorderseite, Vorderseitenwechsel ohne Lageänderung,
+Drehgriff für Stände, Kategorien in der Seitenleiste mit Löschregel, projektweite Beschriftung im
+eigenen Bereich, leere Felder bei Mehrfachauswahl, Lasttest als Abnahmekriterium. Zwei Präzisierungen
+aus der Umsetzung habe ich in `spec.md` nachgetragen (siehe Abweichungen). Nicht in M3 und richtig
+zugeordnet: Fang an Vorderkante/Raster/Nachbarn, Alt-Umkehr, Freiflächen, Warnungen (M4).
+
+### Umgesetzt
+- **Datenmodell:** Grundfläche `{ id, name, cx, cy, w, d, rot }`, Geschäft mit allen Attributen aus §3 und neu `color` (eigene Farbe). Die Vorderseite ist intern immer Kante 2, also ist `w` stets die Länge der Vorderseite. Gespeichert in `project.json` unter `pages[i].areas` / `.stands`, Kategorien unter `categories`. Beim Laden werden Einträge geprüft: kaputte verworfen, doppelte IDs neu vergeben, unbekannte Kategorie oder Anschlussart entfernt. Formatversion bleibt 1.
+- **Genauigkeit:** Beim Übernehmen werden Positionen und Maße auf 0,01 m gerundet, Drehungen auf 0,1° (`roundRect`). Während des Ziehens wird nicht gerundet.
+- **Werkzeuge:** Grundfläche (F) und Geschäft (G): Rechteck aufziehen oder klicken (20 × 8 m bzw. 3 × 3 m, danach das zuletzt angelegte Standmaß). Das Werkzeug bleibt aktiv, das neue Objekt ist ausgewählt.
+- **Auswahlwerkzeug (V):**
+  - Klick, Shift+Klick und Auswahlrechteck (nur vollständig enthaltene Objekte, Shift ergänzt), Cmd/Strg+A, Esc.
+  - Eine nicht ausgewählte Grundfläche wird per Klick ausgewählt; Ziehen darauf zieht ein Auswahlrechteck auf. Eine ausgewählte Grundfläche wird verschoben.
+  - Drehgriff für Stände und Grundflächen (Shift = 15°, sonst ganze Grad); eine Mehrfachauswahl dreht sich um ihre gemeinsame Mitte.
+  - 8 Größengriffe an einer einzeln ausgewählten Grundfläche.
+  - Vorderseite per Kantenklick (mit Hervorhebung und Tooltip), auch per Klick auf den Griff in der Kantenmitte, zusätzlich über den Kantenwähler in der Seitenleiste.
+  - Ein nicht gesperrter Hintergrund wird wie in M2 verschoben.
+- **Undo:**
+  - Gesten laufen über eine flüchtige Vorschau im Store (`preview`, nicht in der Historie). Beim Loslassen folgt genau ein Undo-Schritt, Esc bricht ab.
+  - Felder übernehmen bei Enter oder beim Verlassen: ein Schritt pro Feld.
+  - Pfeiltasten werden innerhalb von 1 s zu einem Schritt zusammengefasst (`mergeKey` in `history.ts`).
+- **Steuerungsleiste:** Art der Auswahl, X, Y (Mittelpunkt bzw. Mitte der Auswahl), Breite, Tiefe, Drehung, live auch während des Ziehens. Bei Mehrfachauswahl bleiben unterschiedliche Werte leer; eine Eingabe gilt für alle.
+- **Seitenleiste:**
+  - Geschäft: alle Attribute, Kategorie, eigene Farbe (Palette, Farbwähler, Zurücksetzen).
+  - Grundfläche: Bezeichnung, Maße, Drehung, Kantenwähler.
+  - Mehrfachauswahl: gemeinsame Felder, unterschiedliche Werte leer.
+  - Darunter immer die projektweiten Bereiche „Beschriftung“ (Vorlage, Schriftgröße) und „Kategorien“ (anlegen, umbenennen, umfärben, löschen) sowie „Ebenen“.
+- **Kategorien:** Löschen einer verwendeten Kategorie fragt nach („von n Geschäften verwendet“). Die Stände verlieren die Kategorie; die Farbe fällt auf die eigene Farbe bzw. Grau zurück. Ein Undo-Schritt stellt alles wieder her.
+- **Beschriftung:**
+  - Stände: mittig, immer horizontal, feste Schriftgröße in Metern, oberste Ebene, nichts gekürzt.
+  - Grundflächen: „Name · B × T m“, horizontal, außerhalb vor der Mitte der Vorderseite.
+  - Vorlage mit 9 Platzhaltern; leere Zeilen entfallen.
+- **Ebenen:** Auge und Schloss je Ebene, als Ansichtseinstellung (kein Undo). Gesperrt heißt nicht auswählbar, ausgeblendet heißt unsichtbar und ohne Fang; betroffene Objekte fallen aus der Auswahl. Das Schloss der Ebene Hintergrund ist die Hintergrund-Sperre (E-13).
+- **Kopieren/Einfügen/Duplizieren** (Cmd/Strg+C/X/V/D) über eine interne Zwischenablage, auch zwischen Pages. Kopien bekommen eine leere, nicht fixierte Platznummer. Pfeiltasten verschieben um 0,1 m bzw. mit Shift um 1 m; Entf/Backspace löscht. In Textfeldern gehören alle Bearbeiten-Kürzel dem Feld. Alle Kürzel stehen in der zentralen Konfiguration und in der Übersicht (?).
+- **Messwerkzeug:** fängt an Ecken und Kanten der sichtbaren Objekte. Die Fangquelle wird nur bei Objektänderungen neu aufgebaut.
+- **Vorbereitet für M4:** `frontFrame`/`toFrame`/`fromFrame` in `geometry/rect.ts`, `moveRects(…, snapper)` in `transform.ts` (Fang-Einhängepunkt, `altKey` wird durchgereicht), `effectivePage` in `derive.ts` (Freiflächen rechnen damit live während des Ziehens) und leere Ebenen für Freiflächen und Warnsymbole in der richtigen Zeichenreihenfolge.
+- **Tests:**
+  - 38 neue Unit-Tests (`src/core/m3.test.ts`, `src/state/objects.test.ts`), zusammen 99. Darunter: Vorderseitenwechsel lässt die Ecken unverändert (auch nach Rundung höchstens 0,01 m), Geste = 1 Undo-Schritt, Pfeiltasten-Zusammenfassung.
+  - 40 neue E2E-Tests (`tests/e2e/m3-objects.spec.ts`, Chromium + WebKit), darunter „Vorderseite per Kantenklick; die Fläche bleibt optisch exakt an derselben Stelle“ (vergleicht die gezeichneten Eckpunkte).
+  - Lasttest `tests/e2e/m3-perf.spec.ts`.
+  - `npm run check` grün, `npm run test:e2e`: 317 bestanden, 7 übersprungen (die bekannten Skips aus M1/M2).
+
+### Lasttest M3-23 (Abnahmekriterium ≥ 50 Bilder/s)
+500 Stände mit dreizeiliger Beschriftung und 10 Grundflächen auf einer Page, alle im Bild. In jedem Frame wird ein Eingabeereignis ausgelöst. Werte aus dem vollständigen E2E-Lauf, also mit beiden Browsern parallel:
+
+| Messung | Chromium | WebKit |
+|---|---|---|
+| Zoomen (Pinch) | 59 Bilder/s | 56 Bilder/s |
+| Ansicht verschieben (Wischen) | 60 | 57 |
+| Ansicht verschieben in Lesegröße (1 m = 20 px, Schrift mit hellem Rand) | 60 | 60 |
+| Stand ziehen | 59 | 60 |
+
+Einzeln gemessen erreicht WebKit 57–60 Bilder/s. Beim ersten Messen lag WebKit nur bei 33–37. Ursache war der helle Rand um jede Beschriftung (`paint-order: stroke`). Er erscheint jetzt erst ab 12 px Schrifthöhe; dann ist nur ein Ausschnitt des Plans im Bild.
+
+### Nicht umgesetzt / verschoben
+- Nichts aus M3.
+- Fang an Vorderkante, Raster und Nachbarn, die Alt-Umkehr, Freiflächen und Warnungen gehören wie geplant zu M4. Die Fang-Umschalter bleiben ausgegraut („folgt in M4“).
+
+### Abweichungen von SPEC.md bzw. vom Plan
+- **Beschriftungsvorlage (Spec präzisiert):** Auch Zeilen, deren Platzhalter alle leer sind, entfallen, z. B. „{strom} kW“ ohne Stromangabe. Sonst stünde dort „ kW“.
+- **Hintergrund-Sperre (Spec präzisiert):** Sie bleibt rückgängig machbar, auch über das Ebenen-Panel, weil die Kalibrierung sie im selben Undo-Schritt setzt. Die übrigen Ebenen-Sperren und das Ein-/Ausblenden sind Ansichtseinstellungen.
+- **Klick auf den Griff in der Kantenmitte** einer Grundfläche setzt diese Kante als Vorderseite; Ziehen ändert die Größe. Der Griff liegt genau dort, wo man zum Festlegen der Vorderseite hinklickt.
+- **Mehrfachauswahl:** Die Felder sind leer (gemäß Spec); ein Tooltip erklärt „Unterschiedliche Werte“. Platznummer erscheint bei mehreren Ständen nicht, weil eine gemeinsame Nummer immer doppelt wäre.
+- **Heller Rand um die Beschriftung** erst ab 12 px Schrifthöhe (Leistung, siehe Lasttest); darunter dunkle Schrift ohne Rand.
+- **Beschriftung in Zentimetern** (`scale(0.01)`) und mit eigenem Grundlinien-Versatz statt `dominant-baseline`, damit Chromium und WebKit gleich setzen.
+- Objekte werden geometrisch getroffen (`src/core/hit.ts`), nicht über das DOM. Überstehende Beschriftung fängt deshalb keine Klicks ab.
+
+### Bekannte Bugs und Einschränkungen
+- Undo stellt die Auswahl nicht wieder her (E-19).
+- Playwright-WebKit meldet über `boundingBox()` für SVG-Text unter `scale()` eine falsche Lage; der Test misst mit `getBoundingClientRect()`. Die Darstellung selbst ist korrekt (Screenshot geprüft).
+- Die Lastmessung läuft im Browser (Playwright). In der Desktop-App (WKWebView/WebView2) ist sie noch nicht gemessen; bitte einmal mit vielen Ständen manuell prüfen.
+
+### Manuell testen (Desktop-App)
+- [ ] Grundfläche aufziehen, drehen, Vorderseite per Kantenklick wechseln: Die Fläche bleibt stehen, nur die orange Linie wandert.
+- [ ] Stand anlegen, ziehen, mit Shift drehen, Cmd+Z: genau ein Schritt zurück.
+- [ ] Zwei Stände auswählen: Breite leer, Eingabe gilt für beide.
+- [ ] Kategorie anlegen, umfärben (Farbwähler des Systems), löschen.
+- [ ] Viele Stände (Kopieren/Einfügen, Cmd+A): Zoomen und Verschieben bleiben flüssig.
+
+### Offene Fragen
+1. Soll ich den QA-Agenten für M3 starten?
+2. E-19 (Auswahl nach Undo wiederherstellen) und E-20 (Shift/Alt beim Ziehen): in M4 mitnehmen oder später?
