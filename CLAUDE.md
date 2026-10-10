@@ -9,7 +9,7 @@ BACKLOG.md ist die Quelle für den Projektstand. Vor jeder Arbeit lesen, nach je
   und werden nicht ungefragt umgesetzt.
 - Am Ende jedes Meilensteins: BACKLOG.md mit spec.md abgleichen, dann Abschnitt „Abschluss Mx“
   schreiben (umgesetzt, nicht umgesetzt/verschoben, Abweichungen, bekannte Bugs, offene Fragen).
-- `src/core/` bleibt frei von React-, DOM- und Tauri-Importen und ist mit Vitest getestet.
+- `src/core/` bleibt frei von React-, DOM- und Tauri-Importen und ist mit Vitest getestet. Der Linter erzwingt das (Override in `.oxlintrc.json`).
 - Betriebssystem-Zugriffe (Dateien, Dialoge, Fenster) laufen ausschließlich über `src/platform/`
   (`platform` aus `src/platform/index.ts`). Nur `src/platform/tauri.ts` importiert `@tauri-apps/*`;
   `src/platform/browser.ts` ist der Ersatz für den normalen Browser.

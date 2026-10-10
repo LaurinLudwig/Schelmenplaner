@@ -224,8 +224,6 @@ test.describe('M1 Datei: Speichern, Laden, Autosave', () => {
   });
 
   test('M1-19: Zurück-Undo auf den gespeicherten Stand hinterlässt keine veraltete Sicherung', async ({ page }) => {
-    // Bekannter Befund QA-M1-03: test.fail() entfernen, sobald behoben (dann schlägt dieser Test als „unerwartet bestanden“ an).
-    test.fail();
     await page.clock.install();
     await openApp(page);
     await page.locator('.tab-add').click();

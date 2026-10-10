@@ -15,7 +15,7 @@ describe('interpretWheel', () => {
   });
 
   it('Trackpad-Wischen verschiebt, auch diagonal', () => {
-    expect(interpretWheel(ev({ deltaX: 4, deltaY: -7, wheelDeltaY: 21 }))).toEqual({ kind: 'pan', dx: -4, dy: 7 });
+    expect(interpretWheel(ev({ deltaX: 4, deltaY: -7, wheelDeltaY: 21 }))).toEqual({ kind: 'pan', dx: 4, dy: -7 });
     expect(interpretWheel(ev({ deltaY: 2.5, wheelDeltaY: -7 })).kind).toBe('pan');
   });
 

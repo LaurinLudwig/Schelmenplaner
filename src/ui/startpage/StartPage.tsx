@@ -22,7 +22,7 @@ export function StartPage() {
             </p>
           </button>
         ))}
-        <button type="button" className="card link" onClick={() => addPage()} {...tip({ shortcut: 'page.new' })}>
+        <button type="button" className="card link" onClick={() => addPage()} {...tip({ shortcut: 'page.new', ariaLabel: false })}>
           <h2 style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
             <Icon name="add" size={16} /> Neuer Festplatz
           </h2>

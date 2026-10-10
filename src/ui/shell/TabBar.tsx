@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState, type PointerEvent as ReactPointerEvent } from 'react';
+import { useEffect, useLayoutEffect, useRef, useState, type PointerEvent as ReactPointerEvent } from 'react';
 import { confirmDeletePage, runCommand } from '../../app/commands';
 import type { Id } from '../../core/model/types';
 import { addPage, duplicatePage, movePage, renamePage } from '../../state/pages';
@@ -29,6 +29,25 @@ export function TabBar() {
   const [menu, setMenu] = useState<{ x: number; y: number; items: MenuItem[] } | null>(null);
   const [drag, setDrag] = useState<DragState | null>(null);
   const tabRefs = useRef(new Map<Id, HTMLElement>());
+  const tabsRef = useRef<HTMLDivElement>(null);
+  const startTabRef = useRef<HTMLButtonElement>(null);
+
+  // Aktive Page in einer übervollen Tab-Leiste sichtbar halten (QA-M1-04). Bewusst nicht
+  // scrollIntoView: das würde auch übergeordnete Bereiche verschieben.
+  useLayoutEffect(() => {
+    const box = tabsRef.current;
+    const el = active === START_PAGE ? startTabRef.current : tabRefs.current.get(active);
+    if (!box || !el) return;
+    const b = box.getBoundingClientRect();
+    const r = el.getBoundingClientRect();
+    if (r.left < b.left) box.scrollLeft -= b.left - r.left;
+    else if (r.right > b.right) box.scrollLeft += r.right - b.right;
+  }, [active]);
+
+  // Die Leiste hat keinen sichtbaren Scrollbalken; das Mausrad scrollt sie seitwärts.
+  const onTabsWheel = (e: React.WheelEvent<HTMLDivElement>) => {
+    if (e.deltaX === 0 && e.deltaY !== 0) e.currentTarget.scrollLeft += e.deltaY;
+  };
 
   const openAppMenu = (e: React.MouseEvent<HTMLButtonElement>) => {
     const r = e.currentTarget.getBoundingClientRect();
@@ -114,8 +133,9 @@ export function TabBar() {
       >
         <Icon name="menu" />
       </button>
-      <div className="tabs" role="tablist">
+      <div className="tabs" role="tablist" ref={tabsRef} onWheel={onTabsWheel}>
         <button
+          ref={startTabRef}
           type="button"
           role="tab"
           className="tab"
@@ -159,7 +179,7 @@ export function TabBar() {
           </div>
         ))}
       </div>
-      <button type="button" className="tab-add" onClick={() => addPage()} {...tip({ shortcut: 'page.new', desc: 'Neue Festplatz-Page anlegen' })}>
+      <button type="button" className="tab-add" onClick={() => addPage()} {...tip({ shortcut: 'page.new', desc: 'Neue Festplatz-Page anlegen', ariaLabel: 'Festplatz-Tab hinzufügen' })}>
         <Icon name="add" />
       </button>
       <div className="spacer" />

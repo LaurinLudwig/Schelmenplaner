@@ -46,5 +46,87 @@
     "node_modules",
     "test-results",
     "playwright-report"
+  ],
+  "overrides": [
+    {
+      "files": [
+        "src/core/**"
+      ],
+      "rules": {
+        "no-restricted-imports": [
+          "error",
+          {
+            "patterns": [
+              {
+                "group": [
+                  "react",
+                  "react-dom",
+                  "react/*",
+                  "react-dom/*"
+                ],
+                "message": "src/core/ ist UI-unabhängig: kein React (siehe CLAUDE.md)."
+              },
+              {
+                "group": [
+                  "@tauri-apps/**"
+                ],
+                "message": "src/core/ ist plattformunabhängig: kein Tauri; Betriebssystem-Zugriffe gehören nach src/platform/."
+              },
+              {
+                "regex": "^(zustand(/.*)?|(\\.\\./)+(state|ui|app|platform)(/.*)?)$",
+                "message": "src/core/ darf nicht von state/, ui/, app/, platform/ oder zustand abhängen."
+              }
+            ]
+          }
+        ],
+        "no-restricted-globals": [
+          "error",
+          {
+            "name": "window",
+            "message": "Kein DOM in src/core/."
+          },
+          {
+            "name": "document",
+            "message": "Kein DOM in src/core/."
+          },
+          {
+            "name": "navigator",
+            "message": "Kein DOM in src/core/."
+          },
+          {
+            "name": "localStorage",
+            "message": "Kein DOM in src/core/."
+          },
+          {
+            "name": "sessionStorage",
+            "message": "Kein DOM in src/core/."
+          },
+          {
+            "name": "HTMLElement",
+            "message": "Kein DOM in src/core/."
+          },
+          {
+            "name": "Element",
+            "message": "Kein DOM in src/core/."
+          },
+          {
+            "name": "Blob",
+            "message": "Kein DOM in src/core/."
+          },
+          {
+            "name": "URL",
+            "message": "Kein DOM in src/core/ (URL.createObjectURL gehört nach src/platform/)."
+          },
+          {
+            "name": "requestAnimationFrame",
+            "message": "Kein DOM in src/core/."
+          },
+          {
+            "name": "getComputedStyle",
+            "message": "Kein DOM in src/core/."
+          }
+        ]
+      }
+    }
   ]
 }

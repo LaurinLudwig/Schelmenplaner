@@ -68,8 +68,6 @@ test.describe('M1 Browser-Modus', () => {
   });
 
   test('Neu angelegte Page bleibt in einer vollen Tab-Leiste sichtbar', async ({ page }) => {
-    // Befund QA-M1-04: test.fail() entfernen, sobald behoben.
-    test.fail();
     await page.setViewportSize({ width: 1000, height: 600 });
     await openApp(page);
     for (let i = 0; i < 14; i++) await page.locator('.tab-add').click();

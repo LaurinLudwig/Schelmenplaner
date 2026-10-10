@@ -101,8 +101,10 @@ test.describe('M1 Zeichenfläche: Zoom und Pan', () => {
     await dispatchWheel(page, { x: box.x + 300, y: box.y + 300 }, { deltaX: 12, deltaY: 30, wheelDeltaY: -90 });
     expect(await scale(page)).toBe(10);
     const o1 = await origin(page);
-    expect(o1.x - o0.x).toBeCloseTo(-12, 0);
-    expect(o1.y - o0.y).toBeCloseTo(-30, 0);
+    // Richtung angepasst nach QA-M1-02: Auf echter Hardware lief das Verschieben invertiert
+    // (Rückmeldung Laurin, 2026-10-10). Der Inhalt bewegt sich jetzt mit +deltaX/+deltaY.
+    expect(o1.x - o0.x).toBeCloseTo(12, 0);
+    expect(o1.y - o0.y).toBeCloseTo(30, 0);
   });
 
   test('M1-24: Safari-Pinch-Gesten (gesturechange) zoomen', async ({ page, browserName }) => {

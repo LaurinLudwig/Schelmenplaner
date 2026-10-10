@@ -20,13 +20,20 @@ ungefragt umgesetzt; erst nach Freigabe wandert ein Eintrag in einen Meilenstein
 - E-05 (Hinweis) Im Browser-Dev-Modus fängt der Browser einige Shortcuts selbst ab (z. B. Cmd/Strg+N, Cmd/Strg+Shift+N). Betrifft nur `npm run dev`, nicht die Desktop-App.
 - E-06 (Hinweis) Die Tab-Taste blendet wie in Illustrator die Panels aus und steht damit nicht mehr zum Springen zwischen Bedienelementen zur Verfügung (Barrierefreiheit). In Textfeldern funktioniert Tab normal.
 - E-07 (Hinweis) Die Tauri-Dateirechte erlauben Lesen und Schreiben im gesamten Dateisystem (`**`), damit Projekte überall liegen dürfen, auch auf USB-Sticks. Enger fassen, falls gewünscht.
+- E-09 (Idee) Wischrichtung des Trackpads folgt der macOS-Einstellung „Natürliche Scrollrichtung“. Falls gewünscht: eigene Einstellung „Wischrichtung umkehren“ in der App.
 - E-08 (Hinweis) Browser-Autosave nutzt localStorage (ca. 5 MB). Mit eingebetteten Hintergründen (M2) reicht das nicht; betrifft nur den Browser-Dev-Modus.
-- [QA] QA-M1-01 (gering) Abschluss M1 widersprüchlich/veraltet: „M1-01 bleibt `[~]`“ vs. Status `[x]`; „24 Unit-Tests“, tatsächlich 28; der erwähnte „automatisierte Klicktest im Browser über alle obigen Funktionen“ liegt nicht im Repo (nur `tests/e2e/smoke.spec.ts`). Siehe `qa/M1.md`.
-- [QA] QA-M1-02 (gering, Risiko) Maus/Trackpad-Erkennung ist eine Heuristik (`src/ui/canvas/wheel.ts:26-31`): In Playwright-WebKit wird ein synthetisches Mausrad (`wheelDeltaY` 300) als Trackpad gedeutet und verschiebt statt zu zoomen. Mit echter Hardware vermutlich korrekt, nur manuell prüfbar; umgekehrt kann ein Trackpad-Wischen mit glattem Delta (z. B. 120) einmal zoomen. Mausrad-E2E-Test läuft nur in Chromium. Siehe `qa/M1.md`.
-- [QA] QA-M1-03 (gering) Autosave: Wird nach einer Sicherung per Undo zum gespeicherten Stand zurückgekehrt, bleibt die Sicherung liegen und wird beim nächsten Start/Öffnen angeboten. Test: `tests/e2e/m1-file.spec.ts` („Zurück-Undo …“, `test.fail`).
-- [QA] QA-M1-04 (gering) Tab-Leiste: Läuft sie über, wird eine neu angelegte bzw. aktive Page nicht in den sichtbaren Bereich gescrollt. Test: `tests/e2e/m1-browser.spec.ts` (`test.fail`).
-- [QA] QA-M1-05 (gering) Die Regel „`src/core/` ohne React/DOM/Tauri“ wird nicht automatisch geprüft (keine Lint-Regel, `tsconfig` gibt `DOM` für alles frei). Derzeit eingehalten.
-- [QA] QA-M1-06 (gering) Start-Page-Karte „Neuer Festplatz“ überschreibt per `aria-label` ihren Inhalt und hat denselben zugänglichen Namen wie der „+“-Button (`src/ui/startpage/StartPage.tsx:25`).
+- [x] [QA] QA-M1-01 (gering, erledigt: Abschluss M1 korrigiert) Abschluss M1 widersprüchlich/veraltet: „M1-01 bleibt `[~]`“ vs. Status `[x]`; „24 Unit-Tests“, tatsächlich 28; der erwähnte „automatisierte Klicktest im Browser über alle obigen Funktionen“ liegt nicht im Repo (nur `tests/e2e/smoke.spec.ts`). Siehe `qa/M1.md`. (QA ✓ M1 Nachprüfung)
+- [!] [QA] QA-M1-02 (gering, Risiko; erledigt: Pinch auf echter Hardware bestätigt, Wischrichtung nach Laurins Test umgedreht; echtes Mausrad bleibt auf der manuellen Checkliste) Maus/Trackpad-Erkennung ist eine Heuristik (`src/ui/canvas/wheel.ts:26-31`): In Playwright-WebKit wird ein synthetisches Mausrad (`wheelDeltaY` 300) als Trackpad gedeutet und verschiebt statt zu zoomen. Mit echter Hardware vermutlich korrekt, nur manuell prüfbar; umgekehrt kann ein Trackpad-Wischen mit glattem Delta (z. B. 120) einmal zoomen. Mausrad-E2E-Test läuft nur in Chromium. Siehe `qa/M1.md`. (QA M1-Nachprüfung: nur teilweise – Heuristik unverändert, Mausrad-Test weiter nur Chromium `tests/e2e/m1-canvas.spec.ts:53`, Restrisiko dokumentiert; die neue Wischrichtung ist klärungsbedürftig, siehe QA-M1-07 in `qa/M1-nachpruefung.md`)
+- [x] [QA] QA-M1-03 (gering, erledigt: eigene Sicherung wird entfernt, sobald das Projekt wieder sauber ist) Autosave: Wird nach einer Sicherung per Undo zum gespeicherten Stand zurückgekehrt, bleibt die Sicherung liegen und wird beim nächsten Start/Öffnen angeboten. Test: `tests/e2e/m1-file.spec.ts` („Zurück-Undo …“, `test.fail`). (QA ✓ M1 Nachprüfung; Randfall „behaltene“ Sicherung siehe QA-M1-08)
+- [x] [QA] QA-M1-04 (gering, erledigt: aktive Page wird in den sichtbaren Bereich gescrollt) Tab-Leiste: Läuft sie über, wird eine neu angelegte bzw. aktive Page nicht in den sichtbaren Bereich gescrollt. Test: `tests/e2e/m1-browser.spec.ts` (`test.fail`). (QA ✓ M1 Nachprüfung; Restfälle Fenstergröße/Umbenennen siehe QA-M1-09)
+- [x] [QA] QA-M1-05 (gering, erledigt: oxlint-Override für `src/core/**`) Die Regel „`src/core/` ohne React/DOM/Tauri“ wird nicht automatisch geprüft (keine Lint-Regel, `tsconfig` gibt `DOM` für alles frei). Derzeit eingehalten. (QA ✓ M1 Nachprüfung; Lücken der Verbotsliste siehe QA-M1-10)
+- [x] [QA] QA-M1-06 (gering, erledigt: eindeutige zugängliche Namen) Start-Page-Karte „Neuer Festplatz“ überschreibt per `aria-label` ihren Inhalt und hat denselben zugänglichen Namen wie der „+“-Button (`src/ui/startpage/StartPage.tsx:25`). (QA ✓ M1 Nachprüfung)
+- [QA] QA-M1-07 (mittel, Klärung nötig; M1-24) Die nach Laurins Hardwaretest umgedrehte Wischrichtung (`src/ui/canvas/wheel.ts:44`, Inhalt bewegt sich mit +delta) läuft der Scrollrichtung des Systems entgegen: Dieselbe waagerechte Wischgeste schiebt den Inhalt der Tab-Leiste (natives Scrollen) nach links, den der Zeichenfläche nach rechts. Bei der macOS-Standardeinstellung „Natürliche Scrollrichtung“ bewegt sich der Plan damit gegen die Finger. Klären, mit welcher Einstellung getestet wurde. Test: `tests/e2e/m1-recheck.spec.ts` („QA-M1-07 …“, `test.fail`). Siehe `qa/M1-nachpruefung.md`.
+- [QA] QA-M1-08 (mittel; M1-19) Eine per Esc/Klick daneben „behaltene“ Sicherung geht verloren: Der nächste Autosave überschreibt sie (schon vor dem Fix so), und seit dem Fix zu QA-M1-03 wird sie nach einem Undo zum sauberen Stand ganz gelöscht. Beim nächsten Start wird nichts mehr angeboten. Test: `tests/e2e/m1-recheck.spec.ts` („QA-M1-08 …“, `test.fail`).
+- [QA] QA-M1-09 (gering; M1-04) Tab-Leiste: Der aktive Tab wird nur beim Wechsel der aktiven Page in Sicht gescrollt (`src/ui/shell/TabBar.tsx:37-45`, Abhängigkeit `[active]`). Nach Verkleinern des Fensters liegt er ganz außerhalb, nach Umbenennen in einen langen Namen ist er teilweise verdeckt. Tests: `tests/e2e/m1-recheck.spec.ts` (2 × `test.fail`), Screenshot `qa/screenshots/recheck-tab-rename-cut.png`.
+- [QA] QA-M1-10 (gering, Risiko; QA-M1-05) Die Lint-Sperre für `src/core/` ist eine Verbotsliste und lässt weitere DOM-Zugriffe durch: `globalThis.document`, `DOMParser`, `Image`, `self`, `fetch`, DOM-Typen wie `HTMLDivElement`. Robuster wäre eine eigene `tsconfig` für `src/core/` ohne `lib: DOM`. Test: `tests/e2e/m1-recheck-lint.spec.ts` (`test.fail`).
+- [QA] QA-M1-11 (gering, Dokumentation/Prozess) Die Entwicklung hat QA-Artefakte geändert: Abschnitt „Behoben“ an `qa/M1.md` angehängt und die Erwartung des QA-Tests „M1-24: Zwei-Finger-Wischen“ umgedreht (`tests/e2e/m1-canvas.spec.ts:104-107`, begründet). Dazu Widersprüche: QA-M1-02 steht hier als „erledigt“, in `qa/M1.md` als „teilweise“; die Einträge QA-M1-03/-04 nennen noch `test.fail`, obwohl die Markierungen entfernt sind.
+- [QA] QA-M1-12 (gering, Test-Infrastruktur) `tests/e2e/m1-file.spec.ts:193` schreibt bei jedem E2E-Lauf `qa/screenshots/m1-recovery-dialog.png` neu. Der Dialog enthält Datum und Uhrzeit, deshalb ist die Arbeitskopie nach jedem Lauf verändert. Screenshots nur auf Anforderung schreiben, z. B. über eine Umgebungsvariable.
 
 ---
 
@@ -61,7 +68,7 @@ ungefragt umgesetzt; erst nach Freigabe wandert ein Eintrag in einen Meilenstein
 - [x] M1-24 Trackpad: Pinch zoomt, Zwei-Finger-Wischen verschiebt; Mausrad zoomt weiterhin (Layout, Entscheidung 2026-10-10, aus E-01) (QA ✓ M1)
 - [x] M1-17 Werkzeuge Auswahl (V) und Zoom (Z) (Layout, Tastaturkürzel) (QA ✓ M1)
 - [x] M1-18 Projekt als eine Datei speichern/laden (`.schelme` = ZIP mit `project.json` + Assets) (§10) (QA ✓ M1)
-- [x] M1-19 Autosave in Sicherungsdatei mit Wiederherstellung beim Öffnen (§10) (QA ✓ M1)
+- [!] M1-19 Autosave in Sicherungsdatei mit Wiederherstellung beim Öffnen (§10) (erste QA ✓ M1; Nachprüfung: Nacharbeit nötig, QA-M1-08 in `qa/M1-nachpruefung.md`)
 - [x] M1-20 Undo/Redo projektweit, Strg/Cmd+Z / Strg/Cmd+Shift+Z (§10, Tastaturkürzel) (QA ✓ M1)
 - [x] M1-21 Shortcut-System: zentrale Konfiguration, Cmd auf macOS statt Strg, Illustrator-Konventionen (Tastaturkürzel) (QA ✓ M1)
 - [x] M1-22 Shortcut-Übersicht per `?` (Tastaturkürzel) (QA ✓ M1)
@@ -174,43 +181,47 @@ belegt Fläche pro Typ, Freiflächen-Beschriftung horizontal, ZIP-Dateiformat, H
 Nordrichtung pro Page, fixierte Nummern, manueller Uhrzeigersinn-Mittelpunkt, SVG-Zeichenfläche)
 stehen jetzt in `spec.md`. Jede davon hat einen Backlog-Eintrag. Keine Anforderung fehlt.
 
+_Stand korrigiert am 2026-10-10 nach QA (QA-M1-01). Die Abschnitte „Nachtrag M1“, „Antworten auf die
+offenen Fragen“ und „QA-Nacharbeit M1“ unten beschreiben, was nach dem ersten Abschluss dazukam._
+
 ### Umgesetzt
-- Projekt-Setup: React 19, TypeScript 7 (strict), Vite 8, Vitest; Tauri-2-Hülle (`src-tauri/`) mit Dialog- und Dateisystem-Plugin, App-Icons, Dateizuordnung `.schelme`.
+- Projekt-Setup: React 19, TypeScript 7 (strict), Vite 8, Vitest; Tauri-2-Hülle (`src-tauri/`) mit Dialog- und Dateisystem-Plugin, App-Icons, Dateizuordnung `.schelme`. Die Desktop-App kompiliert und startet (siehe Antworten, Punkt 1).
 - Datenmodell vollständig angelegt (`src/core/model/types.ts`), mit Standardwerten, Validierung beim Laden, Formatversion und Migrationsgerüst.
 - Dateiformat `.schelme` (ZIP: `project.json` + `assets/`), Speichern, Speichern unter, Öffnen, Neu; Rückfrage bei ungespeicherten Änderungen (auch beim Schließen des Fensters).
-- Autosave alle 30 s in eine Sicherungsdatei; Wiederherstellung beim App-Start bzw. beim Öffnen einer Datei, wenn die Sicherung neuer ist.
+- Autosave alle 30 s in eine Sicherungsdatei; Wiederherstellung beim App-Start bzw. beim Öffnen einer Datei, wenn die Sicherung neuer ist. Wird das Projekt per Undo wieder sauber, wird die eigene Sicherung entfernt (QA-M1-03).
 - Undo/Redo projektweit über Immer-Patches, inklusive Transaktionen (für Ziehvorgänge ab M3).
-- Tab-Leiste: Start-Page (fest, links), Festplatz-Pages anlegen (+), umbenennen (Doppelklick, F2), Kontextmenü (Umbenennen, Duplizieren, Löschen), Umsortieren per Ziehen, Wechsel per Klick und Shortcut (Strg+Tab, Strg+Bild↑/↓, Alt+0…9).
+- Tab-Leiste: Start-Page (fest, links), Festplatz-Pages anlegen (+), umbenennen (Doppelklick, F2), Kontextmenü (Umbenennen, Duplizieren, Löschen), Umsortieren per Ziehen, Wechsel per Klick und Shortcut (Strg+Tab, Strg+Bild↑/↓, Alt+0…9). Die aktive Page bleibt in einer übervollen Leiste sichtbar, das Mausrad scrollt die Leiste seitwärts (QA-M1-04).
 - Layout: Tab-Leiste, Steuerungsleiste, Icon-Werkzeugleiste, Zeichenfläche, Seitenleiste; dunkles Theme als Standard, helles optional.
 - Werkzeugleiste mit allen Werkzeugen der Spec. Auswahl, Hand und Zoom funktionieren; die übrigen sind ausgegraut, ihr Tooltip nennt den Meilenstein.
-- Zeichenfläche: Zoom per Mausrad (um den Mauszeiger), Strg/Cmd +/−, Strg/Cmd+0, Zoom-Werkzeug (Klick, Alt+Klick); Pan per Leertaste, Hand-Werkzeug, mittlere Maustaste; Statusleiste mit Koordinaten und Maßstab.
+- Zeichenfläche: Zoom per Mausrad (um den Mauszeiger), Pinch, Strg/Cmd +/−, Strg/Cmd+0, Zoom-Werkzeug (Klick, Alt+Klick); Pan per Zwei-Finger-Wischen, Leertaste, Hand-Werkzeug, mittlere Maustaste; Statusleiste mit Koordinaten und Maßstab.
 - Shortcut-System: zentrale Konfiguration (`src/ui/shortcuts/definitions.ts`), Cmd auf macOS, QWERTZ-sicher; Übersicht per `?`; Tooltips mit Name, Taste und Beschreibung.
 - Seitenleiste einklappbar (Button, Shift+Tab); Tab blendet alle Panels aus.
-- 24 Unit-Tests (Modell, Dateiformat, Viewport, Store/Undo, Shortcuts); dazu ein automatisierter Klicktest im Browser über alle obigen Funktionen.
+- Tests: 28 Unit-Tests (Modell, Dateiformat, Viewport, Store/Undo, Shortcuts, Rad-Deutung). E2E (Playwright, Chromium + WebKit): der Smoke-Test aus dem Nachtrag plus 69 Testfälle aus der QA (`tests/e2e/m1-*.spec.ts`). Der im ersten Abschluss erwähnte „automatisierte Klicktest“ war ein einmaliges Skript außerhalb des Repositorys; er ist durch die eingecheckten E2E-Tests ersetzt.
 
 ### Nicht umgesetzt / verschoben
-- M1-01 bleibt `[~]`: Die Desktop-App (`npm run tauri dev`) ist nicht getestet, weil auf dem Rechner kein Rust installiert ist. Damit sind auch die Desktop-Dateidialoge, die Autosave-Dateien neben dem Projekt und der Schließen-Dialog nur im Code, nicht im Lauf geprüft.
-- Im Browser-Modus wurde alles getestet; dort ersetzen Download/Upload die Dateidialoge.
+- Nichts aus M1. Alle 24 Einträge sind `[x]` und von der QA bestätigt (`qa/M1.md`).
+- Nur manuell prüfbar und noch offen: native Dateidialoge, Autosave-Dateien neben dem Projekt, Schließen-Dialog der Desktop-App, echte Maus/echtes Trackpad (Checkliste in `qa/M1.md`).
 
 ### Abweichungen von SPEC.md bzw. vom Plan
 - Die Zeichenfläche zeigt schon jetzt ein festes Orientierungsraster (1 m / 10 m), damit Zoom und Pan sichtbar sind. Einstellbare Weite und Ein/Aus folgen mit M2-09.
+- Die Start-Page ist nicht ganz leer: Sie zeigt Projektname, Anzahl und Karten der Festplätze (Klick wechselt), eine Karte „Neuer Festplatz“ und einen Hinweis auf M6.
 - Die Start-Page nutzt die ganze Breite, ohne Werkzeugleiste und Seitenleiste; die Spec beschreibt das Layout nur für Zeichen-Pages.
 - Das Design (hell/dunkel) ist eine App-Einstellung pro Rechner und gehört nicht zum Projekt (im Plan stand `settings.theme`).
-- Zusätzlicher Ordner `src/app/` für die Steuerung (Befehle, Datei-Aktionen, Autosave, Tastatur); `src/platform/` enthält nur noch den reinen Dateizugriff.
+- Zusätzlicher Ordner `src/app/` für die Steuerung (Befehle, Datei-Aktionen, Autosave, Tastatur); `src/platform/` kapselt alle Betriebssystem-Zugriffe.
 - Icons kommen per Vite-`?raw`-Import statt über `vite-plugin-svgr`; eine Abhängigkeit weniger, gleiches Ergebnis.
 - Eine Page mit Objekten wird erst nach Rückfrage gelöscht (zusätzlich zu Undo).
-- Vorgeschlagene Werkzeug-Shortcuts (nicht in der Spec festgelegt): Grundfläche F, Geschäft G, Infrastruktur I, Messen M, Kalibrieren K, Schriftfeld T, Fang Shift+F/R/N, Raster Cmd/Strg+# bzw. '.
+- Werkzeug-Shortcuts (von Laurin bestätigt): Grundfläche F, Geschäft G, Infrastruktur I, Messen M, Kalibrieren K, Schriftfeld T, Fang Shift+F/R/N, Raster Cmd/Strg+# bzw. '.
+- Der Tooltip zeigt die Taste als eigenes Kästchen statt im Format „Name (G) – Beschreibung“ aus dem Spec-Beispiel; der Inhalt ist gleich.
+- Linter ist oxlint statt ESLint (siehe Nachtrag).
 
 ### Bekannte Bugs und Einschränkungen
-- Desktop-App ungetestet (siehe oben).
+- Maus/Trackpad werden heuristisch unterschieden (`src/ui/canvas/wheel.ts`). Pinch und Wischen sind auf echter Hardware bestätigt; das Mausrad einer echten Maus in der Desktop-App ist noch zu prüfen. In Playwright-WebKit wird ein synthetisches Mausrad als Trackpad gedeutet (der E2E-Test dazu läuft nur in Chromium).
+- Die Wischrichtung folgt den Deltas des Systems; ändert man unter macOS die „Natürliche Scrollrichtung“, kehrt sie sich mit um (E-09).
 - Im Browser-Dev-Modus fangen manche Browser Shortcuts wie Cmd/Strg+N ab (E-05).
 - Ein Doppelklick auf eine `.schelme`-Datei öffnet sie noch nicht in der App (E-02).
 
-### Offene Fragen
-1. Installierst du Rust, damit ich die Desktop-App testen kann? (macOS: Xcode Command Line Tools, dann `curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh`; danach `npm run tauri dev`.)
-2. Soll ich ein Git-Repository anlegen? Das brauchen wir spätestens für die GitHub-Actions-Builds (Q-07).
-3. Passen die vorgeschlagenen Werkzeug-Shortcuts (F, G, I, M, K, T)?
-4. Trackpad-Verhalten (E-01): bei „Mausrad zoomt“ bleiben, oder Wischen = Verschieben?
+### Offene Fragen (alle beantwortet, siehe unten)
+1. Rust installieren? 2. Git-Repository? 3. Werkzeug-Shortcuts? 4. Trackpad-Verhalten?
 
 ### Nachtrag M1 (2026-10-10, vor M2)
 - Der QA-Agent (`.claude/agents/qa-tester.md`) ist eingerichtet; neuer Backlog-Status `[!]`.
@@ -226,3 +237,12 @@ stehen jetzt in `spec.md`. Jede davon hat einen Backlog-Eintrag. Keine Anforderu
 2. Git-Repository: https://github.com/LaurinLudwig/Schelmenplaner (öffentlich). Commits laufen unter der GitHub-noreply-Adresse, damit keine private E-Mail-Adresse öffentlich wird.
 3. Werkzeug-Shortcuts F, G, I, M, K, T bestätigt.
 4. Trackpad: Pinch zoomt, Zwei-Finger-Wischen verschiebt, das Mausrad zoomt weiterhin → M1-24, `spec.md` angepasst. Ob ein Rad-Ereignis von Maus oder Trackpad kommt, erkennt `src/ui/canvas/wheel.ts` heuristisch (Unit-Tests vorhanden). Für Safari/macOS-Webview wird Pinch zusätzlich über Gesten-Ereignisse verarbeitet. Mit echter Maus und echtem Trackpad in der Desktop-App manuell prüfen; eine Magic Mouse verhält sich wie ein Trackpad (Wischen verschiebt).
+
+### QA-Nacharbeit M1 (2026-10-10)
+Befunde aus `qa/M1.md` abgearbeitet; Details im Abschnitt „Behoben“ des Berichts.
+- QA-M1-03 Autosave: `src/app/autosave.ts` entfernt die eigene Sicherung, sobald das Projekt wieder dem gespeicherten Stand entspricht (sofort per Store-Abo und zusätzlich im 30-s-Takt).
+- QA-M1-04 Tab-Leiste: Die aktive Page wird in den sichtbaren Bereich gescrollt; das Mausrad scrollt die Leiste seitwärts.
+- QA-M1-05: Override in `.oxlintrc.json` für `src/core/**`: verbietet React, Tauri, zustand, Importe aus `state/`, `ui/`, `app/`, `platform/` und DOM-Globals (`window`, `document`, `localStorage` …). Mit einer Probedatei gegengeprüft.
+- QA-M1-06: `tip()` kennt `ariaLabel`. Die Karte heißt für Screenreader „Neuer Festplatz – Leere Festplatz-Page anlegen“ (sichtbarer Inhalt), der „+“-Button „Festplatz-Tab hinzufügen“.
+- QA-M1-02: Pinch funktioniert laut Laurin; das Verschieben lief invertiert und ist umgedreht (`src/ui/canvas/wheel.ts`). Der E2E-Test „M1-24: Zwei-Finger-Wischen“ prüfte die alte Richtung und ist angepasst (Begründung siehe Bericht).
+- QA-M1-01: Abschluss M1 oben korrigiert.

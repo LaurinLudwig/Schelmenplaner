@@ -1,0 +1,13 @@
+npm notice run schelmeplaner@0.1.0 test
+npm notice run vitest run
+
+ RUN  v5.0.3 /Users/laurin/Desktop/Schelmeplaner
+
+(node:30000) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+
+ Test Files  5 passed (5)
+      Tests  28 passed (28)
+   Start at  12:53:34
+   Duration  137ms (transform 55%, import 22%, tests 18%, worker 5%)
+

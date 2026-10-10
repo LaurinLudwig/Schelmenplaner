@@ -39,5 +39,7 @@ export function interpretWheel(e: WheelLike): WheelAction {
   if (isMouseWheel(e)) {
     return { kind: 'zoom', factor: Math.exp(-e.deltaY * scale * 0.0015) };
   }
-  return { kind: 'pan', dx: -e.deltaX * scale, dy: -e.deltaY * scale };
+  // Richtung laut Test auf echter Hardware (Laurin, MacBook-Trackpad): Inhalt bewegt sich mit +delta.
+  // Die macOS-Einstellung „Natürliche Scrollrichtung“ kehrt die Deltas bereits im System um.
+  return { kind: 'pan', dx: e.deltaX * scale, dy: e.deltaY * scale };
 }

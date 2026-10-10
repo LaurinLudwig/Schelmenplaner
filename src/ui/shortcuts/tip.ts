@@ -12,14 +12,17 @@ export function keyLabel(shortcutId: string): string | undefined {
 /**
  * Attribute für den globalen Tooltip (siehe TooltipHost). Name und Taste kommen aus der
  * zentralen Shortcut-Konfiguration, sofern `label` nicht angegeben ist.
+ *
+ * `ariaLabel` steuert den Namen für Screenreader: Standard ist der Tooltip-Name (für reine
+ * Icon-Buttons nötig); ein eigener Text überschreibt ihn; `false` lässt den sichtbaren Inhalt gelten.
  */
-export function tip(opts: { shortcut?: string; label?: string; desc?: string; side?: TipSide }) {
+export function tip(opts: { shortcut?: string; label?: string; desc?: string; side?: TipSide; ariaLabel?: string | false }) {
   const def = opts.shortcut ? SHORTCUT_BY_ID.get(opts.shortcut) : undefined;
   const keys = opts.shortcut ? keyLabel(opts.shortcut) : undefined;
   const label = opts.label ?? def?.label ?? '';
   return {
     'data-tip': label,
-    'aria-label': label,
+    ...(opts.ariaLabel === false ? {} : { 'aria-label': opts.ariaLabel ?? label }),
     ...(opts.desc ? { 'data-tip-desc': opts.desc } : {}),
     ...(keys ? { 'data-tip-keys': keys } : {}),
     'data-tip-side': opts.side ?? 'bottom',
