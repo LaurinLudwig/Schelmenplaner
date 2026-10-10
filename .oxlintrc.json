@@ -1,0 +1,50 @@
+{
+  "$schema": "./node_modules/oxlint/configuration_schema.json",
+  "plugins": [
+    "typescript",
+    "react",
+    "react-hooks",
+    "import",
+    "unicorn"
+  ],
+  "categories": {
+    "correctness": "error",
+    "suspicious": "warn"
+  },
+  "env": {
+    "browser": true,
+    "es2024": true
+  },
+  "rules": {
+    "react-hooks/rules-of-hooks": "error",
+    "react-hooks/exhaustive-deps": "warn",
+    "react/react-in-jsx-scope": "off",
+    "no-unused-vars": "error",
+    "eqeqeq": "error",
+    "no-console": [
+      "warn",
+      {
+        "allow": [
+          "warn",
+          "error"
+        ]
+      }
+    ],
+    "unicorn/consistent-function-scoping": "off",
+    "import/no-unassigned-import": [
+      "warn",
+      {
+        "allow": [
+          "**/*.css"
+        ]
+      }
+    ]
+  },
+  "ignorePatterns": [
+    "dist",
+    "src-tauri",
+    "node_modules",
+    "test-results",
+    "playwright-report"
+  ]
+}

@@ -1,0 +1,181 @@
+/**
+ * Datenmodell des Projekts (wird als `project.json` gespeichert).
+ *
+ * Konventionen (aus dem Prototyp übernommen):
+ * - Einheit Meter, x nach rechts, y nach unten.
+ * - Drehung in Grad, positiv = im Uhrzeigersinn auf dem Bildschirm.
+ * - Rechteck { cx, cy, w, d, rot }: Mittelpunkt, Breite (lokale x-Achse), Tiefe (lokale y-Achse).
+ * - Kanten: 0 = oben, 1 = rechts, 2 = unten, 3 = links (ungedreht). Ein Geschäft hat seine
+ *   Vorderseite an Kante 2.
+ *
+ * Abgeleitete Daten (Freiflächen, Warnungen, Summen) werden nie gespeichert.
+ */
+
+export type Id = string;
+
+export interface Vec {
+  x: number;
+  y: number;
+}
+
+export interface Rect {
+  cx: number;
+  cy: number;
+  w: number;
+  d: number;
+  rot: number;
+}
+
+export const LAYER_IDS = ['background', 'areas', 'free', 'stands', 'infra', 'labels'] as const;
+export type LayerId = (typeof LAYER_IDS)[number];
+
+export interface LayerState {
+  visible: boolean;
+  locked: boolean;
+}
+
+export interface Category {
+  id: Id;
+  name: string;
+  color: string;
+}
+
+export const INFRA_TYPES = [
+  'barrierMobile',
+  'barrierFixed',
+  'medical',
+  'ambulance',
+  'toilet',
+  'waste',
+  'narrowPassage',
+  'marker',
+] as const;
+export type InfraType = (typeof INFRA_TYPES)[number];
+
+export interface InfraTypeDef {
+  type: InfraType;
+  label: string;
+  color: string;
+  icon: string;
+  /** Belegt die Achse einer Grundfläche wie ein Geschäft (dort keine Freifläche). */
+  occupiesArea: boolean;
+}
+
+export interface Area extends Rect {
+  id: Id;
+  name: string;
+  front: 0 | 1 | 2 | 3;
+}
+
+export type Connection = '230V' | 'CEE16' | 'CEE32';
+
+export interface Stand extends Rect {
+  id: Id;
+  nr: string;
+  nrLocked: boolean;
+  name: string;
+  owner: string;
+  ware: string;
+  powerKw: number;
+  connection: Connection | null;
+  note: string;
+  categoryId: Id | null;
+  suppressOutsideWarning: boolean;
+}
+
+export interface InfraObject extends Rect {
+  id: Id;
+  type: InfraType;
+  /** Text des freien Markers. Bei der engen Durchfahrt ist `w` die lichte Breite. */
+  text?: string;
+}
+
+export interface Background {
+  assetId: string;
+  kind: 'pdf' | 'svg' | 'image';
+  pdfPage?: number;
+  pxSize: { w: number; h: number };
+  transform: { x: number; y: number; metersPerPx: number; rot: number };
+  calibration?: { p1: Vec; p2: Vec; meters: number };
+  opacity: number;
+  locked: boolean;
+}
+
+export interface View {
+  /** Pixel pro Meter. */
+  scale: number;
+  tx: number;
+  ty: number;
+}
+
+export type NumberingMode = 'frontLtr' | 'clockwise' | 'manual';
+
+export interface FestplatzPage {
+  id: Id;
+  name: string;
+  prefix: string;
+  numberingMode: NumberingMode;
+  clockwise?: { center: Vec; startAngle: number };
+  powerLimitKw: number | null;
+  blockOverLimit: boolean;
+  northAngle: number;
+  grid: { size: number; visible: boolean };
+  layers: Record<LayerId, LayerState>;
+  background: Background | null;
+  /** Array-Reihenfolge = Reihenfolge der Grundflächen für die Nummerierung. */
+  areas: Area[];
+  stands: Stand[];
+  infra: InfraObject[];
+  titleBlockPos: Vec;
+  titleBlockText: string;
+  /** Zuletzt verwendete Ansicht; wird beim Speichern geschrieben, gehört nicht zur Undo-Historie. */
+  view: View | null;
+}
+
+export interface ProjectSettings {
+  minFreeWidth: number;
+  /** Schriftgröße der Standbeschriftung in Metern (Planeinheiten). */
+  labelFontSize: number;
+  labelTemplate: string;
+  numbering: { scope: 'global' | 'perPage'; start: number };
+  warnOutside: boolean;
+  snap: { front: boolean; grid: boolean; neighbors: boolean };
+}
+
+export interface ExportProfile {
+  id: Id;
+  name: string;
+  layers: LayerId[];
+  hiddenFields: (keyof Stand)[];
+}
+
+export interface Vendor {
+  id: Id;
+  name: string;
+  owner: string;
+  ware: string;
+  w: number;
+  d: number;
+  powerKw: number;
+  connection: Connection | null;
+  note: string;
+}
+
+export interface Project {
+  id: Id;
+  name: string;
+  settings: ProjectSettings;
+  /** Festplatz-Pages in Tab-Reihenfolge. Die Start-Page ist implizit und immer die erste. */
+  pages: FestplatzPage[];
+  categories: Category[];
+  infraTypes: InfraTypeDef[];
+  exportProfiles: ExportProfile[];
+  titleBlock: { dateText: string; version: string };
+  unplaced: Vendor[];
+}
+
+export interface ProjectFile {
+  format: 'schelmeplaner';
+  schemaVersion: number;
+  project: Project;
+}

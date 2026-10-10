@@ -1,0 +1,36 @@
+import type { ToolId } from '../state/store';
+import type { IconName } from './icons/Icon';
+
+/** Einträge der Werkzeugleiste. `milestone` markiert Werkzeuge, die noch nicht umgesetzt sind. */
+export interface ToolbarItem {
+  shortcut: string;
+  icon: IconName;
+  description: string;
+  kind: 'tool' | 'toggle';
+  tool?: ToolId;
+  milestone?: string;
+}
+
+export const TOOL_GROUPS: ToolbarItem[][] = [
+  [
+    { shortcut: 'tool.select', icon: 'select', kind: 'tool', tool: 'select', description: 'Objekte auswählen und verschieben' },
+    { shortcut: 'tool.hand', icon: 'hand', kind: 'tool', tool: 'hand', description: 'Ansicht verschieben (auch: Leertaste gedrückt halten)' },
+    { shortcut: 'tool.zoom', icon: 'zoom', kind: 'tool', tool: 'zoom', description: 'Klicken vergrößert, mit Alt verkleinert' },
+  ],
+  [
+    { shortcut: 'tool.area', icon: 'area', kind: 'tool', milestone: 'M3', description: 'Grundfläche als Rechteck aufziehen' },
+    { shortcut: 'tool.stand', icon: 'stand', kind: 'tool', milestone: 'M3', description: 'Neuen Stand auf der Zeichenfläche aufziehen' },
+    { shortcut: 'tool.infra', icon: 'infra', kind: 'tool', milestone: 'M7', description: 'Sperren, Sanität, Toiletten und weitere Objekte platzieren' },
+  ],
+  [
+    { shortcut: 'tool.measure', icon: 'measure', kind: 'tool', milestone: 'M2', description: 'Zwei Punkte klicken, Abstand in Metern ablesen' },
+    { shortcut: 'tool.calibrate', icon: 'calibrate', kind: 'tool', milestone: 'M2', description: 'Hintergrund über zwei Punkte und einen bekannten Abstand skalieren' },
+    { shortcut: 'tool.titleBlock', icon: 'titleBlock', kind: 'tool', milestone: 'M7', description: 'Schriftfeld platzieren und verschieben' },
+  ],
+  [
+    { shortcut: 'snap.front', icon: 'snapFront', kind: 'toggle', milestone: 'M4', description: 'Stände rasten an der Vorderseite einer Grundfläche ein' },
+    { shortcut: 'snap.grid', icon: 'snapGrid', kind: 'toggle', milestone: 'M4', description: 'Objekte rasten am Raster ein' },
+    { shortcut: 'snap.neighbors', icon: 'snapNeighbors', kind: 'toggle', milestone: 'M4', description: 'Stände rasten an benachbarten Ständen ein' },
+    { shortcut: 'view.grid', icon: 'grid', kind: 'toggle', milestone: 'M2', description: 'Raster ein- oder ausblenden' },
+  ],
+];
