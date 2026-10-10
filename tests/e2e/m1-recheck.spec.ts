@@ -78,8 +78,6 @@ test.describe('M1 Nachprüfung: Autosave nach Undo (QA-M1-03)', () => {
   });
 
   test('QA-M1-08: Sicherung per Esc „behalten“ geht verloren, sobald im neuen Projekt gesichert und per Undo zurückgegangen wird', async ({ page }) => {
-    // Befund QA-M1-08: test.fail() entfernen, sobald behoben.
-    test.fail();
     await page.clock.install();
     await openApp(page);
     await renameActive(page, 'Alter Stand');
@@ -140,8 +138,6 @@ test.describe('M1 Nachprüfung: Tab-Leiste hält aktive Page sichtbar (QA-M1-04)
   });
 
   test('QA-M1-09: Nach Verkleinern des Fensters bleibt der aktive Tab sichtbar', async ({ page }) => {
-    // Befund QA-M1-09: test.fail() entfernen, sobald behoben.
-    test.fail();
     await page.setViewportSize({ width: 1280, height: 800 });
     await page.keyboard.press('Alt+0');
     await page.keyboard.press('Control+Shift+Tab'); // letzte Page, Leiste ganz rechts
@@ -152,8 +148,6 @@ test.describe('M1 Nachprüfung: Tab-Leiste hält aktive Page sichtbar (QA-M1-04)
   });
 
   test('QA-M1-09: Nach Umbenennen in einen langen Namen ist der aktive Tab vollständig sichtbar', async ({ page }) => {
-    // Befund QA-M1-09: test.fail() entfernen, sobald behoben.
-    test.fail();
     expect(await activeTabVisible(page)).toBe(true);
     await renameActive(page, 'Ein sehr langer Festplatzname für den Obermarkt Gelnhausen');
     await expect.poll(() => activeTabName(page)).toContain('Ein sehr langer');
@@ -194,9 +188,6 @@ test.describe('M1 Nachprüfung: zugängliche Namen (QA-M1-06)', () => {
 test.describe('M1 Nachprüfung: Wischrichtung (QA-M1-02 / QA-M1-07)', () => {
   test('QA-M1-07: Waagerechtes Wischen bewegt Zeichenfläche und Tab-Leiste in dieselbe Richtung', async ({ page, browserName }) => {
     test.skip(browserName !== 'chromium', 'page.mouse.wheel erzeugt in Playwright-WebKit keine verlässlichen Raddaten (siehe QA-M1-02)');
-    // Befund QA-M1-07: test.fail() entfernen, sobald geklärt/behoben (oder Test löschen, falls Laurin die
-    // jetzige, zur Systemkonvention gegenläufige Richtung ausdrücklich so haben will).
-    test.fail();
     await page.setViewportSize({ width: 1000, height: 600 });
     await openApp(page);
     for (let i = 0; i < 14; i++) await page.locator('.tab-add').click();

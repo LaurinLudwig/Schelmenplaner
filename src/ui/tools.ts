@@ -9,6 +9,8 @@ export interface ToolbarItem {
   kind: 'tool' | 'toggle';
   tool?: ToolId;
   milestone?: string;
+  /** Tooltip-Zusatz, wenn das Werkzeug gerade nicht verfügbar ist. */
+  disabledHint?: string;
 }
 
 export const TOOL_GROUPS: ToolbarItem[][] = [
@@ -23,14 +25,14 @@ export const TOOL_GROUPS: ToolbarItem[][] = [
     { shortcut: 'tool.infra', icon: 'infra', kind: 'tool', milestone: 'M7', description: 'Sperren, Sanität, Toiletten und weitere Objekte platzieren' },
   ],
   [
-    { shortcut: 'tool.measure', icon: 'measure', kind: 'tool', milestone: 'M2', description: 'Zwei Punkte klicken, Abstand in Metern ablesen' },
-    { shortcut: 'tool.calibrate', icon: 'calibrate', kind: 'tool', milestone: 'M2', description: 'Hintergrund über zwei Punkte und einen bekannten Abstand skalieren' },
+    { shortcut: 'tool.measure', icon: 'measure', kind: 'tool', tool: 'measure', description: 'Zwei Punkte klicken, Abstand in Metern ablesen' },
+    { shortcut: 'tool.calibrate', icon: 'calibrate', kind: 'tool', tool: 'calibrate', description: 'Hintergrund über zwei Punkte und einen bekannten Abstand skalieren', disabledHint: 'Zuerst einen Hintergrund importieren (Cmd/Strg+Shift+P)' },
     { shortcut: 'tool.titleBlock', icon: 'titleBlock', kind: 'tool', milestone: 'M7', description: 'Schriftfeld platzieren und verschieben' },
   ],
   [
     { shortcut: 'snap.front', icon: 'snapFront', kind: 'toggle', milestone: 'M4', description: 'Stände rasten an der Vorderseite einer Grundfläche ein' },
     { shortcut: 'snap.grid', icon: 'snapGrid', kind: 'toggle', milestone: 'M4', description: 'Objekte rasten am Raster ein' },
     { shortcut: 'snap.neighbors', icon: 'snapNeighbors', kind: 'toggle', milestone: 'M4', description: 'Stände rasten an benachbarten Ständen ein' },
-    { shortcut: 'view.grid', icon: 'grid', kind: 'toggle', milestone: 'M2', description: 'Raster ein- oder ausblenden' },
+    { shortcut: 'view.grid', icon: 'grid', kind: 'toggle', description: 'Raster ein- oder ausblenden; Weite in der Seitenleiste' },
   ],
 ];

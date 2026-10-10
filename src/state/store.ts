@@ -1,3 +1,4 @@
+import { produce } from 'immer';
 import { create } from 'zustand';
 import type { Assets, ProjectBundle } from '../core/fileFormat';
 import { createProject } from '../core/model/defaults';
@@ -7,12 +8,16 @@ import * as H from './history';
 export const START_PAGE = 'start';
 export type PageRef = typeof START_PAGE | Id;
 
-export type ToolId = 'select' | 'hand' | 'zoom';
+export type ToolId = 'select' | 'hand' | 'zoom' | 'measure' | 'calibrate';
+
+/** Auswahl auf der aktiven Page. M2: nur der Hintergrund; ab M3 kommen Objekte hinzu. */
+export type Selection = { kind: 'background' } | null;
 export type Theme = 'dark' | 'light';
 
 export interface UiState {
   activePage: PageRef;
   tool: ToolId;
+  selection: Selection;
   sidebarOpen: boolean;
   /** Tab blendet alle Panels aus (wie in Illustrator). */
   panelsHidden: boolean;
@@ -20,6 +25,8 @@ export interface UiState {
   /** Page, deren Tab gerade umbenannt wird. */
   renamingPage: Id | null;
   theme: Theme;
+  /** App-Einstellung pro Rechner: Wischrichtung des Trackpads umkehren (QA-M1-07). */
+  invertPan: boolean;
   /** Größe der Zeichenfläche in px (für Zoom-Befehle ohne Mausposition). */
   viewport: { w: number; h: number };
 }
@@ -37,6 +44,12 @@ export interface AppState {
   ui: UiState;
 
   change: (label: string, recipe: H.Recipe) => boolean;
+  /**
+   * Ansichtseinstellung im Projekt ändern (z. B. Raster ein/aus): kein Undo-Schritt, markiert das
+   * Projekt nicht als ungespeichert, wird beim nächsten Speichern aber mitgeschrieben (QA-M2-05).
+   * Nur für Felder, die von keiner Undo-Änderung berührt werden.
+   */
+  changeView: (recipe: H.Recipe) => void;
   beginTransaction: (label: string) => void;
   commitTransaction: () => void;
   undo: () => void;
@@ -44,10 +57,28 @@ export interface AppState {
   loadBundle: (bundle: ProjectBundle, file: { path: string | null; name: string | null; dirty?: boolean }) => void;
   markSaved: (path: string | null, name: string) => void;
   setUi: (patch: Partial<UiState>) => void;
+  /** Eingebettete Datei ablegen (nicht Teil der Undo-Historie; nur verwendete Dateien werden gespeichert). */
+  addAsset: (id: string, bytes: Uint8Array) => void;
   setView: (pageId: Id, view: View) => void;
 }
 
 const THEME_KEY = 'schelmeplaner.theme';
+const INVERT_PAN_KEY = 'schelmeplaner.invertPan';
+
+function loadPref(key: string): string | null {
+  try {
+    return localStorage.getItem(key);
+  } catch {
+    return null;
+  }
+}
+export function saveInvertPan(on: boolean) {
+  try {
+    localStorage.setItem(INVERT_PAN_KEY, on ? '1' : '0');
+  } catch {
+    /* Einstellung ist nur Komfort */
+  }
+}
 function loadTheme(): Theme {
   try {
     return localStorage.getItem(THEME_KEY) === 'light' ? 'light' : 'dark';
@@ -63,10 +94,23 @@ export function saveTheme(t: Theme) {
   }
 }
 
+/** Hebt eine Auswahl auf, deren Objekt es nicht mehr gibt (z. B. nach Undo). */
+function validSelection(project: Project, active: PageRef, sel: Selection): Selection {
+  if (!sel) return null;
+  const page = project.pages.find((p) => p.id === active);
+  return sel.kind === 'background' && page?.background ? sel : null;
+}
+
 /** Sorgt dafür, dass die aktive Page nach Undo/Löschen noch existiert. */
 function validActive(project: Project, active: PageRef): PageRef {
   if (active === START_PAGE || project.pages.some((p) => p.id === active)) return active;
   return project.pages[0]?.id ?? START_PAGE;
+}
+
+function normalizeUi(project: Project, ui: UiState): UiState {
+  const activePage = validActive(project, ui.activePage);
+  const selection = activePage === ui.activePage ? validSelection(project, activePage, ui.selection) : null;
+  return { ...ui, activePage, selection };
 }
 
 function initialState(project: Project) {
@@ -88,11 +132,13 @@ export const useStore = create<AppState>()((set, get) => {
     ui: {
       activePage: first.pages[0]?.id ?? START_PAGE,
       tool: 'select',
+      selection: null,
       sidebarOpen: true,
       panelsHidden: false,
       shortcutsOpen: false,
       renamingPage: null,
       theme: loadTheme(),
+      invertPan: loadPref(INVERT_PAN_KEY) === '1',
       viewport: { w: 0, h: 0 },
     },
 
@@ -100,8 +146,11 @@ export const useStore = create<AppState>()((set, get) => {
       const s = get();
       const r = H.record(s.project, s.history, label, recipe);
       if (!r) return false;
-      set({ project: r.project, history: r.history, ui: { ...s.ui, activePage: validActive(r.project, s.ui.activePage) } });
+      set({ project: r.project, history: r.history, ui: normalizeUi(r.project, s.ui) });
       return true;
+    },
+    changeView(recipe) {
+      set({ project: produce(get().project, recipe) });
     },
     beginTransaction(label) {
       set({ history: H.beginTransaction(get().history, label) });
@@ -112,12 +161,12 @@ export const useStore = create<AppState>()((set, get) => {
     undo() {
       const s = get();
       const r = H.undo(s.project, s.history);
-      if (r) set({ project: r.project, history: r.history, ui: { ...s.ui, activePage: validActive(r.project, s.ui.activePage) } });
+      if (r) set({ project: r.project, history: r.history, ui: normalizeUi(r.project, s.ui) });
     },
     redo() {
       const s = get();
       const r = H.redo(s.project, s.history);
-      if (r) set({ project: r.project, history: r.history, ui: { ...s.ui, activePage: validActive(r.project, s.ui.activePage) } });
+      if (r) set({ project: r.project, history: r.history, ui: normalizeUi(r.project, s.ui) });
     },
     loadBundle({ project, assets }, file) {
       const views: Record<Id, View> = {};
@@ -129,14 +178,22 @@ export const useStore = create<AppState>()((set, get) => {
         fileName: file.name,
         savedHead: file.dirty ? -1 : 0,
         views,
-        ui: { ...get().ui, activePage: project.pages[0]?.id ?? START_PAGE, tool: 'select' },
+        ui: { ...get().ui, activePage: project.pages[0]?.id ?? START_PAGE, tool: 'select', selection: null },
       });
     },
     markSaved(path, name) {
       set({ filePath: path, fileName: name, savedHead: H.headId(get().history) });
     },
     setUi(patch) {
-      set({ ui: { ...get().ui, ...patch } });
+      const ui = get().ui;
+      const next = { ...ui, ...patch };
+      // Auswahl gehört zur Page: beim Seitenwechsel aufheben
+      if (patch.activePage !== undefined && patch.activePage !== ui.activePage && patch.selection === undefined) next.selection = null;
+      set({ ui: next });
+    },
+    addAsset(id, bytes) {
+      if (get().assets[id]) return;
+      set({ assets: { ...get().assets, [id]: bytes } });
     },
     setView(pageId, view) {
       set({ views: { ...get().views, [pageId]: view } });

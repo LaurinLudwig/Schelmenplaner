@@ -1,7 +1,7 @@
 import { readFileSync } from 'node:fs';
 import { expect, test, type Page } from '@playwright/test';
 import { strFromU8, strToU8, unzipSync, zipSync } from 'fflate';
-import { activeTabName, collectErrors, MOD, openApp, pageTabs, tabNames } from './helpers';
+import { activeTabName, artifact, collectErrors, MOD, openApp, pageTabs, tabNames } from './helpers';
 
 /** M1-02, M1-18, M1-19, M1-20: Datenmodell, Speichern/Laden (Browser: Download/Upload), Autosave, Undo. */
 
@@ -190,7 +190,7 @@ test.describe('M1 Datei: Speichern, Laden, Autosave', () => {
     await page.reload();
     const dlg = page.getByRole('alertdialog');
     await expect(dlg).toContainText('Sicherung gefunden');
-    await page.screenshot({ path: 'qa/screenshots/m1-recovery-dialog.png' });
+    await page.screenshot({ path: artifact('m1-recovery-dialog.png') });
     await dlg.getByRole('button', { name: 'Wiederherstellen' }).click();
     await expect.poll(() => tabNames(page)).toEqual(['Start-Page', 'Gesichert', 'Festplatz 2']);
     // Wiederhergestelltes Projekt gilt als ungespeichert

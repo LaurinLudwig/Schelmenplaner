@@ -1,6 +1,7 @@
 import { SHORTCUTS } from '../ui/shortcuts/definitions';
 import { IS_MAC, matches, parseCombo } from '../ui/shortcuts/keys';
 import { useDialogs } from './dialogs';
+import { usePagePicker } from './pagePicker';
 import { COMMANDS, runCommand } from './commands';
 
 const compiled = SHORTCUTS.flatMap((def) => def.keys.map((k) => ({ id: def.id, combo: parseCombo(k) })));
@@ -13,7 +14,7 @@ export function startKeyboard(): () => void {
   const onKeyDown = (e: KeyboardEvent) => {
     if (e.defaultPrevented || e.isComposing) return;
     // Offene Dialoge behandeln ihre Tasten selbst.
-    if (useDialogs.getState().queue.length) return;
+    if (useDialogs.getState().queue.length || usePagePicker.getState().request) return;
     const inText = isTextField(e.target);
     for (const { id, combo } of compiled) {
       if (!COMMANDS[id] || !matches(combo, e, IS_MAC)) continue;

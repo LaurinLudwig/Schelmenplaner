@@ -9,10 +9,15 @@ BACKLOG.md ist die Quelle für den Projektstand. Vor jeder Arbeit lesen, nach je
   und werden nicht ungefragt umgesetzt.
 - Am Ende jedes Meilensteins: BACKLOG.md mit spec.md abgleichen, dann Abschnitt „Abschluss Mx“
   schreiben (umgesetzt, nicht umgesetzt/verschoben, Abweichungen, bekannte Bugs, offene Fragen).
-- `src/core/` bleibt frei von React-, DOM- und Tauri-Importen und ist mit Vitest getestet. Der Linter erzwingt das (Override in `.oxlintrc.json`).
+- `src/core/` bleibt frei von React-, DOM- und Tauri-Importen und ist mit Vitest getestet. Erzwungen durch den Linter (Override in `.oxlintrc.json`) und eine eigene Typprüfung ohne DOM (`src/core/tsconfig.json`; erlaubte plattformneutrale Funktionen nur über `src/core/env.d.ts`).
+- Zahlen: Eingabefelder mit `fmtInput` (ohne Tausenderpunkt) und `parseNum`; reine Anzeigen mit `fmt`.
+- Fehlermeldungen für den Nutzer nur auf Deutsch: `UserError` für fertige Meldungen, sonst `userMessage(e, fallback)`.
 - Betriebssystem-Zugriffe (Dateien, Dialoge, Fenster) laufen ausschließlich über `src/platform/`
   (`platform` aus `src/platform/index.ts`). Nur `src/platform/tauri.ts` importiert `@tauri-apps/*`;
   `src/platform/browser.ts` ist der Ersatz für den normalen Browser.
+
+- Screenshots und Logs aus Testläufen gehören nach `test-artifacts/` (ignoriert; Helfer `artifact()` in `tests/e2e/helpers.ts`). Unter `qa/` nur Belege, die in QA-Berichten verlinkt sind.
+- Im Entwicklungsmodus ist der Store als `window.__schelmeStore` erreichbar (Fehlersuche, Tests).
 
 ## QA
 - Der QA-Agent (`.claude/agents/qa-tester.md`) prüft jeden Meilenstein und schreibt `qa/Mx.md`.
@@ -29,7 +34,7 @@ BACKLOG.md ist die Quelle für den Projektstand. Vor jeder Arbeit lesen, nach je
 | `npm run dev` | Frontend im Browser, http://localhost:1420 (ohne Tauri; Dateien per Upload/Download) |
 | `npm run tauri dev` | Desktop-App starten (benötigt Rust; in Shells ohne Rust im PATH vorher `source ~/.cargo/env`) |
 | `npm run tauri build` | Desktop-Installer bauen (benötigt Rust) |
-| `npm run typecheck` | TypeScript-Prüfung (`tsc --noEmit`) |
+| `npm run typecheck` | TypeScript-Prüfung: ganzes Projekt und zusätzlich `src/core` ohne DOM-Bibliothek (`tsc -p src/core`) |
 | `npm run lint` | Linter (oxlint, Warnungen gelten als Fehler) |
 | `npm test` | Unit-Tests (Vitest, `src/**/*.test.ts`) |
 | `npm run test:watch` | Unit-Tests im Watch-Modus |
@@ -37,3 +42,5 @@ BACKLOG.md ist die Quelle für den Projektstand. Vor jeder Arbeit lesen, nach je
 | `npx playwright install chromium webkit` | Browser für die E2E-Tests installieren (einmalig) |
 | `npm run build` | Typecheck + Produktions-Build nach `dist/` |
 | `npm run check` | typecheck, lint, test und build nacheinander |
+| `node scripts/make-fixtures.mjs` | Testdateien in `tests/fixtures/` neu erzeugen (Maße siehe README dort) |
+| `node scripts/copy-pdfjs-assets.mjs` | pdf.js-Zusatzdateien nach `public/pdfjs/` kopieren (läuft automatisch vor `dev`/`build`) |

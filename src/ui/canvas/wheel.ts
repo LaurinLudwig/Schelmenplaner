@@ -30,7 +30,12 @@ export function isMouseWheel(e: WheelLike): boolean {
   return legacy !== undefined && legacy !== 0 && Math.abs(legacy) >= 120 && legacy % 120 === 0;
 }
 
-export function interpretWheel(e: WheelLike): WheelAction {
+/**
+ * @param invertPan Einstellung „Wischrichtung umkehren“ (Menü). Standard: Richtung wie das System
+ *   (wie Safari, Figma und die Tab-Leiste; die macOS-Einstellung „Natürliche Scrollrichtung“ wirkt
+ *   bereits auf die Deltas).
+ */
+export function interpretWheel(e: WheelLike, invertPan = false): WheelAction {
   const scale = e.deltaMode === 1 ? LINE_PX : e.deltaMode === 2 ? 400 : 1;
   if (e.ctrlKey) {
     // Pinch (oder Strg + Mausrad): feinere Deltas, daher stärkerer Faktor pro Pixel
@@ -39,7 +44,6 @@ export function interpretWheel(e: WheelLike): WheelAction {
   if (isMouseWheel(e)) {
     return { kind: 'zoom', factor: Math.exp(-e.deltaY * scale * 0.0015) };
   }
-  // Richtung laut Test auf echter Hardware (Laurin, MacBook-Trackpad): Inhalt bewegt sich mit +delta.
-  // Die macOS-Einstellung „Natürliche Scrollrichtung“ kehrt die Deltas bereits im System um.
-  return { kind: 'pan', dx: e.deltaX * scale, dy: e.deltaY * scale };
+  const dir = invertPan ? 1 : -1;
+  return { kind: 'pan', dx: dir * e.deltaX * scale, dy: dir * e.deltaY * scale };
 }

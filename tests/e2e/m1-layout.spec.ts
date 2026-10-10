@@ -1,5 +1,5 @@
 import { expect, test } from '@playwright/test';
-import { collectErrors, hoverTooltip, MOD, openApp, pageTabs } from './helpers';
+import { artifact, collectErrors, hoverTooltip, MOD, openApp, pageTabs } from './helpers';
 
 /** M1-10 … M1-14, M1-21 … M1-23: Layout, Werkzeugleiste, Theme, Shortcuts, Tooltips. */
 
@@ -36,7 +36,7 @@ test.describe('M1 Layout und Bedienung', () => {
     expect(side.x + side.width).toBeCloseTo(1280, 0);
     // Zeichenfläche bekommt den meisten Platz
     expect(canvas.width * canvas.height).toBeGreaterThan(0.5 * 1280 * 800);
-    await page.screenshot({ path: 'qa/screenshots/m1-layout-dark.png' });
+    await page.screenshot({ path: artifact('m1-layout-dark.png') });
   });
 
   test('M1-11: Werkzeugleiste nur aus Icons mit allen Werkzeugen der Spec', async ({ page }) => {
@@ -61,7 +61,7 @@ test.describe('M1 Layout und Bedienung', () => {
     expect(t2).toMatch(/Hand[\s\S]*H[\s\S]*Ansicht verschieben/);
     const t3 = await hoverTooltip(page, nav.getByRole('button', { name: 'Geschäft erstellen' }));
     expect(t3).toMatch(/Geschäft erstellen[\s\S]*G[\s\S]*Neuen Stand/);
-    await page.screenshot({ path: 'qa/screenshots/m1-tooltip-geschaeft.png' });
+    await page.screenshot({ path: artifact('m1-tooltip-geschaeft.png') });
   });
 
   test('M1-23: Tooltips an Buttons außerhalb der Werkzeugleiste (Tabs, +, Seitenleiste, Zoom)', async ({ page, browserName }) => {
@@ -123,7 +123,7 @@ test.describe('M1 Layout und Bedienung', () => {
     await expect(page.locator('html')).toHaveAttribute('data-theme', 'light');
     const lightBg = await page.evaluate(() => getComputedStyle(document.querySelector('.toolbar')!).backgroundColor);
     expect(lightBg).not.toBe(darkBg);
-    await page.screenshot({ path: 'qa/screenshots/m1-layout-light.png' });
+    await page.screenshot({ path: artifact('m1-layout-light.png') });
     await page.reload();
     await expect(page.locator('html')).toHaveAttribute('data-theme', 'light');
     await page.locator('.menu-btn').click();
@@ -166,7 +166,7 @@ test.describe('M1 Layout und Bedienung', () => {
     await expect(page.getByRole('navigation', { name: 'Werkzeuge' })).toHaveCount(0);
     await expect(page.locator('.controlbar')).toHaveCount(0);
     await expect(page.locator('svg.canvas')).toBeVisible();
-    await page.screenshot({ path: 'qa/screenshots/m1-panels-hidden.png' });
+    await page.screenshot({ path: artifact('m1-panels-hidden.png') });
     await page.keyboard.press('Tab');
     await expect(side).toBeVisible();
     await expect(page.getByRole('navigation', { name: 'Werkzeuge' })).toBeVisible();
@@ -188,7 +188,7 @@ test.describe('M1 Layout und Bedienung', () => {
     await expect(dlg).toContainText('Rückgängig');
     await expect(dlg).toContainText('An Fenster anpassen');
     await expect(dlg).toContainText('Zu Festplatz 1 … 9');
-    await page.screenshot({ path: 'qa/screenshots/m1-shortcuts-overlay.png' });
+    await page.screenshot({ path: artifact('m1-shortcuts-overlay.png') });
     await page.keyboard.press('Escape');
     await expect(dlg).toHaveCount(0);
     await page.keyboard.press('?');

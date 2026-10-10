@@ -24,6 +24,7 @@ export const SHORTCUTS: ShortcutDef[] = [
   { id: 'file.open', label: 'Projekt öffnen …', group: 'Datei', keys: ['Mod+O'] },
   { id: 'file.save', label: 'Speichern', group: 'Datei', keys: ['Mod+S'] },
   { id: 'file.saveAs', label: 'Speichern unter …', group: 'Datei', keys: ['Mod+Shift+S'] },
+  { id: 'file.importBackground', label: 'Hintergrund importieren …', group: 'Datei', keys: ['Mod+Shift+P'] },
 
   { id: 'edit.undo', label: 'Rückgängig', group: 'Bearbeiten', keys: ['Mod+Z'] },
   { id: 'edit.redo', label: 'Wiederholen', group: 'Bearbeiten', keys: ['Mod+Shift+Z', 'Mod+Y'] },

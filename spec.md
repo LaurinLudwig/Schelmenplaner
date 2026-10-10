@@ -36,13 +36,20 @@ Freiflächen-Logik wurde bereits erfolgreich getestet (prototype/freiflaechen.ht
 
 ### 1. Hintergrund & Maßstab
 - Hintergrundplan pro Festplatz-Page importieren: PDF (Seitenauswahl bei mehrseitigen PDFs),
-  SVG, JPEG, PNG.
+  SVG, JPEG, PNG. Der Plan wird in die Projektdatei eingebettet; bei mehrseitigen PDFs nur die
+  gewählte Seite.
 - Deckkraft einstellbar, Hintergrund sperrbar, austauschbar ohne Verlust der gezeichneten Objekte.
 - Kalibrierung: zwei Punkte auf dem Hintergrund klicken, realen Abstand in m eingeben, der
-  Hintergrund wird entsprechend skaliert. Kalibrierung jederzeit wiederholbar.
+  Hintergrund wird entsprechend skaliert. Kalibrierung jederzeit wiederholbar. Nach der
+  2-Punkt-Kalibrierung wird der Hintergrund automatisch gesperrt; gesperrt sind Position, Drehung
+  und Maßstab geschützt (Kalibrieren bleibt möglich). Bei PDFs alternativ: Planmaßstab 1:n direkt
+  eingeben (sperrt nicht automatisch).
+- Rückfrage bei unplausiblem Maßstab: PDF außerhalb 1:50 bis 1:10.000, Bild/SVG mit Planbreite
+  außerhalb 10 m bis 5 km, oder Änderung gegenüber der bisherigen Kalibrierung um mehr als Faktor 2.
 - Hintergrund zusätzlich verschieb- und drehbar. Nordrichtung pro Festplatz-Page einstellbar
   (Nordpfeil folgt ihr).
-- Raster mit einstellbarer Weite.
+- Raster mit einstellbarer Weite. „Raster ein/aus“ ist eine Ansichtseinstellung (kein Undo-Schritt,
+  markiert das Projekt nicht als ungespeichert).
 
 ### 2. Grundflächen
 - Rechteck mit dem Grundflächen-Werkzeug aufziehen, drehen, Vorderseite per Klick auf eine Kante
@@ -153,7 +160,8 @@ Freiflächen-Logik wurde bereits erfolgreich getestet (prototype/freiflaechen.ht
   Schriftfeld, sowie Umschalter für Fang (Vorderkante, Raster, Nachbarstände; einzeln
   schaltbar), Raster ein/aus.
 - **Mitte: Zeichenfläche** mit Zoom (Mausrad, Strg/Cmd + / −, „an Fenster anpassen“) und Pan
-  (Leertaste + Ziehen, Hand-Werkzeug). Trackpad: Pinch zoomt, Zwei-Finger-Wischen verschiebt.
+  (Leertaste + Ziehen, Hand-Werkzeug). Trackpad: Pinch zoomt, Zwei-Finger-Wischen verschiebt, in
+  der Richtung des Systems; im Menü umkehrbar („Wischrichtung umkehren“, pro Rechner).
 - **Rechts: Seitenleiste** mit Eigenschaften des ausgewählten Objekts und Ebenen-Panel.
   Einklappbar per Button und per Shortcut (Tab blendet wie in Illustrator alle Panels aus).
 
@@ -175,7 +183,9 @@ Freiflächen-Logik wurde bereits erfolgreich getestet (prototype/freiflaechen.ht
   ein-/ausblendbar und sperrbar.
 - Mehrfachauswahl (Shift+Klick, Auswahlrechteck), Kopieren/Einfügen, Duplizieren,
   Verschieben per Pfeiltasten (0,1 m, mit Shift 1 m), Entf zum Löschen.
-- Oberfläche auf Deutsch.
+- Oberfläche auf Deutsch, auch alle Fehlermeldungen.
+- Zahleneingaben: Komma als Dezimaltrennzeichen, Punkt wird ebenfalls als Dezimaltrennzeichen
+  akzeptiert. Eingabefelder zeigen keine Tausendertrennzeichen (nur reine Anzeigen).
 
 ## Nicht-funktionale Anforderungen
 - Läuft auf Windows und macOS, komplett offline, kein Server, kein Account.

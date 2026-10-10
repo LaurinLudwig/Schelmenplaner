@@ -24,6 +24,7 @@ export function TabBar() {
   const canUndo = useStore(selectCanUndo);
   const canRedo = useStore(selectCanRedo);
   const theme = useStore((s) => s.ui.theme);
+  const invertPan = useStore((s) => s.ui.invertPan);
   const setUi = useStore((s) => s.setUi);
 
   const [menu, setMenu] = useState<{ x: number; y: number; items: MenuItem[] } | null>(null);
@@ -32,16 +33,24 @@ export function TabBar() {
   const tabsRef = useRef<HTMLDivElement>(null);
   const startTabRef = useRef<HTMLButtonElement>(null);
 
-  // Aktive Page in einer übervollen Tab-Leiste sichtbar halten (QA-M1-04). Bewusst nicht
-  // scrollIntoView: das würde auch übergeordnete Bereiche verschieben.
+  // Aktive Page in einer übervollen Tab-Leiste sichtbar halten (QA-M1-04/-09): beim Wechsel,
+  // bei geänderter Fenstergröße und wenn der Tab z. B. durch Umbenennen breiter wird.
+  // Bewusst nicht scrollIntoView: das würde auch übergeordnete Bereiche verschieben.
   useLayoutEffect(() => {
     const box = tabsRef.current;
     const el = active === START_PAGE ? startTabRef.current : tabRefs.current.get(active);
     if (!box || !el) return;
-    const b = box.getBoundingClientRect();
-    const r = el.getBoundingClientRect();
-    if (r.left < b.left) box.scrollLeft -= b.left - r.left;
-    else if (r.right > b.right) box.scrollLeft += r.right - b.right;
+    const reveal = () => {
+      const b = box.getBoundingClientRect();
+      const r = el.getBoundingClientRect();
+      if (r.left < b.left) box.scrollLeft -= b.left - r.left;
+      else if (r.right > b.right) box.scrollLeft += Math.min(r.right - b.right, r.left - b.left);
+    };
+    reveal();
+    const ro = new ResizeObserver(reveal);
+    ro.observe(box);
+    ro.observe(el);
+    return () => ro.disconnect();
   }, [active]);
 
   // Die Leiste hat keinen sichtbaren Scrollbalken; das Mausrad scrollt sie seitwärts.
@@ -65,6 +74,7 @@ export function TabBar() {
         { label: 'Wiederholen', shortcut: 'edit.redo', onSelect: cmd('edit.redo'), disabled: !canRedo },
         'separator',
         { label: theme === 'dark' ? 'Helles Design' : 'Dunkles Design', shortcut: 'ui.theme', onSelect: cmd('ui.theme') },
+        { label: 'Wischrichtung umkehren', checked: invertPan, onSelect: cmd('ui.invertPan') },
         { label: 'Tastaturkürzel', shortcut: 'ui.shortcuts', onSelect: cmd('ui.shortcuts') },
       ],
     });

@@ -1,6 +1,9 @@
 import { addPage, cyclePage, deletePage, duplicatePage, gotoPage } from '../state/pages';
-import { saveTheme, selectCanRedo, selectCanUndo, START_PAGE, useStore, type ToolId } from '../state/store';
+import { saveInvertPan, saveTheme, selectCanRedo, selectCanUndo, START_PAGE, useStore, type ToolId } from '../state/store';
+import { setGridVisible } from '../state/pageSettings';
+import { importBackground } from './backgroundImport';
 import { confirm } from './dialogs';
+import { notify } from './notify';
 import { newProject, openProject, saveProject } from './fileActions';
 import { fitView, zoomBy } from './view';
 
@@ -11,10 +14,14 @@ import { fitView, zoomBy } from './view';
 export interface Command {
   run: () => void;
   enabled?: () => boolean;
+  /** Hinweis, wenn der Befehl per Taste ausgelöst wird, aber gerade nicht möglich ist. */
+  disabledMessage?: string;
 }
 
 const s = () => useStore.getState();
 const onDrawingPage = () => s().ui.activePage !== START_PAGE;
+const activePage = () => s().project.pages.find((p) => p.id === s().ui.activePage) ?? null;
+const hasBackground = () => !!activePage()?.background;
 const setTool = (tool: ToolId) => () => s().setUi({ tool });
 
 export async function confirmDeletePage(id: string) {
@@ -49,6 +56,20 @@ export const COMMANDS: Record<string, Command> = {
   'tool.select': { run: setTool('select'), enabled: onDrawingPage },
   'tool.hand': { run: setTool('hand'), enabled: onDrawingPage },
   'tool.zoom': { run: setTool('zoom'), enabled: onDrawingPage },
+  'tool.measure': { run: setTool('measure'), enabled: onDrawingPage },
+  'tool.calibrate': {
+    run: setTool('calibrate'),
+    enabled: hasBackground,
+    disabledMessage: 'Kalibrieren: Zuerst einen Hintergrund importieren (Cmd/Strg+Shift+P).',
+  },
+  'file.importBackground': { run: () => void importBackground(), enabled: onDrawingPage },
+  'view.grid': {
+    run: () => {
+      const page = activePage();
+      if (page) setGridVisible(page.id, !page.grid.visible);
+    },
+    enabled: onDrawingPage,
+  },
 
   'view.zoomIn': { run: () => zoomBy(1.25), enabled: onDrawingPage },
   'view.zoomOut': { run: () => zoomBy(1 / 1.25), enabled: onDrawingPage },
@@ -78,12 +99,24 @@ export const COMMANDS: Record<string, Command> = {
       s().setUi({ theme });
     },
   },
+  'ui.invertPan': {
+    run: () => {
+      const on = !s().ui.invertPan;
+      saveInvertPan(on);
+      s().setUi({ invertPan: on });
+      notify(on ? 'Wischrichtung umgekehrt (gegen die Systemeinstellung).' : 'Wischrichtung wie in der Systemeinstellung.');
+    },
+  },
   'ui.shortcuts': { run: () => s().setUi({ shortcutsOpen: !s().ui.shortcutsOpen }) },
 };
 
 export function runCommand(id: string): boolean {
   const cmd = COMMANDS[id];
-  if (!cmd || (cmd.enabled && !cmd.enabled())) return false;
+  if (!cmd) return false;
+  if (cmd.enabled && !cmd.enabled()) {
+    if (cmd.disabledMessage && onDrawingPage()) notify(cmd.disabledMessage);
+    return false;
+  }
   cmd.run();
   return true;
 }

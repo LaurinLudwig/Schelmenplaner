@@ -7,7 +7,9 @@ import { START_PAGE, useStore } from './state/store';
 import { Canvas } from './ui/canvas/Canvas';
 import { ControlBar } from './ui/shell/ControlBar';
 import { DialogHost } from './ui/shell/DialogHost';
+import { PdfPagePicker } from './ui/shell/PdfPagePicker';
 import { ShortcutsOverlay } from './ui/shell/ShortcutsOverlay';
+import { Toasts } from './ui/shell/Toasts';
 import { Sidebar } from './ui/shell/Sidebar';
 import { TabBar } from './ui/shell/TabBar';
 import { Toolbar } from './ui/shell/Toolbar';
@@ -50,6 +52,8 @@ export function App() {
         </>
       )}
       <TooltipHost />
+      <Toasts />
+      <PdfPagePicker />
       <DialogHost />
       <ShortcutsOverlay />
     </div>

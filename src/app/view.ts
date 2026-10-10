@@ -1,6 +1,7 @@
+import { bgCorners } from '../core/background';
 import { boundsOfRects } from '../core/geometry/rect';
 import type { FestplatzPage, View } from '../core/model/types';
-import { defaultView, fitBounds, zoomAt } from '../core/viewport';
+import { defaultView, fitBounds, zoomAt, type Bounds } from '../core/viewport';
 import { START_PAGE, useStore } from '../state/store';
 
 /** Ansicht der aktiven Page (Standardansicht, falls noch keine gesetzt ist). */
@@ -26,11 +27,27 @@ export function zoomBy(factor: number) {
   useStore.getState().setView(page.id, zoomAt(v, factor, { x: w / 2, y: h / 2 }));
 }
 
-/** Passt alle Objekte der Page ins Fenster; leere Page → Standardansicht um den Ursprung. */
+/** Hüllrechteck aller Objekte und des Hintergrundplans (sichtbare Ebene) einer Page. */
+export function pageBounds(page: FestplatzPage): Bounds | null {
+  const objects = boundsOfRects([...page.areas, ...page.stands, ...page.infra]);
+  const bg = page.background && page.layers.background.visible ? bgCorners(page.background.transform, page.background.pxSize) : [];
+  if (!bg.length) return objects;
+  const xs = bg.map((p) => p.x);
+  const ys = bg.map((p) => p.y);
+  const b: Bounds = { minX: Math.min(...xs), minY: Math.min(...ys), maxX: Math.max(...xs), maxY: Math.max(...ys) };
+  if (!objects) return b;
+  return {
+    minX: Math.min(b.minX, objects.minX),
+    minY: Math.min(b.minY, objects.minY),
+    maxX: Math.max(b.maxX, objects.maxX),
+    maxY: Math.max(b.maxY, objects.maxY),
+  };
+}
+
+/** Passt Objekte und Hintergrund der Page ins Fenster; leere Page → Standardansicht um den Ursprung. */
 export function fitView() {
   const page = activePage();
   if (!page) return;
   const { w, h } = useStore.getState().ui.viewport;
-  const bounds = boundsOfRects([...page.areas, ...page.stands, ...page.infra]);
-  useStore.getState().setView(page.id, fitBounds(bounds, w, h));
+  useStore.getState().setView(page.id, fitBounds(pageBounds(page), w, h));
 }

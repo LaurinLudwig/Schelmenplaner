@@ -90,3 +90,9 @@ export async function dispatchWheel(
     { pos: at, w: init },
   );
 }
+
+/**
+ * Ablageort für Screenshots, die bei jedem Testlauf neu entstehen (QA-M1-12). Der Ordner steht in
+ * .gitignore; versionierte Belege der QA-Berichte liegen unter qa/screenshots/.
+ */
+export const artifact = (name: string) => `test-artifacts/screenshots/${name}`;

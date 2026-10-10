@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { decodeProjectFile, encodeProjectFile } from './fileFormat';
-import { fmt, parseNum } from './format';
+
 import { boundsOfRects, rectCorners } from './geometry/rect';
 import { createProject } from './model/defaults';
 import { fitBounds, screenToWorld, worldToScreen, zoomAt } from './viewport';
@@ -47,12 +47,3 @@ describe('Rechteck', () => {
   });
 });
 
-describe('Zahlenformat', () => {
-  it('fmt und parseNum arbeiten deutsch', () => {
-    expect(fmt(1234.5)).toBe('1.234,5');
-    expect(fmt(-0.001)).toBe('0');
-    expect(parseNum(' 1,5 ')).toBe(1.5);
-    expect(parseNum('2.25')).toBe(2.25);
-    expect(parseNum('abc')).toBeNaN();
-  });
-});

@@ -3,25 +3,30 @@ import { getCurrentWindow } from '@tauri-apps/api/window';
 import { open as openDialog, save as saveDialog } from '@tauri-apps/plugin-dialog';
 import { exists, mkdir, readFile, remove, stat, writeFile } from '@tauri-apps/plugin-fs';
 import { FILE_EXTENSION } from '../core/fileFormat';
-import type { Platform } from './types';
+import type { AutosaveSlot, Platform } from './types';
 
 const FILTERS = [{ name: 'Schelmeplaner-Projekt', extensions: [FILE_EXTENSION] }];
 const baseName = (path: string) => path.split(/[\\/]/).pop() ?? path;
 const withExtension = (name: string) => (name.endsWith(`.${FILE_EXTENSION}`) ? name : `${name}.${FILE_EXTENSION}`);
 
 /** Sicherung neben der Projektdatei, bei unbenannten Projekten im App-Datenverzeichnis. */
-async function autosavePath(projectPath: string | null): Promise<string> {
-  if (projectPath) return `${projectPath}.autosave`;
+async function autosavePath(projectPath: string | null, slot: AutosaveSlot = 'current'): Promise<string> {
+  const suffix = slot === 'kept' ? '.behalten.autosave' : '.autosave';
+  if (projectPath) return `${projectPath}${suffix}`;
   const dir = await appLocalDataDir();
   if (!(await exists(dir))) await mkdir(dir, { recursive: true });
-  return join(dir, `unbenannt.${FILE_EXTENSION}.autosave`);
+  return join(dir, `unbenannt.${FILE_EXTENSION}${suffix}`);
 }
 
 export const tauriPlatform: Platform = {
   kind: 'tauri',
 
   async pickProjectFile() {
-    const path = await openDialog({ multiple: false, directory: false, filters: FILTERS });
+    return this.pickFile(FILTERS[0]!);
+  },
+
+  async pickFile(filter) {
+    const path = await openDialog({ multiple: false, directory: false, filters: [filter] });
     if (typeof path !== 'string') return null;
     return { bytes: await readFile(path), path, name: baseName(path) };
   },
@@ -33,12 +38,12 @@ export const tauriPlatform: Platform = {
     return { path: target, name: baseName(target) };
   },
 
-  async writeAutosave(projectPath, bytes) {
-    await writeFile(await autosavePath(projectPath), bytes);
+  async writeAutosave(projectPath, bytes, slot) {
+    await writeFile(await autosavePath(projectPath, slot), bytes);
   },
 
-  async readAutosave(projectPath) {
-    const p = await autosavePath(projectPath);
+  async readAutosave(projectPath, slot) {
+    const p = await autosavePath(projectPath, slot);
     if (!(await exists(p))) return null;
     const info = await stat(p);
     if (projectPath) {
@@ -48,9 +53,9 @@ export const tauriPlatform: Platform = {
     return { bytes: await readFile(p), time: info.mtime };
   },
 
-  async removeAutosave(projectPath) {
+  async removeAutosave(projectPath, slot) {
     try {
-      const p = await autosavePath(projectPath);
+      const p = await autosavePath(projectPath, slot);
       if (await exists(p)) await remove(p);
     } catch {
       /* Eine übrig gebliebene Sicherung ist harmlos */

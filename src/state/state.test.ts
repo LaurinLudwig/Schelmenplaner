@@ -76,3 +76,17 @@ describe('Pages und Undo/Redo', () => {
     expect(useStore.getState().project.name).toBe('T');
   });
 });
+
+describe('Ansichtseinstellungen (QA-M2-05)', () => {
+  it('Raster ein/aus ist kein Undo-Schritt und markiert nicht als ungespeichert; Undo lässt es unberührt', async () => {
+    const { setGridSize, setGridVisible } = await import('./pageSettings');
+    const id = useStore.getState().project.pages[0]!.id;
+    setGridVisible(id, false);
+    expect(useStore.getState().project.pages[0]!.grid.visible).toBe(false);
+    expect(useStore.getState().history.past.length).toBe(0);
+    expect(selectDirty(useStore.getState())).toBe(false);
+    setGridSize(id, 5);
+    useStore.getState().undo();
+    expect(useStore.getState().project.pages[0]!.grid).toEqual({ size: 1, visible: false });
+  });
+});

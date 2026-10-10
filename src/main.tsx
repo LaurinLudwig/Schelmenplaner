@@ -7,9 +7,13 @@ import '@fontsource/ibm-plex-mono/400.css';
 import '@fontsource/ibm-plex-mono/500.css';
 import './ui/theme/app.css';
 import { App } from './App';
+import { useStore } from './state/store';
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
     <App />
   </StrictMode>,
 );
+
+// Nur im Entwicklungsmodus: Store für Fehlersuche und E2E-Tests erreichbar machen
+if (import.meta.env.DEV) (window as unknown as { __schelmeStore: typeof useStore }).__schelmeStore = useStore;

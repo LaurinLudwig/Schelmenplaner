@@ -1,22 +1,39 @@
 import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { runCommand } from '../../app/commands';
+import { moveBy, type BgTransform } from '../../core/background';
 import { fmt } from '../../core/format';
 import type { FestplatzPage, Vec, View } from '../../core/model/types';
-import { defaultView, screenToWorld, zoomAt } from '../../core/viewport';
+import { findSnap, rectSnapSource } from '../../core/snap';
+import { defaultView, screenToWorld, worldToScreen, zoomAt } from '../../core/viewport';
+import { updateBackground } from '../../state/pageSettings';
 import { useStore } from '../../state/store';
 import { Icon } from '../icons/Icon';
 import { tip } from '../shortcuts/tip';
+import { BackgroundLayer } from './background/BackgroundLayer';
+import type { ToolContext, ToolPointer } from './tools/types';
+import { useCalibrateTool } from './tools/useCalibrateTool';
+import { useMeasureTool } from './tools/useMeasureTool';
 import { interpretWheel } from './wheel';
+
+/** Fangradius in Bildschirmpixeln. */
+const SNAP_PX = 8;
 
 const isTextField = (t: EventTarget | null) =>
   t instanceof HTMLElement && (t.isContentEditable || /^(INPUT|TEXTAREA|SELECT)$/.test(t.tagName));
 
 interface PanDrag {
+  kind: 'pan';
   pointerId: number;
   x0: number;
   y0: number;
   view0: View;
-  moved: boolean;
+}
+
+interface BackgroundDrag {
+  kind: 'background';
+  pointerId: number;
+  start: Vec;
+  transform0: BgTransform;
 }
 
 /**
@@ -41,7 +58,39 @@ export function Canvas({ page }: { page: FestplatzPage }) {
   const [spaceDown, setSpaceDown] = useState(false);
   const [altDown, setAltDown] = useState(false);
   const [panning, setPanning] = useState(false);
-  const drag = useRef<PanDrag | null>(null);
+  const drag = useRef<PanDrag | BackgroundDrag | null>(null);
+  const selection = useStore((s) => s.ui.selection);
+  const assets = useStore((s) => s.assets);
+  const setSelection = (sel: typeof selection) => setUi({ selection: sel });
+
+  // ---------- Werkzeuge ----------
+  const ctx: ToolContext = {
+    page,
+    view,
+    toScreen: (p) => worldToScreen(view, p),
+    snap: (p) => findSnap(p, [rectSnapSource([...page.areas, ...page.stands, ...page.infra])], SNAP_PX / view.scale),
+  };
+  const measureTool = useMeasureTool(ctx, tool === 'measure');
+  const calibrateTool = useCalibrateTool(ctx, tool === 'calibrate');
+  const activeTool = tool === 'measure' ? measureTool : tool === 'calibrate' ? calibrateTool : null;
+  const activeToolRef = useRef(activeTool);
+  useLayoutEffect(() => {
+    activeToolRef.current = activeTool;
+  });
+
+  // Esc und weitere Tasten zuerst dem Werkzeug anbieten; im Auswahlwerkzeug hebt Esc die Auswahl auf
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if (e.defaultPrevented || isTextField(e.target)) return;
+      if (activeToolRef.current?.onKeyDown(e)) {
+        e.preventDefault();
+        return;
+      }
+      if (e.key === 'Escape' && useStore.getState().ui.selection) useStore.getState().setUi({ selection: null });
+    };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, []);
 
   // Größe der Zeichenfläche verfolgen
   useLayoutEffect(() => {
@@ -98,13 +147,16 @@ export function Canvas({ page }: { page: FestplatzPage }) {
       e.preventDefault();
       if (gestureScale !== null) return;
       const legacy = (e as WheelEvent & { wheelDeltaY?: number }).wheelDeltaY;
-      const action = interpretWheel({
-        deltaX: e.deltaX,
-        deltaY: e.deltaY,
-        deltaMode: e.deltaMode,
-        ctrlKey: e.ctrlKey,
-        ...(legacy !== undefined ? { wheelDeltaY: legacy } : {}),
-      });
+      const action = interpretWheel(
+        {
+          deltaX: e.deltaX,
+          deltaY: e.deltaY,
+          deltaMode: e.deltaMode,
+          ctrlKey: e.ctrlKey,
+          ...(legacy !== undefined ? { wheelDeltaY: legacy } : {}),
+        },
+        useStore.getState().ui.invertPan,
+      );
       const v = current();
       setView(page.id, action.kind === 'zoom' ? zoomAt(v, action.factor, at(e)) : { ...v, tx: v.tx + action.dx, ty: v.ty + action.dy });
     };
@@ -142,35 +194,69 @@ export function Canvas({ page }: { page: FestplatzPage }) {
     return { x: e.clientX - r.left, y: e.clientY - r.top };
   };
 
+  const toolPointer = (e: React.PointerEvent): ToolPointer => {
+    const screen = localPoint(e);
+    return { screen, world: screenToWorld(viewRef.current, screen), shiftKey: e.shiftKey, altKey: e.altKey };
+  };
+
   const onPointerDown = (e: React.PointerEvent<SVGSVGElement>) => {
     (document.activeElement as HTMLElement | null)?.blur?.();
     const wantsPan = e.button === 1 || (e.button === 0 && (spaceDown || tool === 'hand'));
     if (wantsPan) {
       e.preventDefault();
       e.currentTarget.setPointerCapture(e.pointerId);
-      drag.current = { pointerId: e.pointerId, x0: e.clientX, y0: e.clientY, view0: viewRef.current, moved: false };
+      drag.current = { kind: 'pan', pointerId: e.pointerId, x0: e.clientX, y0: e.clientY, view0: viewRef.current };
       setPanning(true);
       return;
     }
-    if (e.button === 0 && tool === 'zoom') {
-      setView(page.id, zoomAt(viewRef.current, e.altKey ? 0.5 : 2, localPoint(e)));
+    if (e.button !== 0) return;
+    if (activeTool) {
+      if (activeTool.onPointerDown(toolPointer(e))) e.currentTarget.setPointerCapture(e.pointerId);
+      return;
     }
+    if (tool === 'zoom') {
+      setView(page.id, zoomAt(viewRef.current, e.altKey ? 0.5 : 2, localPoint(e)));
+      return;
+    }
+    // Auswahlwerkzeug: nicht gesperrten Hintergrund auswählen und verschieben
+    const bg = page.background;
+    const onBackground = (e.target as Element).closest('[data-kind="background"]');
+    if (bg && onBackground && !bg.locked) {
+      setSelection({ kind: 'background' });
+      e.currentTarget.setPointerCapture(e.pointerId);
+      useStore.getState().beginTransaction('Hintergrund verschieben');
+      drag.current = { kind: 'background', pointerId: e.pointerId, start: toolPointer(e).world, transform0: bg.transform };
+      return;
+    }
+    if (selection) setSelection(null);
   };
 
   const onPointerMove = (e: React.PointerEvent<SVGSVGElement>) => {
-    setCursor(screenToWorld(viewRef.current, localPoint(e)));
+    const p = toolPointer(e);
+    setCursor(p.world);
+    activeTool?.onPointerMove(p);
     const d = drag.current;
     if (!d || d.pointerId !== e.pointerId) return;
-    d.moved = true;
-    setView(page.id, { ...d.view0, tx: d.view0.tx + e.clientX - d.x0, ty: d.view0.ty + e.clientY - d.y0 });
+    if (d.kind === 'pan') {
+      setView(page.id, { ...d.view0, tx: d.view0.tx + e.clientX - d.x0, ty: d.view0.ty + e.clientY - d.y0 });
+    } else {
+      updateBackground(page.id, 'Hintergrund verschieben', { transform: moveBy(d.transform0, p.world.x - d.start.x, p.world.y - d.start.y) });
+    }
   };
 
-  const endPan = () => {
+  const endDrag = (e: React.PointerEvent<SVGSVGElement>) => {
+    activeTool?.onPointerUp(toolPointer(e));
+    if (drag.current?.kind === 'background') useStore.getState().commitTransaction();
     drag.current = null;
     setPanning(false);
   };
 
-  const grid = useMemo(() => buildGrid(view, size.w, size.h, page.grid.size), [view, size.w, size.h, page.grid.size]);
+  const grid = useMemo(
+    () => (page.grid.visible ? buildGrid(view, size.w, size.h, page.grid.size) : { minor: '', major: '' }),
+    [view, size.w, size.h, page.grid.size, page.grid.visible],
+  );
+  const worldTransform = `translate(${view.tx} ${view.ty}) scale(${view.scale})`;
+  const bg = page.background;
   const origin = { x: view.tx, y: view.ty };
 
   const classes = ['stage', `tool-${tool}`];
@@ -182,20 +268,35 @@ export function Canvas({ page }: { page: FestplatzPage }) {
     <main className={classes.join(' ')}>
       <svg
         ref={svgRef}
-        className="canvas"
+        className={`canvas${bg && page.layers.background.visible ? ' has-bg' : ''}`}
         aria-label={`Zeichenfläche ${page.name}`}
         onPointerDown={onPointerDown}
         onPointerMove={onPointerMove}
-        onPointerUp={endPan}
-        onPointerCancel={endPan}
+        onPointerUp={endDrag}
+        onPointerCancel={endDrag}
         onPointerLeave={() => !drag.current && setCursor(null)}
         onContextMenu={(e) => e.preventDefault()}
       >
+        {bg && page.layers.background.visible && (
+          <g transform={worldTransform}>
+            <BackgroundLayer
+              background={bg}
+              bytes={assets[bg.assetId]}
+              view={view}
+              viewport={size}
+              selected={selection?.kind === 'background'}
+              interactive={tool === 'select' && !bg.locked && !spaceDown}
+            />
+          </g>
+        )}
         <path className="grid-minor" d={grid.minor} />
         <path className="grid-major" d={grid.major} />
         <path className="origin" d={`M${origin.x - 8} ${origin.y}H${origin.x + 8}M${origin.x} ${origin.y - 8}V${origin.y + 8}`} />
-        <g transform={`translate(${view.tx} ${view.ty}) scale(${view.scale})`}>{/* Objekte ab M3 */}</g>
+        <g transform={worldTransform}>{/* Objekte ab M3 */}</g>
+        {activeTool?.overlay}
       </svg>
+      {activeTool?.panel && <div className="tool-panel-host">{activeTool.panel}</div>}
+      <NorthArrow angle={page.northAngle} />
       <div className="statusbar">
         <span>
           x <b>{cursor ? fmt(cursor.x) : '–'}</b> y <b>{cursor ? fmt(cursor.y) : '–'}</b> m
@@ -215,6 +316,23 @@ export function Canvas({ page }: { page: FestplatzPage }) {
         </button>
       </div>
     </main>
+  );
+}
+
+/** Nordpfeil oben rechts; `angle` = Richtung Norden in Grad im Uhrzeigersinn ab „oben“. */
+function NorthArrow({ angle }: { angle: number }) {
+  return (
+    <div className="north-arrow" {...tip({ label: `Norden: ${fmt(angle, 1)}°`, desc: 'Nordrichtung in der Seitenleiste einstellen', side: 'bottom' })}>
+      <svg viewBox="-20 -20 40 40" width="40" height="40" aria-hidden="true">
+        <circle r="18" className="north-ring" />
+        <g transform={`rotate(${angle})`}>
+          <path d="M0 -4 L4.5 13 L0 10 L-4.5 13 Z" className="north-needle" />
+          <text y="-10.5" textAnchor="middle" dominantBaseline="central" className="north-n">
+            N
+          </text>
+        </g>
+      </svg>
+    </div>
   );
 }
 

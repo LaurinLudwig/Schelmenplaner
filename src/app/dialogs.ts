@@ -50,3 +50,18 @@ export async function confirm(title: string, message: string, okLabel: string, d
   });
   return r === 'ok';
 }
+
+/** Rückfrage bei unplausiblem Maßstab (QA-M2-07). true = übernehmen. Ohne Hinweise sofort true. */
+export async function confirmScale(warnings: string[]): Promise<boolean> {
+  if (!warnings.length) return true;
+  const r = await ask({
+    title: 'Maßstab prüfen',
+    message: `${warnings.join(' ')} Ist das richtig?`,
+    buttons: [
+      { id: 'back', label: 'Zurück' },
+      { id: 'ok', label: 'Trotzdem übernehmen', variant: 'primary' },
+    ],
+    cancelId: 'back',
+  });
+  return r === 'ok';
+}

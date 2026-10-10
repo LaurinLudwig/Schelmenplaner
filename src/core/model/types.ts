@@ -90,13 +90,25 @@ export interface InfraObject extends Rect {
   text?: string;
 }
 
+export type BackgroundKind = 'pdf' | 'svg' | 'image';
+
 export interface Background {
+  /** Schlüssel der eingebetteten Datei in `assets/` (Inhalts-Hash + Endung). */
   assetId: string;
-  kind: 'pdf' | 'svg' | 'image';
+  kind: BackgroundKind;
+  /** Ursprünglicher Dateiname, nur zur Anzeige. */
+  fileName: string;
+  /** Bei PDFs: gewählte Seite (1-basiert) und Seitenzahl der Originaldatei. Eingebettet ist nur diese Seite. */
   pdfPage?: number;
+  pdfPageCount?: number;
+  /** Größe in Quell-Einheiten: Pixel (PNG/JPEG), Nutzereinheiten (SVG), Punkte (PDF). */
   pxSize: { w: number; h: number };
+  /** Siehe core/background.ts. */
   transform: { x: number; y: number; metersPerPx: number; rot: number };
+  /** Zuletzt verwendete Kalibrierpunkte in Quell-Einheiten und der eingegebene Abstand. */
   calibration?: { p1: Vec; p2: Vec; meters: number };
+  /** Bei PDFs: direkt eingegebener Planmaßstab 1:n (Alternative zur 2-Punkt-Kalibrierung). */
+  paperScale?: number;
   opacity: number;
   locked: boolean;
 }

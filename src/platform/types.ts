@@ -12,10 +12,18 @@ export interface PickedFile {
   name: string;
 }
 
+export interface FileFilter {
+  name: string;
+  /** Endungen ohne Punkt, z. B. ['pdf', 'png']. */
+  extensions: string[];
+}
+
 export interface SavedFile {
   path: string | null;
   name: string;
 }
+
+export type AutosaveSlot = 'current' | 'kept';
 
 export interface AutosaveInfo {
   bytes: Uint8Array;
@@ -27,17 +35,23 @@ export interface Platform {
 
   /** Projektdatei auswählen und lesen. null = abgebrochen. */
   pickProjectFile(): Promise<PickedFile | null>;
+  /** Beliebige Datei mit den gegebenen Endungen auswählen und lesen (z. B. Hintergrundplan). */
+  pickFile(filter: FileFilter): Promise<PickedFile | null>;
   /**
    * Projektdatei schreiben. Ohne `path` wird nach dem Ziel gefragt (Desktop) bzw. die Datei
    * heruntergeladen (Browser). null = abgebrochen.
    */
   writeProjectFile(bytes: Uint8Array, path: string | null, suggestedName: string): Promise<SavedFile | null>;
 
-  /** Sicherung schreiben; `projectPath` null = unbenanntes Projekt. */
-  writeAutosave(projectPath: string | null, bytes: Uint8Array): Promise<void>;
+  /**
+   * Sicherung schreiben; `projectPath` null = unbenanntes Projekt. `slot` „current“ ist die
+   * laufende Sicherung, „kept“ eine im Wiederherstellen-Dialog behaltene (QA-M1-08), die die
+   * laufende Sitzung nie überschreibt.
+   */
+  writeAutosave(projectPath: string | null, bytes: Uint8Array, slot?: AutosaveSlot): Promise<void>;
   /** Sicherung lesen, bei benannten Projekten nur, wenn sie neuer ist als die Datei. */
-  readAutosave(projectPath: string | null): Promise<AutosaveInfo | null>;
-  removeAutosave(projectPath: string | null): Promise<void>;
+  readAutosave(projectPath: string | null, slot?: AutosaveSlot): Promise<AutosaveInfo | null>;
+  removeAutosave(projectPath: string | null, slot?: AutosaveSlot): Promise<void>;
 
   setWindowTitle(title: string): void;
   /**

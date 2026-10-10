@@ -173,9 +173,10 @@ test.describe('M2 Kalibrierung und Maßstab', () => {
     await page.keyboard.press('k');
     await clickAt(page, at(100, 100));
     await clickAt(page, at(600, 100));
-    await page.locator('#calibrate-meters').fill('25');
+    // 30 m statt 25 m: Faktor 2 würde wegen der Klickrundung die Rückfrage aus QA-M2-07 auslösen
+    await page.locator('#calibrate-meters').fill('30');
     await page.keyboard.press('Enter');
-    await expect(page.getByTestId('bg-scale')).toContainText('1 px = 0,05 m');
+    await expect(page.getByTestId('bg-scale')).toContainText('1 px = 0,06 m');
     await page.keyboard.press(`${MOD}+z`);
     await expect(page.getByTestId('bg-scale')).toContainText('1 px = 0,1 m');
   });
@@ -212,7 +213,8 @@ test.describe('M2 Kalibrierung und Maßstab', () => {
     await page.locator('#bg-paper-scale').fill('1000');
     await page.keyboard.press('Enter');
     await expect(page.getByTestId('bg-scale')).toContainText('Maßstab 1:1.000');
-    await expect(page.getByLabel('Gesperrt (nicht verschiebbar)')).toBeChecked();
+    // Nur die 2-Punkt-Kalibrierung sperrt automatisch; der Planmaßstab bleibt nachjustierbar (QA-M2-06)
+    await expect(page.getByLabel('Gesperrt (nicht verschiebbar)')).not.toBeChecked();
     await page.keyboard.press(`${MOD}+0`);
     const at = await sourceToScreen(page, { w: 842, h: 595 });
     const m = 20 * MM;

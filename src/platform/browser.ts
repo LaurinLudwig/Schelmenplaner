@@ -1,5 +1,5 @@
 import { FILE_EXTENSION } from '../core/fileFormat';
-import type { Platform } from './types';
+import type { AutosaveSlot, Platform } from './types';
 
 /**
  * Browser-Ersatz: Öffnen per Datei-Upload, Speichern per Download, Autosave in localStorage.
@@ -14,14 +14,48 @@ function toBase64(bytes: Uint8Array): string {
   return btoa(bin);
 }
 
+// ---------- IndexedDB-Ablage für große Sicherungen ----------
+const IDB_NAME = 'schelmeplaner';
+const IDB_STORE = 'autosave';
+const idbKey = (slot: AutosaveSlot) => slot;
+const lsKey = (slot: AutosaveSlot) => (slot === 'kept' ? `${LS_KEY}.behalten` : LS_KEY);
+
+function idb<T>(mode: IDBTransactionMode, fn: (store: IDBObjectStore) => IDBRequest<T>): Promise<T> {
+  return new Promise((resolve, reject) => {
+    const open = indexedDB.open(IDB_NAME, 1);
+    open.addEventListener('upgradeneeded', () => open.result.createObjectStore(IDB_STORE));
+    open.addEventListener('error', () => reject(open.error));
+    open.addEventListener('success', () => {
+      const db = open.result;
+      const req = fn(db.transaction(IDB_STORE, mode).objectStore(IDB_STORE));
+      req.addEventListener('success', () => {
+        resolve(req.result);
+        db.close();
+      });
+      req.addEventListener('error', () => {
+        reject(req.error);
+        db.close();
+      });
+    });
+  });
+}
+const idbPut = (slot: AutosaveSlot, v: { time: number; bytes: Uint8Array }) => idb('readwrite', (s) => s.put(v, idbKey(slot))).then(() => undefined);
+const idbGet = (slot: AutosaveSlot) =>
+  idb<{ time: number; bytes: Uint8Array } | undefined>('readonly', (s) => s.get(idbKey(slot))).then((v) => v ?? null);
+const idbDelete = (slot: AutosaveSlot) => idb('readwrite', (s) => s.delete(idbKey(slot))).then(() => undefined);
+
 export const browserPlatform: Platform = {
   kind: 'browser',
 
   pickProjectFile() {
+    return this.pickFile({ name: 'Schelmeplaner-Projekt', extensions: [FILE_EXTENSION] });
+  },
+
+  pickFile(filter) {
     return new Promise((resolve) => {
       const input = document.createElement('input');
       input.type = 'file';
-      input.accept = `.${FILE_EXTENSION}`;
+      input.accept = filter.extensions.map((e) => `.${e}`).join(',');
       input.addEventListener('change', async () => {
         const f = input.files?.[0];
         resolve(f ? { bytes: new Uint8Array(await f.arrayBuffer()), path: null, name: f.name } : null);
@@ -42,29 +76,45 @@ export const browserPlatform: Platform = {
     return { path: null, name };
   },
 
-  async writeAutosave(_projectPath, bytes) {
-    localStorage.setItem(LS_KEY, JSON.stringify({ time: Date.now(), data: toBase64(bytes) }));
-  },
-
-  async readAutosave(projectPath) {
-    if (projectPath) return null;
+  async writeAutosave(_projectPath, bytes, slot = 'current') {
+    const time = Date.now();
     try {
-      const raw = localStorage.getItem(LS_KEY);
-      if (!raw) return null;
-      const { time, data } = JSON.parse(raw) as { time: number; data: string };
-      return { bytes: Uint8Array.from(atob(data), (c) => c.charCodeAt(0)), time: new Date(time) };
+      localStorage.setItem(lsKey(slot), JSON.stringify({ time, data: toBase64(bytes) }));
+      // Ältere große Sicherung im Hintergrund entfernen; der Ablauf wartet nicht darauf
+      void idbDelete(slot).catch(() => undefined);
     } catch {
-      return null;
+      // localStorage fasst nur wenige MB; mit eingebetteten Plänen weicht die Sicherung auf IndexedDB aus.
+      localStorage.removeItem(lsKey(slot));
+      await idbPut(slot, { time, bytes });
     }
   },
 
-  async removeAutosave(projectPath) {
+  async readAutosave(projectPath, slot = 'current') {
+    if (projectPath) return null;
+    let fromLs: { time: number; bytes: Uint8Array } | null = null;
+    try {
+      const raw = localStorage.getItem(lsKey(slot));
+      if (raw) {
+        const { time, data } = JSON.parse(raw) as { time: number; data: string };
+        fromLs = { time, bytes: Uint8Array.from(atob(data), (c) => c.charCodeAt(0)) };
+      }
+    } catch {
+      fromLs = null;
+    }
+    const fromIdb = await idbGet(slot).catch(() => null);
+    const newest = !fromIdb || (fromLs && fromLs.time >= fromIdb.time) ? fromLs : fromIdb;
+    return newest ? { bytes: newest.bytes, time: new Date(newest.time) } : null;
+  },
+
+  async removeAutosave(projectPath, slot = 'current') {
     if (projectPath) return;
     try {
-      localStorage.removeItem(LS_KEY);
+      localStorage.removeItem(lsKey(slot));
     } catch {
       /* Eine übrig gebliebene Sicherung ist harmlos */
     }
+    // Im Hintergrund, damit z. B. „Neues Projekt“ nicht auf IndexedDB warten muss
+    void idbDelete(slot).catch(() => undefined);
   },
 
   setWindowTitle(title) {

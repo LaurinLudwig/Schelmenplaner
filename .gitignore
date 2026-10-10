@@ -7,3 +7,10 @@ src-tauri/gen
 test-results
 playwright-report
 blob-report
+public/pdfjs
+# Projektdateien nicht versionieren, außer Testprojekten
+*.schelme
+!tests/fixtures/**/*.schelme
+local-fixtures/
+# Bei jedem Testlauf neu erzeugte Screenshots/Logs (QA-M1-12); Belege der QA-Berichte liegen unter qa/
+test-artifacts/

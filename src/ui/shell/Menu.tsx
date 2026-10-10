@@ -2,7 +2,7 @@ import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { keyLabel } from '../shortcuts/tip';
 
 export type MenuItem =
-  | { label: string; onSelect: () => void; shortcut?: string; disabled?: boolean; danger?: boolean }
+  | { label: string; onSelect: () => void; shortcut?: string; disabled?: boolean; danger?: boolean; checked?: boolean }
   | 'separator';
 
 /** Popup-Menü an fester Position; schließt bei Klick daneben, Esc oder Auswahl. */
@@ -47,7 +47,8 @@ export function Menu({ x, y, items, onClose }: { x: number; y: number; items: Me
           <button
             key={i}
             type="button"
-            role="menuitem"
+            role={item.checked === undefined ? 'menuitem' : 'menuitemcheckbox'}
+            aria-checked={item.checked}
             className={item.danger ? 'danger' : undefined}
             disabled={item.disabled}
             onClick={() => {
@@ -55,6 +56,7 @@ export function Menu({ x, y, items, onClose }: { x: number; y: number; items: Me
               item.onSelect();
             }}
           >
+            {item.checked !== undefined && <span className="check-mark">{item.checked ? '✓' : ''}</span>}
             <span className="grow">{item.label}</span>
             {item.shortcut && keyLabel(item.shortcut) && <kbd>{keyLabel(item.shortcut)}</kbd>}
           </button>

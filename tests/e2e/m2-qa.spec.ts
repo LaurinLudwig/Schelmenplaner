@@ -156,7 +156,7 @@ test.describe('QA M2: Kalibrierung mit den Testdateien', () => {
 });
 
 test.describe('QA M2: Zahleneingaben mit Tausenderpunkt (QA-M2-01)', () => {
-  test.fail('QA-M2-01: Planmaßstab 1:1000 bleibt nach bloßem Hinein- und Herausklicken erhalten', async ({ page }) => {
+  test('QA-M2-01: Planmaßstab 1:1000 bleibt nach bloßem Hinein- und Herausklicken erhalten', async ({ page }) => {
     await openApp(page);
     await importReady(page, 'plan-1zu1000.pdf');
     await page.locator('#bg-paper-scale').fill('1000');
@@ -168,7 +168,7 @@ test.describe('QA M2: Zahleneingaben mit Tausenderpunkt (QA-M2-01)', () => {
     await expect(page.getByTestId('bg-scale')).toContainText('Maßstab 1:1.000', { timeout: 1000 });
   });
 
-  test.fail('QA-M2-01: Pfeiltaste im Planmaßstab 1:1.200 erhöht um 50 auf 1:1.250', async ({ page }) => {
+  test('QA-M2-01: Pfeiltaste im Planmaßstab 1:1.200 erhöht um 50 auf 1:1.250', async ({ page }) => {
     await openApp(page);
     await importReady(page, 'plan-1zu1000.pdf');
     await page.locator('#bg-paper-scale').fill('1200');
@@ -178,7 +178,7 @@ test.describe('QA M2: Zahleneingaben mit Tausenderpunkt (QA-M2-01)', () => {
     await expect(page.getByTestId('bg-scale')).toContainText('Maßstab 1:1.250', { timeout: 1000 });
   });
 
-  test.fail('QA-M2-01: Rasterweite 1000 m bleibt nach Fokus/Tab erhalten', async ({ page }) => {
+  test('QA-M2-01: Rasterweite 1000 m bleibt nach Fokus/Tab erhalten', async ({ page }) => {
     await openApp(page);
     await page.locator('#grid-size').fill('1000');
     await page.keyboard.press('Enter');
@@ -188,7 +188,7 @@ test.describe('QA M2: Zahleneingaben mit Tausenderpunkt (QA-M2-01)', () => {
     expect(size).toBe(1000);
   });
 
-  test.fail('QA-M2-01: Vorbelegter Abstand ≥ 1000 m wird beim Anwenden nicht durch 1000 geteilt', async ({ page }) => {
+  test('QA-M2-01: Vorbelegter Abstand ≥ 1000 m wird beim Anwenden nicht durch 1000 geteilt', async ({ page }) => {
     await openApp(page);
     await importReady(page, 'raster-10m.png');
     await calibrate(page, RASTER, [100, 100], [600, 100], '1500');
@@ -225,7 +225,7 @@ test.describe('QA M2: ungültige und leere Dateien', () => {
     });
   }
 
-  test.fail('QA-M2-02: beschädigtes PDF → Meldung auf Deutsch (nicht „Invalid PDF structure.“)', async ({ page }) => {
+  test('QA-M2-02: beschädigtes PDF → Meldung auf Deutsch (nicht „Invalid PDF structure.“)', async ({ page }) => {
     await openApp(page);
     await importFile(page, { name: 'kaputt.pdf', mimeType: 'application/pdf', buffer: Buffer.from('%PDF-1.4\nkaputt\n%%EOF\n') });
     const dlg = page.getByRole('alertdialog');
@@ -236,7 +236,6 @@ test.describe('QA M2: ungültige und leere Dateien', () => {
   test('QA-M2-02: abgeschnittenes PNG → Meldung auf Deutsch (nicht „The source image could not be decoded.“)', async ({ page, browserName }) => {
     // WebKit dekodiert abgeschnittene Bilder teilweise und importiert sie ohne Meldung (kein Fehlerfall).
     test.skip(browserName === 'webkit', 'WebKit importiert das Teilbild');
-    test.fail();
     await openApp(page);
     const png = readFileSync(join(FX, 'raster-10m.png')).subarray(0, 3000);
     await importFile(page, { name: 'kaputt.png', mimeType: 'image/png', buffer: Buffer.from(png) });
@@ -313,7 +312,7 @@ test.describe('QA M2: Speichern, Neuladen, Dateigröße', () => {
     await expect(p2.locator('#bg-rot')).toHaveValue('20');
   });
 
-  test.fail('QA-M2-04: dieselbe PDF-Seite auf zwei Festplätzen wird nur einmal eingebettet', async ({ page }) => {
+  test('QA-M2-04: dieselbe PDF-Seite auf zwei Festplätzen wird nur einmal eingebettet', async ({ page }) => {
     await openApp(page);
     await importReady(page, 'plan-2seiten.pdf', 2);
     await page.getByRole('button', { name: 'Festplatz-Tab hinzufügen' }).click();

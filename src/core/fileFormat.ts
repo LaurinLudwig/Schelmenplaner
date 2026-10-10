@@ -22,8 +22,8 @@ export function encodeProjectFile({ project, assets }: ProjectBundle): Uint8Arra
   const entries: Zippable = {
     [PROJECT_ENTRY]: [strToU8(JSON.stringify(toProjectFile(project), null, 2)), { level: 6 }],
   };
-  // PDF/JPEG/PNG sind bereits komprimiert; erneutes Packen kostet nur Zeit.
-  for (const [name, data] of Object.entries(assets)) entries[ASSET_PREFIX + name] = [data, { level: 0 }];
+  // PDF/JPEG/PNG sind bereits komprimiert; erneutes Packen kostet nur Zeit. SVG ist Text und schrumpft stark.
+  for (const [name, data] of Object.entries(assets)) entries[ASSET_PREFIX + name] = [data, { level: name.endsWith('.svg') ? 6 : 0 }];
   return zipSync(entries);
 }
 

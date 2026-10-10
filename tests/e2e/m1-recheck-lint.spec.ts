@@ -63,8 +63,6 @@ test.describe('M1 Nachprüfung: Reinheit von src/core/ (QA-M1-05)', () => {
   });
 
   test('QA-M1-10: Weitere DOM-Zugriffe in src/core/ werden ebenfalls gemeldet', () => {
-    // Befund QA-M1-10: test.fail() entfernen, sobald behoben (z. B. eigene tsconfig für src/core ohne lib „DOM“).
-    test.fail();
     const lines = [
       'export const a = globalThis.document;',
       'export const b = new DOMParser();',
