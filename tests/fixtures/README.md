@@ -1,6 +1,6 @@
 # Testdateien (synthetisch, bekannte Maße)
 
-Erzeugt mit `node scripts/make-fixtures.mjs`. Nicht von Hand ändern, sondern das Skript anpassen.
+Erzeugt mit `node scripts/make-fixtures.mjs` (Pläne) bzw. `node scripts/make-load-project.mjs` (Testprojekt). Nicht von Hand ändern, sondern das Skript anpassen.
 
 | Datei | Inhalt | Bekannte Maße |
 |---|---|---|
@@ -10,3 +10,14 @@ Erzeugt mit `node scripts/make-fixtures.mjs`. Nicht von Hand ändern, sondern da
 | `raster-10m.jpg` | dasselbe Raster als JPEG (Qualität 90), 1000 × 800 px | wie oben, in Pixeln |
 | `plan-1zu1000.pdf` | 1 Seite A4 quer (842 × 595 pt), Raster ab 20 mm Rand | Kästchen = 10 mm Papier. Bei Planmaßstab 1:1000 ⇒ 10 m je Kästchen. |
 | `plan-2seiten.pdf` | Seite 1: Deckblatt A4 hoch; Seite 2: A3 quer (1191 × 842 pt) | Seite 2: Kästchen = 20 mm Papier. Bei 1:500 ⇒ 10 m je Kästchen. |
+| `last-500-staende.schelme` | Testprojekt „Lasttest 500 Stände“: 4 Festplätze (Obermarkt, Untermarkt 15°, Am Ziegelturm 340°, Schifftor) mit je 6 Grundflächen à 170 m, 5 Kategorien, ohne Hintergrund | 500 Stände (3 × 3 bis 10 × 5 m), bündig an der Vorderseite, ohne Überlappung; Lücken 0,5 m bzw. 4 m. Geprüft von `src/core/fixtures.test.ts`. |
+
+## Bildrate in der Desktop-App prüfen (M3-23)
+1. `npm run tauri dev`, dann `last-500-staende.schelme` öffnen (Cmd/Strg+O).
+2. Einen Festplatz wählen, Cmd/Strg+0, dann so weit hineinzoomen, dass die Beschriftung lesbar ist
+   (ab ca. 1 m = 5 px; darunter wird sie ausgeblendet, ab 1 m = 20 px bekommt sie einen hellen Rand).
+3. Zoomen (Pinch/Mausrad), Ansicht verschieben (Wischen/Leertaste) und einen Stand ziehen: Das sollte
+   flüssig bleiben (Ziel ≥ 50 Bilder/s).
+4. Härtester Fall, alle 500 Stände auf einer Page: auf jedem Festplatz Cmd/Strg+A, Cmd/Strg+C und auf
+   dem Obermarkt Cmd/Strg+V (eingefügt wird jeweils 1 m versetzt). Denselben Fall misst der
+   automatische Lasttest `tests/e2e/m3-perf.spec.ts` im Browser.

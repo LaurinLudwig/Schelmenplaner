@@ -216,6 +216,8 @@ Freiflächen-Logik wurde bereits erfolgreich getestet (prototype/freiflaechen.ht
     leeres Feld; eine Eingabe gilt für alle ausgewählten Objekte (Drehgriff dreht um die gemeinsame Mitte).
   - Kopieren/Einfügen über eine interne Zwischenablage, auch zwischen Pages. Kopien erhalten eine leere,
     nicht fixierte Platznummer. Duplizieren (Cmd/Strg+D) setzt die Kopie um 1 m nach rechts unten versetzt.
+  - Beim Verschieben beschränkt Shift die Richtung auf waagerecht/senkrecht/45°; Alt+Ziehen dupliziert
+    die Auswahl (Illustrator-Konventionen, ab M4; Entscheidung 2026-10-10).
   - Ein Ziehen, Drehen oder Aufziehen ist genau ein Undo-Schritt; ebenso eine Feldänderung in der
     Seiten- oder Steuerungsleiste und eine gedrückt gehaltene Pfeiltaste.
 - Oberfläche auf Deutsch, auch alle Fehlermeldungen.

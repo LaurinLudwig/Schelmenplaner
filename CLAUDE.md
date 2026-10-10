@@ -43,4 +43,5 @@ BACKLOG.md ist die Quelle für den Projektstand. Vor jeder Arbeit lesen, nach je
 | `npm run build` | Typecheck + Produktions-Build nach `dist/` |
 | `npm run check` | typecheck, lint, test und build nacheinander |
 | `node scripts/make-fixtures.mjs` | Testdateien in `tests/fixtures/` neu erzeugen (Maße siehe README dort) |
+| `node scripts/make-load-project.mjs` | Testprojekt `tests/fixtures/last-500-staende.schelme` (500 Stände, 4 Festplätze) neu erzeugen |
 | `node scripts/copy-pdfjs-assets.mjs` | pdf.js-Zusatzdateien nach `public/pdfjs/` kopieren (läuft automatisch vor `dev`/`build`) |

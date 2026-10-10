@@ -30,8 +30,8 @@ ungefragt umgesetzt; erst nach Freigabe wandert ein Eintrag in einen Meilenstein
 - ~~E-09 Einstellung „Wischrichtung umkehren“~~ → umgesetzt mit QA-M1-07 (Menü).
 - E-17 (Idee, Laurin) Lupe bzw. Vergrößerung beim Setzen der Kalibrierpunkte, um die Klickgenauigkeit zu verbessern.
 - E-18 (Hinweis) Der QA-Test „abgeschnittenes PNG“ (`m2-qa.spec.ts`) wird in WebKit übersprungen mit der Begründung „WebKit importiert das Teilbild“. Seit QA-M2-02 weist auch WebKit abgeschnittene Bilder ab; der Skip kann entfallen (nicht geändert, da kein `test.fail`).
-- E-19 (Lücke) Undo stellt die Auswahl nicht wieder her: Nach „Löschen“ und Rückgängig ist das Objekt wieder da, aber nicht ausgewählt (Illustrator wählt es wieder aus).
-- E-20 (Idee) Shift beim Verschieben beschränkt auf waagerecht/senkrecht/45°; Alt+Ziehen dupliziert (Illustrator-Konventionen). Alt ist ab M4 für die Fang-Umkehr vorgesehen, also abstimmen.
+- E-19 (Lücke, → Feinschliff-Runde, Entscheidung Laurin 2026-10-10) Undo stellt die Auswahl nicht wieder her: Nach „Löschen“ und Rückgängig ist das Objekt wieder da, aber nicht ausgewählt (Illustrator wählt es wieder aus).
+- ~~E-20 Shift/Alt beim Ziehen~~ → M4-11/M4-12 (Entscheidung Laurin 2026-10-10).
 - E-21 (Idee) Taste zum Drehen um 90° (der Prototyp hatte R).
 - E-22 (Hinweis) Die Grundflächen-Beschriftung wird über eine geschätzte Textbreite (0,56 em pro Zeichen) vor die Vorderseite gesetzt, nicht gemessen. Bei stark gedrehten Flächen mit langem Namen kann der Abstand zur Fläche etwas größer oder kleiner ausfallen.
 - E-23 (Hinweis, M8) Der helle Rand um die Beschriftung erscheint erst ab 12 px Schrifthöhe (Leistung WebKit, siehe Abschluss M3). Für den PDF-Export (weißes Papier) separat entscheiden.
@@ -145,6 +145,8 @@ Entscheidungen aus der Planung (2026-10-10) stehen in `spec.md` (Begriffe, §2, 
 - [ ] M4-08 Alt kehrt den Fang beim Ziehen temporär um (§3)
 - [ ] M4-09 Warnung, wenn ein Geschäft außerhalb von Grundflächen steht; keine Blockade; global und pro Stand deaktivierbar (§3)
 - [ ] M4-10 Warnung bei Überlappung zweier Stände (§3)
+- [ ] M4-11 Shift beim Verschieben beschränkt die Richtung auf waagerecht/senkrecht/45° (aus E-20, Illustrator-Konvention)
+- [ ] M4-12 Alt+Ziehen dupliziert die Auswahl; Zusammenspiel mit der Alt-Fang-Umkehr (M4-08) klären (aus E-20)
 
 ## M5 – Nummerierung, Strom
 - [ ] M5-01 Nummerierung links → rechts entlang der Vorderseite, Grundflächen in festlegbarer Reihenfolge (§5)
@@ -429,6 +431,9 @@ Einzeln gemessen erreicht WebKit 57–60 Bilder/s. Beim ersten Messen lag WebKit
 - [ ] Kategorie anlegen, umfärben (Farbwähler des Systems), löschen.
 - [ ] Viele Stände (Kopieren/Einfügen, Cmd+A): Zoomen und Verschieben bleiben flüssig.
 
-### Offene Fragen
-1. Soll ich den QA-Agenten für M3 starten?
-2. E-19 (Auswahl nach Undo wiederherstellen) und E-20 (Shift/Alt beim Ziehen): in M4 mitnehmen oder später?
+### Offene Fragen (beantwortet 2026-10-10)
+1. QA-Agent für M3: startet Laurin selbst in einer eigenen Session; mit M4 wird bis zum Bericht gewartet.
+2. E-20 → M4 (M4-11, M4-12), weil M4 die Bewegungsfunktion für den Fang ohnehin erweitert. E-19 → spätere Feinschliff-Runde.
+
+### Nachtrag M3 (2026-10-10)
+- Testprojekt `tests/fixtures/last-500-staende.schelme` für die manuelle Prüfung der Bildrate in der Desktop-App: 500 Stände auf 4 Festplätzen (je 6 Grundflächen à 170 m, teils gedreht), 5 Kategorien. Erzeugt mit `node scripts/make-load-project.mjs`; `src/core/fixtures.test.ts` prüft, dass es sich mit dem echten Ladecode vollständig öffnet. Anleitung in `tests/fixtures/README.md`.
