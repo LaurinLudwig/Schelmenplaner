@@ -63,6 +63,7 @@ ungefragt umgesetzt; erst nach Freigabe wandert ein Eintrag in einen Meilenstein
 - [x] [QA] QA-M3-L1 (gering, Test-Infrastruktur; M3-23) Der Lasttest `tests/e2e/m3-perf.spec.ts` schlägt im vollen parallelen `npm run test:e2e` in WebKit fehl (47,6 Bilder/s beim Verschieben, `qa/logs/m3-e2e-final.log`); allein gestartet besteht er (55–60). Lasttests getrennt bzw. mit einem Worker laufen lassen. Siehe `qa/M3.md`. **Erledigt 2026-10-11:** `npm run test:perf` (seriell, ein Worker); `test:e2e` ohne Lasttests; CLAUDE.md und QA-Agent ergänzt.
 - [x] [QA] QA-M3-L2 (Idee; M3-05) Waagerechtes Aufziehen mit dem Geschäfts-Werkzeug erzeugt einen Stand 10 × 0,1 m, der danach Standardmaß für Klicks wird. Mindestmaß beim Aufziehen erwägen. Siehe `qa/M3.md`. **Erledigt 2026-10-11:** unter 0,5 m in einer Richtung zählt Aufziehen als Klick; nur plausible Maße werden Standard (Spec §2/§3).
 - [x] [QA] QA-M3-L3 (gering, Doku) `tests/fixtures/README.md` Punkt 4: Einfügen von einer anderen Page erfolgt an derselben Position, nicht „1 m versetzt“. **Erledigt 2026-10-11:** Regel festgelegt (auf derselben Page 1 m versetzt, auch nach Ausschneiden; andere Page gleiche Position), Spec und README angepasst.
+- [QA] QA-M4-05 (gering, Doku; Abschluss M4) Abschluss M4 widersprüchlich/veraltet: „Formatversion bleibt 1“ (Umgesetzt) vs. `CURRENT_SCHEMA_VERSION = 2` (Antworten); „165 Unit-Tests“, tatsächlich 170; „Zwei M3-E2E-Tests … schlagen fehl“ (Bekannte Bugs), beide sind angepasst und grün. Siehe `qa/M4.md`.
 
 ---
 
@@ -138,34 +139,34 @@ Entscheidungen aus der Planung (2026-10-10) stehen in `spec.md` (Begriffe, §2, 
 - [x] M3-17 Verschieben per Pfeiltasten (0,1 m, mit Shift 1 m), Entf/Backspace löscht (Allgemein) (QA ✓ M3)
 - [x] M3-18 Messwerkzeug fängt an Ecken und Kanten von Objekten (nur sichtbare Ebenen) (Messwerkzeug) (QA ✓ M3)
 - [x] M3-20 Größe von Grundflächen per Ziehen an 8 Griffen ändern; gegenüberliegende Kante/Ecke bleibt fest (§2) (QA M3: Nacharbeit, QA-M3-02 in `qa/M3.md`) **Erledigt 2026-10-11:** QA-M3-02 behoben (Höchstmaß 2000 m auch am Griff).
-- [x] M3-21 Undo: Ziehen, Drehen, Aufziehen, Größe ändern = genau ein Schritt; Feldänderung = ein Schritt; gedrückt gehaltene Pfeiltaste = ein Schritt; Esc bricht eine laufende Geste ab (Allgemein) (QA M3: Nacharbeit, QA-M3-01, QA-M3-05 in `qa/M3.md`) **Erledigt 2026-10-11:** QA-M3-01 behoben (Tastatur-Reihenfolge fest im Code, Interaktion vor Kurzbefehlen), QA-M3-05 behoben (jeder Pfeiltasten-Druck ein Schritt, gehaltene Taste einer).
+- [!] M3-21 Undo: Ziehen, Drehen, Aufziehen, Größe ändern = genau ein Schritt; Feldänderung = ein Schritt; gedrückt gehaltene Pfeiltaste = ein Schritt; Esc bricht eine laufende Geste ab (Allgemein) (QA M3: Nacharbeit, QA-M3-01, QA-M3-05 in `qa/M3.md`) **Erledigt 2026-10-11:** QA-M3-01 behoben (Tastatur-Reihenfolge fest im Code, Interaktion vor Kurzbefehlen), QA-M3-05 behoben (jeder Pfeiltasten-Druck ein Schritt, gehaltene Taste einer). (QA M4: Nacharbeit, QA-M4-04 in `qa/M4.md`: Esc bricht das Verschieben des Hintergrunds nicht ab)
 - [x] M3-22 Rundung beim Übernehmen: Positionen und Maße 0,01 m, Drehung 0,1° (Begriffe) (QA M3: Nacharbeit, QA-M3-04 in `qa/M3.md`) **Erledigt 2026-10-11:** QA-M3-04 behoben (Drehung exakt auf 0,1°).
 - [x] M3-23 Lasttest 500 Stände auf einer Page: ≥ 50 Bilder/s beim Zoomen, Verschieben der Ansicht und Ziehen eines Stands, Chromium und WebKit (NFA, Abnahmekriterium; Teil von Q-04) (QA ✓ M3)
 
 ## M4 – Freiflächen, Fang, Warnungen
 Entscheidungen aus der Planung (2026-10-11) stehen in `spec.md` (Begriffe, §3, §4, Allgemein, Tastaturkürzel, NFA).
-- [x] M4-01 Freiflächen-Kernlogik aus dem Prototyp mit Unit-Tests: Achse entlang der Vorderseite [0, Breite], belegtes Intervall = Projektion der Schnittmenge, Freiflächen = [0, Breite] minus Vereinigung, volle Tiefe, nie hinter einem Stand; Fall-Tabelle A1–A13 und Eigenschaftstests (fast-check) (§4)
-- [x] M4-02 Freiflächen werden nie manuell gezeichnet und nie gespeichert, nur berechnet und angezeigt (hellgrün schraffiert, Ebene „Freiflächen“) (Begriffe, §4)
-- [x] M4-03 Mindestbreite für Freiflächen (Standard 0,5 m, 0,05–100 m) im Seitenleisten-Bereich „Freiflächen & Warnungen“ (§4)
-- [x] M4-04 Live-Neuberechnung beim Verschieben (auch während des Ziehens), Drehen, Ändern der Maße, Löschen; nur betroffene Grundflächen werden neu berechnet (§4)
-- [x] M4-05 Freiflächen-Beschriftung „Frei B × T m“ horizontal mit fester Schriftgröße, wie bei Ständen (§4)
-- [x] M4-06 Fang an der Vorderseite: Vorderseite des Stands legt sich an die der Grundfläche, übernimmt deren Drehung, gleitet entlang (Hysterese 8/16 px), fängt an Achsenenden und Nachbarn (§3)
-- [x] M4-07 Fang-Umschalter in der Werkzeugleiste, einzeln schaltbar: Vorderkante, Raster, Nachbarstände; Ansichtseinstellungen ohne Undo-Schritt (§3, Layout)
-- [x] M4-08 Cmd/Strg beim Ziehen schaltet den Fang vorübergehend aus (ersetzt die Alt-Umkehr; Entscheidung 2026-10-11) (§3, Allgemein)
-- [x] M4-09 Warnung „außerhalb“ (orange), wenn ein Teil des Stands außerhalb der Vereinigung aller Grundflächen liegt (auch hinten herausragend); keine Blockade; global und pro Stand abschaltbar, mit Undo (§3)
-- [x] M4-10 Warnung bei Überlappung zweier Stände (rot); global und pro Stand abschaltbar, mit Undo (§3)
-- [x] M4-11 Shift beim Verschieben beschränkt die Richtung auf waagerecht/senkrecht/45°; eingerastet bleibt der Stand an der Vorderseite (aus E-20, Illustrator-Konvention)
-- [x] M4-12 Alt+Ziehen dupliziert die Auswahl (Alt beim Loslassen entscheidet, ein Undo-Schritt) (aus E-20; Konflikt mit der Alt-Umkehr durch M4-08 aufgelöst)
-- [x] M4-13 Toleranz 0,01 m für Überlappung, Bündigkeit, Belegung und „außerhalb“ (Begriffe, §4)
-- [x] M4-14 Überlappende Grundflächen: die frühere gewinnt, spätere rechnen nur mit ihrem Rest (§4)
-- [x] M4-15 Fang an Nachbarständen (Anliegen, Flucht; nur parallele Nachbarn) (§3)
-- [x] M4-16 Fang am Raster (Rand/Mitte des Hüllrechtecks, nur bei eingeblendetem Raster) (§3)
-- [x] M4-17 Fang-Priorität (Vorderkante > Nachbar > Raster), Mehrfachauswahl nur parallel verschoben, Hilfslinien beim Einrasten (§3)
-- [x] M4-18 Warnzähler am Page-Tab (§3)
-- [x] M4-19 Stabiler Schlüssel je Freifläche und Auflösefunktion als Grundlage für die Sprung-Links in M6-02 (§4, §7)
-- [x] M4-20 Während eines Ziehens keine Kurzbefehle (außer Esc); Übersicht (?) nennt die Tasten beim Ziehen (Allgemein, Tastaturkürzel)
-- [x] M4-22 Versioniertes Dateiformat: Formatversion 2, Migration 1 → 2 (neue Felder mit Standardwerten), neuere Versionen mit deutscher Meldung abgewiesen; echte M3-Datei (Version 1) als Testdatei; Regel in CLAUDE.md (§10, Entscheidung 2026-10-11)
-- [x] M4-21 Lasttest 500 Stände mit Freiflächen, Warnungen und Fang: ≥ 50 Bilder/s beim Zoomen, Verschieben der Ansicht und Ziehen quer über mehrere Grundflächen, Chromium und WebKit (NFA, Teil von Q-04)
+- [x] M4-01 Freiflächen-Kernlogik aus dem Prototyp mit Unit-Tests: Achse entlang der Vorderseite [0, Breite], belegtes Intervall = Projektion der Schnittmenge, Freiflächen = [0, Breite] minus Vereinigung, volle Tiefe, nie hinter einem Stand; Fall-Tabelle A1–A13 und Eigenschaftstests (fast-check) (§4) (QA ✓ M4)
+- [x] M4-02 Freiflächen werden nie manuell gezeichnet und nie gespeichert, nur berechnet und angezeigt (hellgrün schraffiert, Ebene „Freiflächen“) (Begriffe, §4) (QA ✓ M4)
+- [x] M4-03 Mindestbreite für Freiflächen (Standard 0,5 m, 0,05–100 m) im Seitenleisten-Bereich „Freiflächen & Warnungen“ (§4) (QA ✓ M4)
+- [x] M4-04 Live-Neuberechnung beim Verschieben (auch während des Ziehens), Drehen, Ändern der Maße, Löschen; nur betroffene Grundflächen werden neu berechnet (§4) (QA ✓ M4)
+- [x] M4-05 Freiflächen-Beschriftung „Frei B × T m“ horizontal mit fester Schriftgröße, wie bei Ständen (§4) (QA ✓ M4)
+- [x] M4-06 Fang an der Vorderseite: Vorderseite des Stands legt sich an die der Grundfläche, übernimmt deren Drehung, gleitet entlang (Hysterese 8/16 px), fängt an Achsenenden und Nachbarn (§3) (QA ✓ M4)
+- [x] M4-07 Fang-Umschalter in der Werkzeugleiste, einzeln schaltbar: Vorderkante, Raster, Nachbarstände; Ansichtseinstellungen ohne Undo-Schritt (§3, Layout) (QA ✓ M4)
+- [x] M4-08 Cmd/Strg beim Ziehen schaltet den Fang vorübergehend aus (ersetzt die Alt-Umkehr; Entscheidung 2026-10-11) (§3, Allgemein) (QA ✓ M4)
+- [x] M4-09 Warnung „außerhalb“ (orange), wenn ein Teil des Stands außerhalb der Vereinigung aller Grundflächen liegt (auch hinten herausragend); keine Blockade; global und pro Stand abschaltbar, mit Undo (§3) (QA ✓ M4)
+- [x] M4-10 Warnung bei Überlappung zweier Stände (rot); global und pro Stand abschaltbar, mit Undo (§3) (QA ✓ M4)
+- [x] M4-11 Shift beim Verschieben beschränkt die Richtung auf waagerecht/senkrecht/45°; eingerastet bleibt der Stand an der Vorderseite (aus E-20, Illustrator-Konvention) (QA ✓ M4)
+- [x] M4-12 Alt+Ziehen dupliziert die Auswahl (Alt beim Loslassen entscheidet, ein Undo-Schritt) (aus E-20; Konflikt mit der Alt-Umkehr durch M4-08 aufgelöst) (QA ✓ M4)
+- [!] M4-13 Toleranz 0,01 m für Überlappung, Bündigkeit, Belegung und „außerhalb“ (Begriffe, §4) (QA M4: Nacharbeit, QA-M4-01, QA-M4-02 in `qa/M4.md`)
+- [x] M4-14 Überlappende Grundflächen: die frühere gewinnt, spätere rechnen nur mit ihrem Rest (§4) (QA ✓ M4)
+- [x] M4-15 Fang an Nachbarständen (Anliegen, Flucht; nur parallele Nachbarn) (§3) (QA ✓ M4)
+- [x] M4-16 Fang am Raster (Rand/Mitte des Hüllrechtecks, nur bei eingeblendetem Raster) (§3) (QA ✓ M4)
+- [x] M4-17 Fang-Priorität (Vorderkante > Nachbar > Raster), Mehrfachauswahl nur parallel verschoben, Hilfslinien beim Einrasten (§3) (QA ✓ M4)
+- [x] M4-18 Warnzähler am Page-Tab (§3) (QA ✓ M4)
+- [x] M4-19 Stabiler Schlüssel je Freifläche und Auflösefunktion als Grundlage für die Sprung-Links in M6-02 (§4, §7) (QA ✓ M4)
+- [x] M4-20 Während eines Ziehens keine Kurzbefehle (außer Esc); Übersicht (?) nennt die Tasten beim Ziehen (Allgemein, Tastaturkürzel) (QA ✓ M4)
+- [x] M4-22 Versioniertes Dateiformat: Formatversion 2, Migration 1 → 2 (neue Felder mit Standardwerten), neuere Versionen mit deutscher Meldung abgewiesen; echte M3-Datei (Version 1) als Testdatei; Regel in CLAUDE.md (§10, Entscheidung 2026-10-11) (QA ✓ M4)
+- [!] M4-21 Lasttest 500 Stände mit Freiflächen, Warnungen und Fang: ≥ 50 Bilder/s beim Zoomen, Verschieben der Ansicht und Ziehen quer über mehrere Grundflächen, Chromium und WebKit (NFA, Teil von Q-04) (QA M4: Nacharbeit, QA-M4-03 in `qa/M4.md`)
 
 ## M5 – Nummerierung, Strom
 - [ ] M5-01 Nummerierung links → rechts entlang der Vorderseite, Grundflächen in festlegbarer Reihenfolge (§5)

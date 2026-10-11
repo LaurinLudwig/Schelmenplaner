@@ -1,0 +1,428 @@
+npm notice run schelmeplaner@0.1.0 npx
+npm notice run 'playwright' test tests/e2e/m4-qa.spec.ts --reporter=line -g Hintergrunds|genau 0,01|Ecke 0,013
+
+Running 10 tests using 5 workers
+
+[1/10] [chromium] › tests/e2e/m4-qa.spec.ts:145:3 › QA M4-01/05/13: Freiflächen-Fälle aus spec.md §4 in der Oberfläche › Berührung von außen belegt nichts; Eindringen genau 0,01 m belegt nichts, 0,02 m belegt
+[2/10] [chromium] › tests/e2e/m4-qa.spec.ts:167:3 › QA M4-01/05/13: Freiflächen-Fälle aus spec.md §4 in der Oberfläche › Eindringen genau 0,01 m an allen vier Seiten und an anderen Koordinaten belegt nichts (Gleitkomma)
+[3/10] [chromium] › tests/e2e/m4-qa.spec.ts:944:3 › QA M4: weitere Grenzfälle › Esc bricht auch das Verschieben des Hintergrunds ab (spec Allgemein, QA-M3-01)
+[4/10] [chromium] › tests/e2e/m4-qa.spec.ts:762:3 › QA M4-09/10/13/18: Warnungen und Zähler › Gedrehter Stand (45°), dessen Ecke 0,013 m über die Vorderseite ragt, ist „außerhalb“
+[5/10] [chromium] › tests/e2e/m4-qa.spec.ts:723:3 › QA M4-09/10/13/18: Warnungen und Zähler › Toleranz Überlappung: bündig und genau 0,01 m keine Warnung, 0,02 m rot
+  1) [chromium] › tests/e2e/m4-qa.spec.ts:944:3 › QA M4: weitere Grenzfälle › Esc bricht auch das Verschieben des Hintergrunds ab (spec Allgemein, QA-M3-01) 
+
+    Error: expect(received).toBe(expected) // Object.is equality
+
+    Expected: "{\"x\":-39.2,\"y\":-31.360000000000003,\"metersPerPx\":0.07840000000000001,\"rot\":0}"
+    Received: "{\"x\":-29.200000000000003,\"y\":-25.360000000000003,\"metersPerPx\":0.07840000000000001,\"rot\":0}"
+
+      960 |     await page.mouse.move(b0.x + 300, b0.y + 260, { steps: 3 });
+      961 |     await page.mouse.up();
+    > 962 |     expect(await page.evaluate(() => JSON.stringify((window as any).__schelmeStore.getState().project.pages[0].background.transform))).toBe(t0);
+          |                                                                                                                                        ^
+      963 |     expect(await pastLen(page)).toBe(n0);
+      964 |   });
+      965 |
+        at tests/e2e/m4-qa.spec.ts:962:136
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/m4-qa-QA-M4-weitere-Grenzf-8c9fb-ab-spec-Allgemein-QA-M3-01--chromium/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/m4-qa-QA-M4-weitere-Grenzf-8c9fb-ab-spec-Allgemein-QA-M3-01--chromium/error-context.md
+
+    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results/m4-qa-QA-M4-weitere-Grenzf-8c9fb-ab-spec-Allgemein-QA-M3-01--chromium/trace.zip
+    Usage:
+
+        npx playwright show-trace test-results/m4-qa-QA-M4-weitere-Grenzf-8c9fb-ab-spec-Allgemein-QA-M3-01--chromium/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+
+[6/10] [webkit] › tests/e2e/m4-qa.spec.ts:145:3 › QA M4-01/05/13: Freiflächen-Fälle aus spec.md §4 in der Oberfläche › Berührung von außen belegt nichts; Eindringen genau 0,01 m belegt nichts, 0,02 m belegt
+  2) [chromium] › tests/e2e/m4-qa.spec.ts:762:3 › QA M4-09/10/13/18: Warnungen und Zähler › Gedrehter Stand (45°), dessen Ecke 0,013 m über die Vorderseite ragt, ist „außerhalb“ 
+
+    Error: expect(locator).toHaveAttribute(expected) failed
+
+    Locator:  locator('.stand[data-id="ecke"]')
+    Expected: "outside"
+    Received: ""
+    Timeout:  2000ms
+
+    Call log:
+      - Expect "toHaveAttribute" locator('.stand[data-id="ecke"]') with timeout 2000ms
+      - waiting for locator('.stand[data-id="ecke"]')
+        21 × locator resolved to <polygon class="stand" data-id="ecke" fill="#a7adb3" points="10.000,-4.230 12.121,-2.108 10.000,0.013 7.879,-2.108"></polygon>
+           - unexpected value "null"
+
+
+      766 |     const half = 1.5 * Math.SQRT2;
+      767 |     await seed(page, { areas: [G], stands: [{ id: 'ecke', cx: 10, cy: -half + 0.013, w: 3, d: 3, rot: 45 }] });
+    > 768 |     await expect(page.locator('.stand[data-id="ecke"]')).toHaveAttribute('data-warning', 'outside', { timeout: 2000 });
+          |                                                          ^
+      769 |   });
+      770 |
+      771 |   test('Zähler am Tab nach Ziehen, Undo, Redo, Löschen, Duplizieren, Einfügen, Pfeiltasten, Maßen, Ignorieren', async ({ page }) => {
+        at tests/e2e/m4-qa.spec.ts:768:58
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/m4-qa-QA-M4-09-10-13-18-Wa-c38b1-rseite-ragt-ist-„außerhalb“-chromium/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/m4-qa-QA-M4-09-10-13-18-Wa-c38b1-rseite-ragt-ist-„außerhalb“-chromium/error-context.md
+
+    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results/m4-qa-QA-M4-09-10-13-18-Wa-c38b1-rseite-ragt-ist-„außerhalb“-chromium/trace.zip
+    Usage:
+
+        npx playwright show-trace test-results/m4-qa-QA-M4-09-10-13-18-Wa-c38b1-rseite-ragt-ist-„außerhalb“-chromium/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+
+[7/10] [webkit] › tests/e2e/m4-qa.spec.ts:167:3 › QA M4-01/05/13: Freiflächen-Fälle aus spec.md §4 in der Oberfläche › Eindringen genau 0,01 m an allen vier Seiten und an anderen Koordinaten belegt nichts (Gleitkomma)
+  3) [chromium] › tests/e2e/m4-qa.spec.ts:167:3 › QA M4-01/05/13: Freiflächen-Fälle aus spec.md §4 in der Oberfläche › Eindringen genau 0,01 m an allen vier Seiten und an anderen Koordinaten belegt nichts (Gleitkomma) 
+
+    Error: expect(locator).toHaveText(expected) failed
+
+    Locator: locator('.free-label')
+    Timeout: 5000ms
+    - Expected  - 1
+    + Received  + 2
+
+      Array [
+    -   "Frei 20 × 8 m",
+    +   "Frei 3,5 × 8 m",
+    +   "Frei 13,49 × 8 m",
+      ]
+
+    Call log:
+      - Expect "toHaveText" locator('.free-label') with timeout 5000ms
+      - waiting for locator('.free-label')
+        14 × locator resolved to 2 elements
+
+
+      179 |     ];
+      180 |     await seed(page, { areas: [A], stands: s });
+    > 181 |     await expect(freeLabels(page)).toHaveText(['Frei 20 × 8 m']);
+          |                                    ^
+      182 |   });
+      183 |
+      184 |   test('Gedrehter Stand belegt seine volle Projektion (45°, 4 × 4 m → 5,66 m)', async ({ page }) => {
+        at tests/e2e/m4-qa.spec.ts:181:36
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/m4-qa-QA-M4-01-05-13-Freif-60d98-n-belegt-nichts-Gleitkomma--chromium/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/m4-qa-QA-M4-01-05-13-Freif-60d98-n-belegt-nichts-Gleitkomma--chromium/error-context.md
+
+    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results/m4-qa-QA-M4-01-05-13-Freif-60d98-n-belegt-nichts-Gleitkomma--chromium/trace.zip
+    Usage:
+
+        npx playwright show-trace test-results/m4-qa-QA-M4-01-05-13-Freif-60d98-n-belegt-nichts-Gleitkomma--chromium/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+
+  4) [chromium] › tests/e2e/m4-qa.spec.ts:723:3 › QA M4-09/10/13/18: Warnungen und Zähler › Toleranz Überlappung: bündig und genau 0,01 m keine Warnung, 0,02 m rot 
+
+    Error: expect(locator).toHaveCount(expected) failed
+
+    Locator:  locator('.stand[data-warning]')
+    Expected: 0
+    Received: 2
+    Timeout:  5000ms
+
+    Call log:
+      - Expect "toHaveCount" locator('.stand[data-warning]') with timeout 5000ms
+      - waiting for locator('.stand[data-warning]')
+        14 × locator resolved to 2 elements
+           - unexpected value "2"
+
+
+      739 |     // Warnung „außerhalb“ abschalten, damit nur Überlappung zählt
+      740 |     await page.getByLabel('Warnung, wenn ein Geschäft außerhalb der Grundflächen steht').uncheck();
+    > 741 |     await expect(page.locator('.stand[data-warning]')).toHaveCount(0);
+          |                                                        ^
+      742 |     await expectBadge(page, '');
+      743 |     await page.evaluate(() => {
+      744 |       const s = (window as any).__schelmeStore.getState();
+        at tests/e2e/m4-qa.spec.ts:741:56
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/m4-qa-QA-M4-09-10-13-18-Wa-eaec0--m-keine-Warnung-0-02-m-rot-chromium/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/m4-qa-QA-M4-09-10-13-18-Wa-eaec0--m-keine-Warnung-0-02-m-rot-chromium/error-context.md
+
+    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results/m4-qa-QA-M4-09-10-13-18-Wa-eaec0--m-keine-Warnung-0-02-m-rot-chromium/trace.zip
+    Usage:
+
+        npx playwright show-trace test-results/m4-qa-QA-M4-09-10-13-18-Wa-eaec0--m-keine-Warnung-0-02-m-rot-chromium/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+
+  5) [chromium] › tests/e2e/m4-qa.spec.ts:145:3 › QA M4-01/05/13: Freiflächen-Fälle aus spec.md §4 in der Oberfläche › Berührung von außen belegt nichts; Eindringen genau 0,01 m belegt nichts, 0,02 m belegt 
+
+    Error: expect(locator).toHaveText(expected) failed
+
+    Locator: locator('.free-label')
+    Timeout: 5000ms
+    - Expected  - 1
+    + Received  + 2
+
+      Array [
+    -   "Frei 50 × 10 m",
+    +   "Frei 23,5 × 10 m",
+    +   "Frei 23,5 × 10 m",
+      ]
+
+    Call log:
+      - Expect "toHaveText" locator('.free-label') with timeout 5000ms
+      - waiting for locator('.free-label')
+        14 × locator resolved to 2 elements
+
+
+      155 |       s.change('t', (p: any) => void (p.pages[0].stands[0].cy = 1.49));
+      156 |     });
+    > 157 |     await expect(freeLabels(page)).toHaveText(['Frei 50 × 10 m']);
+          |                                    ^
+      158 |     // 0,02 m hinein
+      159 |     await page.evaluate(() => {
+      160 |       const s = (window as any).__schelmeStore.getState();
+        at tests/e2e/m4-qa.spec.ts:157:36
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/m4-qa-QA-M4-01-05-13-Freif-842a4-belegt-nichts-0-02-m-belegt-chromium/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/m4-qa-QA-M4-01-05-13-Freif-842a4-belegt-nichts-0-02-m-belegt-chromium/error-context.md
+
+    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results/m4-qa-QA-M4-01-05-13-Freif-842a4-belegt-nichts-0-02-m-belegt-chromium/trace.zip
+    Usage:
+
+        npx playwright show-trace test-results/m4-qa-QA-M4-01-05-13-Freif-842a4-belegt-nichts-0-02-m-belegt-chromium/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+
+[8/10] [webkit] › tests/e2e/m4-qa.spec.ts:723:3 › QA M4-09/10/13/18: Warnungen und Zähler › Toleranz Überlappung: bündig und genau 0,01 m keine Warnung, 0,02 m rot
+[9/10] [webkit] › tests/e2e/m4-qa.spec.ts:762:3 › QA M4-09/10/13/18: Warnungen und Zähler › Gedrehter Stand (45°), dessen Ecke 0,013 m über die Vorderseite ragt, ist „außerhalb“
+[10/10] [webkit] › tests/e2e/m4-qa.spec.ts:944:3 › QA M4: weitere Grenzfälle › Esc bricht auch das Verschieben des Hintergrunds ab (spec Allgemein, QA-M3-01)
+  6) [webkit] › tests/e2e/m4-qa.spec.ts:145:3 › QA M4-01/05/13: Freiflächen-Fälle aus spec.md §4 in der Oberfläche › Berührung von außen belegt nichts; Eindringen genau 0,01 m belegt nichts, 0,02 m belegt 
+
+    Error: expect(locator).toHaveText(expected) failed
+
+    Locator: locator('.free-label')
+    Timeout: 5000ms
+    - Expected  - 1
+    + Received  + 2
+
+      Array [
+    -   "Frei 50 × 10 m",
+    +   "Frei 23,5 × 10 m",
+    +   "Frei 23,5 × 10 m",
+      ]
+
+    Call log:
+      - Expect "toHaveText" locator('.free-label') with timeout 5000ms
+      - waiting for locator('.free-label')
+        14 × locator resolved to 2 elements
+
+
+      155 |       s.change('t', (p: any) => void (p.pages[0].stands[0].cy = 1.49));
+      156 |     });
+    > 157 |     await expect(freeLabels(page)).toHaveText(['Frei 50 × 10 m']);
+          |                                    ^
+      158 |     // 0,02 m hinein
+      159 |     await page.evaluate(() => {
+      160 |       const s = (window as any).__schelmeStore.getState();
+        at tests/e2e/m4-qa.spec.ts:157:36
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/m4-qa-QA-M4-01-05-13-Freif-842a4-belegt-nichts-0-02-m-belegt-webkit/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/m4-qa-QA-M4-01-05-13-Freif-842a4-belegt-nichts-0-02-m-belegt-webkit/error-context.md
+
+    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results/m4-qa-QA-M4-01-05-13-Freif-842a4-belegt-nichts-0-02-m-belegt-webkit/trace.zip
+    Usage:
+
+        npx playwright show-trace test-results/m4-qa-QA-M4-01-05-13-Freif-842a4-belegt-nichts-0-02-m-belegt-webkit/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+
+  7) [webkit] › tests/e2e/m4-qa.spec.ts:944:3 › QA M4: weitere Grenzfälle › Esc bricht auch das Verschieben des Hintergrunds ab (spec Allgemein, QA-M3-01) 
+
+    Error: expect(received).toBe(expected) // Object.is equality
+
+    Expected: "{\"x\":-39.2,\"y\":-31.360000000000003,\"metersPerPx\":0.07840000000000001,\"rot\":0}"
+    Received: "{\"x\":-29.200000000000003,\"y\":-25.360000000000003,\"metersPerPx\":0.07840000000000001,\"rot\":0}"
+
+      960 |     await page.mouse.move(b0.x + 300, b0.y + 260, { steps: 3 });
+      961 |     await page.mouse.up();
+    > 962 |     expect(await page.evaluate(() => JSON.stringify((window as any).__schelmeStore.getState().project.pages[0].background.transform))).toBe(t0);
+          |                                                                                                                                        ^
+      963 |     expect(await pastLen(page)).toBe(n0);
+      964 |   });
+      965 |
+        at tests/e2e/m4-qa.spec.ts:962:136
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/m4-qa-QA-M4-weitere-Grenzf-8c9fb-ab-spec-Allgemein-QA-M3-01--webkit/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/m4-qa-QA-M4-weitere-Grenzf-8c9fb-ab-spec-Allgemein-QA-M3-01--webkit/error-context.md
+
+    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results/m4-qa-QA-M4-weitere-Grenzf-8c9fb-ab-spec-Allgemein-QA-M3-01--webkit/trace.zip
+    Usage:
+
+        npx playwright show-trace test-results/m4-qa-QA-M4-weitere-Grenzf-8c9fb-ab-spec-Allgemein-QA-M3-01--webkit/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+
+  8) [webkit] › tests/e2e/m4-qa.spec.ts:167:3 › QA M4-01/05/13: Freiflächen-Fälle aus spec.md §4 in der Oberfläche › Eindringen genau 0,01 m an allen vier Seiten und an anderen Koordinaten belegt nichts (Gleitkomma) 
+
+    Error: expect(locator).toHaveText(expected) failed
+
+    Locator: locator('.free-label')
+    Timeout: 5000ms
+    - Expected  - 1
+    + Received  + 2
+
+      Array [
+    -   "Frei 20 × 8 m",
+    +   "Frei 3,5 × 8 m",
+    +   "Frei 13,49 × 8 m",
+      ]
+
+    Call log:
+      - Expect "toHaveText" locator('.free-label') with timeout 5000ms
+      - waiting for locator('.free-label')
+        14 × locator resolved to 2 elements
+
+
+      179 |     ];
+      180 |     await seed(page, { areas: [A], stands: s });
+    > 181 |     await expect(freeLabels(page)).toHaveText(['Frei 20 × 8 m']);
+          |                                    ^
+      182 |   });
+      183 |
+      184 |   test('Gedrehter Stand belegt seine volle Projektion (45°, 4 × 4 m → 5,66 m)', async ({ page }) => {
+        at tests/e2e/m4-qa.spec.ts:181:36
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/m4-qa-QA-M4-01-05-13-Freif-60d98-n-belegt-nichts-Gleitkomma--webkit/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/m4-qa-QA-M4-01-05-13-Freif-60d98-n-belegt-nichts-Gleitkomma--webkit/error-context.md
+
+    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results/m4-qa-QA-M4-01-05-13-Freif-60d98-n-belegt-nichts-Gleitkomma--webkit/trace.zip
+    Usage:
+
+        npx playwright show-trace test-results/m4-qa-QA-M4-01-05-13-Freif-60d98-n-belegt-nichts-Gleitkomma--webkit/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+
+  9) [webkit] › tests/e2e/m4-qa.spec.ts:762:3 › QA M4-09/10/13/18: Warnungen und Zähler › Gedrehter Stand (45°), dessen Ecke 0,013 m über die Vorderseite ragt, ist „außerhalb“ 
+
+    Error: expect(locator).toHaveAttribute(expected) failed
+
+    Locator:  locator('.stand[data-id="ecke"]')
+    Expected: "outside"
+    Received: ""
+    Timeout:  2000ms
+
+    Call log:
+      - Expect "toHaveAttribute" locator('.stand[data-id="ecke"]') with timeout 2000ms
+      - waiting for locator('.stand[data-id="ecke"]')
+        21 × locator resolved to <polygon class="stand" data-id="ecke" fill="#a7adb3" points="10.000,-4.230 12.121,-2.108 10.000,0.013 7.879,-2.108"></polygon>
+           - unexpected value "null"
+
+
+      766 |     const half = 1.5 * Math.SQRT2;
+      767 |     await seed(page, { areas: [G], stands: [{ id: 'ecke', cx: 10, cy: -half + 0.013, w: 3, d: 3, rot: 45 }] });
+    > 768 |     await expect(page.locator('.stand[data-id="ecke"]')).toHaveAttribute('data-warning', 'outside', { timeout: 2000 });
+          |                                                          ^
+      769 |   });
+      770 |
+      771 |   test('Zähler am Tab nach Ziehen, Undo, Redo, Löschen, Duplizieren, Einfügen, Pfeiltasten, Maßen, Ignorieren', async ({ page }) => {
+        at tests/e2e/m4-qa.spec.ts:768:58
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/m4-qa-QA-M4-09-10-13-18-Wa-c38b1-rseite-ragt-ist-„außerhalb“-webkit/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/m4-qa-QA-M4-09-10-13-18-Wa-c38b1-rseite-ragt-ist-„außerhalb“-webkit/error-context.md
+
+    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results/m4-qa-QA-M4-09-10-13-18-Wa-c38b1-rseite-ragt-ist-„außerhalb“-webkit/trace.zip
+    Usage:
+
+        npx playwright show-trace test-results/m4-qa-QA-M4-09-10-13-18-Wa-c38b1-rseite-ragt-ist-„außerhalb“-webkit/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+
+  10) [webkit] › tests/e2e/m4-qa.spec.ts:723:3 › QA M4-09/10/13/18: Warnungen und Zähler › Toleranz Überlappung: bündig und genau 0,01 m keine Warnung, 0,02 m rot 
+
+    Error: expect(locator).toHaveCount(expected) failed
+
+    Locator:  locator('.stand[data-warning]')
+    Expected: 0
+    Received: 2
+    Timeout:  5000ms
+
+    Call log:
+      - Expect "toHaveCount" locator('.stand[data-warning]') with timeout 5000ms
+      - waiting for locator('.stand[data-warning]')
+        14 × locator resolved to 2 elements
+           - unexpected value "2"
+
+
+      739 |     // Warnung „außerhalb“ abschalten, damit nur Überlappung zählt
+      740 |     await page.getByLabel('Warnung, wenn ein Geschäft außerhalb der Grundflächen steht').uncheck();
+    > 741 |     await expect(page.locator('.stand[data-warning]')).toHaveCount(0);
+          |                                                        ^
+      742 |     await expectBadge(page, '');
+      743 |     await page.evaluate(() => {
+      744 |       const s = (window as any).__schelmeStore.getState();
+        at tests/e2e/m4-qa.spec.ts:741:56
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/m4-qa-QA-M4-09-10-13-18-Wa-eaec0--m-keine-Warnung-0-02-m-rot-webkit/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/m4-qa-QA-M4-09-10-13-18-Wa-eaec0--m-keine-Warnung-0-02-m-rot-webkit/error-context.md
+
+    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results/m4-qa-QA-M4-09-10-13-18-Wa-eaec0--m-keine-Warnung-0-02-m-rot-webkit/trace.zip
+    Usage:
+
+        npx playwright show-trace test-results/m4-qa-QA-M4-09-10-13-18-Wa-eaec0--m-keine-Warnung-0-02-m-rot-webkit/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+
+  10 failed
+    [chromium] › tests/e2e/m4-qa.spec.ts:145:3 › QA M4-01/05/13: Freiflächen-Fälle aus spec.md §4 in der Oberfläche › Berührung von außen belegt nichts; Eindringen genau 0,01 m belegt nichts, 0,02 m belegt 
+    [chromium] › tests/e2e/m4-qa.spec.ts:167:3 › QA M4-01/05/13: Freiflächen-Fälle aus spec.md §4 in der Oberfläche › Eindringen genau 0,01 m an allen vier Seiten und an anderen Koordinaten belegt nichts (Gleitkomma) 
+    [chromium] › tests/e2e/m4-qa.spec.ts:723:3 › QA M4-09/10/13/18: Warnungen und Zähler › Toleranz Überlappung: bündig und genau 0,01 m keine Warnung, 0,02 m rot 
+    [chromium] › tests/e2e/m4-qa.spec.ts:762:3 › QA M4-09/10/13/18: Warnungen und Zähler › Gedrehter Stand (45°), dessen Ecke 0,013 m über die Vorderseite ragt, ist „außerhalb“ 
+    [chromium] › tests/e2e/m4-qa.spec.ts:944:3 › QA M4: weitere Grenzfälle › Esc bricht auch das Verschieben des Hintergrunds ab (spec Allgemein, QA-M3-01) 
+    [webkit] › tests/e2e/m4-qa.spec.ts:145:3 › QA M4-01/05/13: Freiflächen-Fälle aus spec.md §4 in der Oberfläche › Berührung von außen belegt nichts; Eindringen genau 0,01 m belegt nichts, 0,02 m belegt 
+    [webkit] › tests/e2e/m4-qa.spec.ts:167:3 › QA M4-01/05/13: Freiflächen-Fälle aus spec.md §4 in der Oberfläche › Eindringen genau 0,01 m an allen vier Seiten und an anderen Koordinaten belegt nichts (Gleitkomma) 
+    [webkit] › tests/e2e/m4-qa.spec.ts:723:3 › QA M4-09/10/13/18: Warnungen und Zähler › Toleranz Überlappung: bündig und genau 0,01 m keine Warnung, 0,02 m rot 
+    [webkit] › tests/e2e/m4-qa.spec.ts:762:3 › QA M4-09/10/13/18: Warnungen und Zähler › Gedrehter Stand (45°), dessen Ecke 0,013 m über die Vorderseite ragt, ist „außerhalb“ 
+    [webkit] › tests/e2e/m4-qa.spec.ts:944:3 › QA M4: weitere Grenzfälle › Esc bricht auch das Verschieben des Hintergrunds ab (spec Allgemein, QA-M3-01) 

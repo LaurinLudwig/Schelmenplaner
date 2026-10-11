@@ -1,0 +1,4 @@
+QA-Lasttest M4 webkit: {"browser":"webkit","free":504,"zoom":{"fps":51.38746145940391,"maxFrameMs":59,"p95Ms":38},"pan":{"fps":56.77517032551098,"maxFrameMs":26,"p95Ms":22},"panReadable":{"fps":51.528684300927516,"maxFrameMs":25,"p95Ms":25},"drag":{"fps":59.194948697711126,"maxFrameMs":33,"p95Ms":27},"glide":{"fps":59.90415335463259,"maxFrameMs":33,"p95Ms":29}}
+  1 passed (15.1s)
+QA-Lasttest M4 webkit: {"browser":"webkit","free":504,"zoom":{"fps":53.21035828307911,"maxFrameMs":55,"p95Ms":30},"pan":{"fps":56.28517823639775,"maxFrameMs":26,"p95Ms":23},"panReadable":{"fps":50.77860528097495,"maxFrameMs":26,"p95Ms":25},"drag":{"fps":59.54743946010321,"maxFrameMs":29,"p95Ms":27},"glide":{"fps":58.8235294117647,"maxFrameMs":47,"p95Ms":30}}
+  1 passed (15.1s)

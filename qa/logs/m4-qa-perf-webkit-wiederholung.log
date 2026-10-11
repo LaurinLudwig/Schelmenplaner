@@ -1,0 +1,8 @@
+QA-Lasttest M4 webkit: {"browser":"webkit","free":504,"zoom":{"fps":49.40711462450593,"maxFrameMs":57,"p95Ms":41},"pan":{"fps":56.475903614457835,"maxFrameMs":25,"p95Ms":21},"panReadable":{"fps":50,"maxFrameMs":31,"p95Ms":26},"drag":{"fps":58.4339696143358,"maxFrameMs":28,"p95Ms":27},"glide":{"fps":59.61844197138315,"maxFrameMs":38,"p95Ms":31}}
+      196 |     console.warn(`QA-Lasttest M4 ${info.project.name}: ${JSON.stringify(result)}`);
+    test-results/m4-qa-perf-QA-M4-21-eigene-3a23c-000-×-6000-px-≥-50-Bilder-s-webkit/test-failed-1.png
+  1 failed
+QA-Lasttest M4 webkit: {"browser":"webkit","free":504,"zoom":{"fps":52.44755244755245,"maxFrameMs":52,"p95Ms":31},"pan":{"fps":55.78281889178133,"maxFrameMs":33,"p95Ms":22},"panReadable":{"fps":49.93342210386152,"maxFrameMs":30,"p95Ms":25},"drag":{"fps":57.98221878623889,"maxFrameMs":90,"p95Ms":26},"glide":{"fps":58.8235294117647,"maxFrameMs":38,"p95Ms":31}}
+    test-results/m4-qa-perf-QA-M4-21-eigene-3a23c-000-×-6000-px-≥-50-Bilder-s-webkit/test-failed-1.png
+  1 failed
+QA-Lasttest M4 webkit: {"browser":"webkit","free":504,"zoom":{"fps":51.59958720330237,"maxFrameMs":48,"p95Ms":35},"pan":{"fps":56.032872618602916,"maxFrameMs":37,"p95Ms":22},"panReadable":{"fps":48.29362524146812,"maxFrameMs":39,"p95Ms":28},"drag":{"fps":58.18463925523662,"maxFrameMs":31,"p95Ms":27},"glide":{"fps":59.241706161137444,"maxFrameMs":42,"p95Ms":30}}

@@ -1,0 +1,6 @@
+QA-Lasttest M4 chromium: {"browser":"chromium","free":504,"zoom":{"fps":56.96274636387812,"maxFrameMs":33.400000000001455,"p95Ms":33.299999999995634,"runs":[55.9,57,57.7]},"pan":{"fps":60.002400096003804,"maxFrameMs":16.80000000000291,"p95Ms":16.799999999995634,"runs":[60,60,60]},"panReadable":{"fps":60,"maxFrameMs":16.80000000000291,"p95Ms":16.799999999995634,"runs":[60,60,53.9]},"drag":{"fps":59.21364282330639,"maxFrameMs":33.400000000001455,"p95Ms":16.799999999995634},"glide":{"fps":60.002400096003804,"maxFrameMs":16.80000000000291,"p95Ms":16.70000000001164}}
+QA-Lasttest M4 webkit: {"browser":"webkit","free":504,"zoom":{"fps":51.75983436853002,"maxFrameMs":55,"p95Ms":29,"runs":[50.6,52.8,51.8]},"pan":{"fps":56.32745024408562,"maxFrameMs":27,"p95Ms":22,"runs":[56.2,56.3,57.7]},"panReadable":{"fps":49.668874172185426,"maxFrameMs":27,"p95Ms":25,"runs":[50.6,49.6,49.7]},"drag":{"fps":54.66472303206997,"maxFrameMs":246,"p95Ms":29},"glide":{"fps":59.241706161137444,"maxFrameMs":46,"p95Ms":30}}
+    Received:    49.668874172185426
+    test-results/m4-qa-perf-QA-M4-21-eigene-3a23c-000-×-6000-px-≥-50-Bilder-s-webkit/test-failed-1.png
+  1 failed
+  1 passed (2.4m)

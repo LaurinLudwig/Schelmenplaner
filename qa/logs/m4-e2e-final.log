@@ -1,0 +1,522 @@
+npm notice run schelmeplaner@0.1.0 test:e2e
+npm notice run playwright test --reporter=line
+
+Running 514 tests using 5 workers
+
+[1/514] [chromium] › tests/e2e/m1-browser.spec.ts:7:3 › M1 Browser-Modus › Kein Tauri im Browser: keine Fehler über einen kompletten Bedienablauf
+[2/514] [chromium] › tests/e2e/m1-browser.spec.ts:28:3 › M1 Browser-Modus › Fenstertitel zeigt Projekt und Änderungsmarkierung (document.title)
+[3/514] [chromium] › tests/e2e/m1-browser.spec.ts:47:3 › M1 Browser-Modus › Ohne Änderungen kein beforeunload-Hinweis
+[4/514] [chromium] › tests/e2e/m1-browser.spec.ts:35:3 › M1 Browser-Modus › Schließen mit ungespeicherten Änderungen löst beforeunload-Warnung aus, ohne Änderungen nicht
+[5/514] [chromium] › tests/e2e/m1-browser.spec.ts:60:3 › M1 Browser-Modus › Öffnen-Dialog abbrechen (Browser „cancel“) lässt die App bedienbar
+[6/514] [chromium] › tests/e2e/m1-browser.spec.ts:70:3 › M1 Browser-Modus › Neu angelegte Page bleibt in einer vollen Tab-Leiste sichtbar
+[7/514] [chromium] › tests/e2e/m1-canvas.spec.ts:7:3 › M1 Zeichenfläche: Zoom und Pan › M1-15: Strg/Cmd + / − zoomen, Strg/Cmd+0 passt an
+[8/514] [chromium] › tests/e2e/m1-canvas.spec.ts:20:3 › M1 Zeichenfläche: Zoom und Pan › M1-15: QWERTZ-Plus (key "+") und Ziffernblock zoomen
+[9/514] [chromium] › tests/e2e/m1-canvas.spec.ts:30:3 › M1 Zeichenfläche: Zoom und Pan › M1-15: Zoom-Buttons in der Statusleiste mit Tooltip
+[10/514] [chromium] › tests/e2e/m1-canvas.spec.ts:41:3 › M1 Zeichenfläche: Zoom und Pan › M1-15: Zoom ist nach unten und oben begrenzt (0,2 … 500 px/m)
+[11/514] [chromium] › tests/e2e/m1-canvas.spec.ts:52:3 › M1 Zeichenfläche: Zoom und Pan › M1-15: Mausrad zoomt um den Mauszeiger (Chromium, echtes Rad-Ereignis)
+[12/514] [chromium] › tests/e2e/m1-canvas.spec.ts:71:3 › M1 Zeichenfläche: Zoom und Pan › M1-15: Mausrad (zeilenweise Deltas, Windows/Firefox-Stil) zoomt
+[13/514] [chromium] › tests/e2e/m1-canvas.spec.ts:78:3 › M1 Zeichenfläche: Zoom und Pan › M1-24: Mausrad mit wheelDeltaY = 120er-Vielfaches zoomt, verschiebt nicht
+[14/514] [chromium] › tests/e2e/m1-canvas.spec.ts:88:3 › M1 Zeichenfläche: Zoom und Pan › M1-24: Pinch (Rad mit Strg) zoomt
+[15/514] [chromium] › tests/e2e/m1-canvas.spec.ts:97:3 › M1 Zeichenfläche: Zoom und Pan › M1-24: Zwei-Finger-Wischen (pixelgenaue Deltas) verschiebt, zoomt nicht
+[16/514] [chromium] › tests/e2e/m1-canvas.spec.ts:108:3 › M1 Zeichenfläche: Zoom und Pan › M1-24: Safari-Pinch-Gesten (gesturechange) zoomen
+[17/514] [chromium] › tests/e2e/m1-canvas.spec.ts:130:3 › M1 Zeichenfläche: Zoom und Pan › M1-16: Leertaste + Ziehen verschiebt die Ansicht (temporäre Hand), danach wieder Auswahl
+[18/514] [chromium] › tests/e2e/m1-canvas.spec.ts:154:3 › M1 Zeichenfläche: Zoom und Pan › M1-16: Leertaste aktiviert keine fokussierten Buttons
+[19/514] [chromium] › tests/e2e/m1-canvas.spec.ts:162:3 › M1 Zeichenfläche: Zoom und Pan › M1-16/M1-17: Hand-Werkzeug (H) verschiebt beim Ziehen; V wechselt zurück
+[20/514] [chromium] › tests/e2e/m1-canvas.spec.ts:180:3 › M1 Zeichenfläche: Zoom und Pan › M1-16: Mittlere Maustaste verschiebt immer
+[21/514] [chromium] › tests/e2e/m1-canvas.spec.ts:191:3 › M1 Zeichenfläche: Zoom und Pan › M1-17: Zoom-Werkzeug (Z): Klick vergrößert ×2, Alt+Klick verkleinert
+[22/514] [chromium] › tests/e2e/m1-canvas.spec.ts:203:3 › M1 Zeichenfläche: Zoom und Pan › M1-17: Werkzeug-Buttons per Klick aktivieren; Werkzeug-Shortcuts in Textfeldern wirkungslos
+[23/514] [chromium] › tests/e2e/m1-canvas.spec.ts:218:3 › M1 Zeichenfläche: Zoom und Pan › Ansicht ist pro Page eigenständig und wird beim Wechsel beibehalten
+[24/514] [chromium] › tests/e2e/m1-canvas.spec.ts:229:3 › M1 Zeichenfläche: Zoom und Pan › Statusleiste zeigt Koordinaten in Metern unter dem Mauszeiger
+[25/514] [chromium] › tests/e2e/m1-file.spec.ts:32:3 › M1 Datei: Speichern, Laden, Autosave › M1-18/M1-02: Speichern erzeugt ZIP mit project.json, Formatkennung und Schema-Version
+[26/514] [chromium] › tests/e2e/m1-file.spec.ts:51:3 › M1 Datei: Speichern, Laden, Autosave › M1-18: Speichern und wieder Öffnen stellt Pages, Reihenfolge und Ansicht wieder her
+[27/514] [chromium] › tests/e2e/m1-file.spec.ts:79:3 › M1 Datei: Speichern, Laden, Autosave › M1-18: Beschädigte Datei → verständliche Fehlermeldung, Projekt bleibt erhalten
+[28/514] [chromium] › tests/e2e/m1-file.spec.ts:90:3 › M1 Datei: Speichern, Laden, Autosave › M1-02: Datei aus neuerer Formatversion wird abgelehnt
+[29/514] [chromium] › tests/e2e/m1-file.spec.ts:97:3 › M1 Datei: Speichern, Laden, Autosave › M1-02: Fehlende Felder werden mit Standardwerten ergänzt; ZIP ohne project.json abgelehnt
+[30/514] [chromium] › tests/e2e/m1-file.spec.ts:109:3 › M1 Datei: Speichern, Laden, Autosave › M1-18: Öffnen bei ungespeicherten Änderungen fragt nach; Abbrechen behält alles
+[31/514] [chromium] › tests/e2e/m1-file.spec.ts:124:3 › M1 Datei: Speichern, Laden, Autosave › M1-18: Neues Projekt fragt nach und „Speichern“ im Dialog lädt die Datei herunter
+[32/514] [chromium] › tests/e2e/m1-file.spec.ts:135:3 › M1 Datei: Speichern, Laden, Autosave › M1-20: Dirty-Markierung folgt Undo/Redo zurück zum gespeicherten Stand
+[33/514] [chromium] › tests/e2e/m1-file.spec.ts:150:3 › M1 Datei: Speichern, Laden, Autosave › M1-20: Undo/Redo projektweit über mehrere Pages; neue Aktion verwirft Redo
+[34/514] [chromium] › tests/e2e/m1-file.spec.ts:172:3 › M1 Datei: Speichern, Laden, Autosave › M1-20: Undo im Umbenennen-Feld gehört dem Feld, nicht dem Projekt
+[35/514] [chromium] › tests/e2e/m1-file.spec.ts:182:3 › M1 Datei: Speichern, Laden, Autosave › M1-19: Autosave nach 30 s, Wiederherstellung beim nächsten Start
+[36/514] [chromium] › tests/e2e/m1-file.spec.ts:201:3 › M1 Datei: Speichern, Laden, Autosave › M1-19: Sicherung verwerfen löscht sie; ohne Änderungen wird nicht gesichert
+[37/514] [chromium] › tests/e2e/m1-file.spec.ts:215:3 › M1 Datei: Speichern, Laden, Autosave › M1-19: Nach dem Speichern wird die Sicherung entfernt
+[38/514] [chromium] › tests/e2e/m1-file.spec.ts:227:3 › M1 Datei: Speichern, Laden, Autosave › M1-19: Zurück-Undo auf den gespeicherten Stand hinterlässt keine veraltete Sicherung
+[39/514] [chromium] › tests/e2e/m1-layout.spec.ts:23:3 › M1 Layout und Bedienung › M1-10: Grundlayout: Tab-Leiste oben, Steuerungsleiste, Werkzeugleiste links, Zeichenfläche Mitte, Seitenleiste rechts
+[40/514] [chromium] › tests/e2e/m1-layout.spec.ts:42:3 › M1 Layout und Bedienung › M1-11: Werkzeugleiste nur aus Icons mit allen Werkzeugen der Spec
+[41/514] [chromium] › tests/e2e/m1-layout.spec.ts:53:3 › M1 Layout und Bedienung › M1-11/M1-23: Tooltip mit Name, Kurzbeschreibung und Shortcut
+[42/514] [chromium] › tests/e2e/m1-layout.spec.ts:67:3 › M1 Layout und Bedienung › M1-23: Tooltips an Buttons außerhalb der Werkzeugleiste (Tabs, +, Seitenleiste, Zoom)
+[43/514] [chromium] › tests/e2e/m1-layout.spec.ts:77:3 › M1 Layout und Bedienung › M1-23: Tooltip verschwindet beim Klicken und beim Verlassen
+[44/514] [chromium] › tests/e2e/m1-layout.spec.ts:88:3 › M1 Layout und Bedienung › M1-11: Aktives Werkzeug ist farblich hervorgehoben
+[45/514] [chromium] › tests/e2e/m1-layout.spec.ts:101:3 › M1 Layout und Bedienung › M1-12: Icons sind lokal gebündelt; keine Anfrage an fremde Server
+[46/514] [chromium] › tests/e2e/m1-layout.spec.ts:118:3 › M1 Layout und Bedienung › M1-13: Dunkles Theme ist Standard, helles per Mod+Alt+T bzw. Menü; Einstellung bleibt nach Neuladen
+[47/514] [chromium] › tests/e2e/m1-layout.spec.ts:134:3 › M1 Layout und Bedienung › M1-13: Dunkles Theme ist neutrales Grau (kein Farbstich) und kompakte Schrift
+[48/514] [chromium] › tests/e2e/m1-layout.spec.ts:144:3 › M1 Layout und Bedienung › M1-14: Seitenleiste per Button und Shift+Tab einklappbar; Tab blendet alle Panels aus
+[49/514] [chromium] › tests/e2e/m1-layout.spec.ts:175:3 › M1 Layout und Bedienung › M1-14: Tab im Textfeld bleibt Tab (Panels bleiben sichtbar)
+[50/514] [chromium] › tests/e2e/m1-layout.spec.ts:182:3 › M1 Layout und Bedienung › M1-22: ? öffnet die Shortcut-Übersicht, Esc und Klick daneben schließen sie
+[51/514] [chromium] › tests/e2e/m1-layout.spec.ts:200:3 › M1 Layout und Bedienung › M1-22: Übersicht ist auch auf der Start-Page und über das Menü erreichbar
+[52/514] [chromium] › tests/e2e/m1-layout.spec.ts:211:3 › M1 Layout und Bedienung › M1-21: Shortcuts zeigen auf macOS Cmd-Symbole, sonst Strg
+[53/514] [chromium] › tests/e2e/m1-layout.spec.ts:220:3 › M1 Layout und Bedienung › Menü enthält Datei- und Bearbeiten-Befehle; Rückgängig ist anfangs deaktiviert
+[54/514] [chromium] › tests/e2e/m1-pages.spec.ts:7:3 › M1 Pages / Tab-Leiste › M1-03/M1-04: Start-Page ist ganz links, danach die Festplatz-Pages; Wechsel per Klick
+[55/514] [chromium] › tests/e2e/m1-pages.spec.ts:21:3 › M1 Pages / Tab-Leiste › M1-03: Start-Page hat kein Kontextmenü zum Löschen und lässt sich nicht umbenennen
+[56/514] [chromium] › tests/e2e/m1-pages.spec.ts:35:3 › M1 Pages / Tab-Leiste › M1-05: „+“ legt eine neue Festplatz-Page an und aktiviert sie; Undo/Redo
+[57/514] [chromium] › tests/e2e/m1-pages.spec.ts:49:3 › M1 Pages / Tab-Leiste › M1-05: Shortcut Neuer Festplatz (Mod+Shift+N) und Start-Page-Karte
+[58/514] [chromium] › tests/e2e/m1-pages.spec.ts:58:3 › M1 Pages / Tab-Leiste › M1-06: Umbenennen per Doppelklick: Enter übernimmt, Esc bricht ab, leer wird ignoriert
+[59/514] [chromium] › tests/e2e/m1-pages.spec.ts:94:3 › M1 Pages / Tab-Leiste › M1-06: Umbenennen mit sehr langem Namen sprengt die Tab-Leiste nicht
+[60/514] [chromium] › tests/e2e/m1-pages.spec.ts:106:3 › M1 Pages / Tab-Leiste › M1-06: F2 benennt die aktive Page um; Blur übernimmt
+[61/514] [chromium] › tests/e2e/m1-pages.spec.ts:116:3 › M1 Pages / Tab-Leiste › M1-07: Kontextmenü Duplizieren und Löschen, beides rückgängig machbar
+[62/514] [chromium] › tests/e2e/m1-pages.spec.ts:140:3 › M1 Pages / Tab-Leiste › M1-07: Esc und Klick daneben schließen das Kontextmenü
+[63/514] [chromium] › tests/e2e/m1-pages.spec.ts:151:3 › M1 Pages / Tab-Leiste › M1-07: Letzte Festplatz-Page löschen → nur Start-Page bleibt, App bleibt bedienbar
+[64/514] [chromium] › tests/e2e/m1-pages.spec.ts:167:3 › M1 Pages / Tab-Leiste › M1-08: Pages per Ziehen umsortieren, Undo stellt die Reihenfolge wieder her
+[65/514] [chromium] › tests/e2e/m1-pages.spec.ts:186:3 › M1 Pages / Tab-Leiste › M1-08: Start-Page lässt sich nicht verschieben, Page nicht vor die Start-Page ziehen
+[66/514] [chromium] › tests/e2e/m1-pages.spec.ts:205:3 › M1 Pages / Tab-Leiste › M1-08: Kurzer Klick (unter 5 px Bewegung) sortiert nicht um und erzeugt keinen Undo-Schritt
+[67/514] [chromium] › tests/e2e/m1-pages.spec.ts:215:3 › M1 Pages / Tab-Leiste › M1-09: Pages per Shortcut durchschalten (Strg+Tab, Strg+Shift+Tab, Strg+Bild, Alt+Ziffer)
+[68/514] [chromium] › tests/e2e/m1-pages.spec.ts:241:3 › M1 Pages / Tab-Leiste › M1-07: Shortcuts Duplizieren (Mod+Alt+D) und Löschen (Mod+Alt+Backspace)
+[69/514] [chromium] › tests/e2e/m1-pages.spec.ts:249:3 › M1 Pages / Tab-Leiste › Seitenwechsel ist kein Undo-Schritt
+[70/514] [chromium] › tests/e2e/m1-recheck-lint.spec.ts:37:3 › M1 Nachprüfung: Reinheit von src/core/ (QA-M1-05) › Verbotene Importe und DOM-Globals in src/core/ sind Lint-Fehler, in src/ui/ nicht
+[71/514] [chromium] › tests/e2e/m1-recheck-lint.spec.ts:65:3 › M1 Nachprüfung: Reinheit von src/core/ (QA-M1-05) › QA-M1-10: Weitere DOM-Zugriffe in src/core/ werden ebenfalls gemeldet
+[72/514] [chromium] › tests/e2e/m1-recheck.spec.ts:30:3 › M1 Nachprüfung: Autosave nach Undo (QA-M1-03) › Undo zum gespeicherten Stand entfernt die Sicherung sofort, ohne auf das Intervall zu warten
+[73/514] [chromium] › tests/e2e/m1-recheck.spec.ts:41:3 › M1 Nachprüfung: Autosave nach Undo (QA-M1-03) › Redo nach dem Entfernen: wieder ungespeichert, nach 30 s erneut gesichert und wiederherstellbar
+[74/514] [chromium] › tests/e2e/m1-recheck.spec.ts:60:3 › M1 Nachprüfung: Autosave nach Undo (QA-M1-03) › Wiederhergestelltes Projekt: Änderung + Undo bleibt ungespeichert, die Sicherung bleibt erhalten
+[75/514] [chromium] › tests/e2e/m1-recheck.spec.ts:80:3 › M1 Nachprüfung: Autosave nach Undo (QA-M1-03) › QA-M1-08: Sicherung per Esc „behalten“ geht verloren, sobald im neuen Projekt gesichert und per Undo zurückgegangen wird
+[76/514] [chromium] › tests/e2e/m1-recheck.spec.ts:111:3 › M1 Nachprüfung: Tab-Leiste hält aktive Page sichtbar (QA-M1-04) › Alt+1 / Alt+0 / Strg+Tab-Umlauf scrollen den aktiven Tab in Sicht
+[77/514] [chromium] › tests/e2e/m1-recheck.spec.ts:130:3 › M1 Nachprüfung: Tab-Leiste hält aktive Page sichtbar (QA-M1-04) › Duplizieren und Undo in voller Leiste: aktiver Tab bleibt sichtbar
+[78/514] [chromium] › tests/e2e/m1-recheck.spec.ts:140:3 › M1 Nachprüfung: Tab-Leiste hält aktive Page sichtbar (QA-M1-04) › QA-M1-09: Nach Verkleinern des Fensters bleibt der aktive Tab sichtbar
+[79/514] [chromium] › tests/e2e/m1-recheck.spec.ts:150:3 › M1 Nachprüfung: Tab-Leiste hält aktive Page sichtbar (QA-M1-04) › QA-M1-09: Nach Umbenennen in einen langen Namen ist der aktive Tab vollständig sichtbar
+[80/514] [chromium] › tests/e2e/m1-recheck.spec.ts:158:3 › M1 Nachprüfung: Tab-Leiste hält aktive Page sichtbar (QA-M1-04) › Mausrad über der Tab-Leiste scrollt sie seitwärts
+[81/514] [chromium] › tests/e2e/m1-recheck.spec.ts:170:3 › M1 Nachprüfung: zugängliche Namen (QA-M1-06) › Karte und „+“-Button haben unterschiedliche Namen; Tooltips unverändert
+[82/514] [chromium] › tests/e2e/m1-recheck.spec.ts:189:3 › M1 Nachprüfung: Wischrichtung (QA-M1-02 / QA-M1-07) › QA-M1-07: Waagerechtes Wischen bewegt Zeichenfläche und Tab-Leiste in dieselbe Richtung
+[83/514] [chromium] › tests/e2e/m2-background.spec.ts:70:5 › M2 Hintergrund-Import › M2-01/02: raster-10m.png wird importiert und angezeigt
+[84/514] [chromium] › tests/e2e/m2-background.spec.ts:70:5 › M2 Hintergrund-Import › M2-01/02: raster-10m.jpg wird importiert und angezeigt
+[85/514] [chromium] › tests/e2e/m2-background.spec.ts:70:5 › M2 Hintergrund-Import › M2-01/02: raster-10m.svg wird importiert und angezeigt
+[86/514] [chromium] › tests/e2e/m2-background.spec.ts:70:5 › M2 Hintergrund-Import › M2-01/02: raster-10m-viewbox.svg wird importiert und angezeigt
+[87/514] [chromium] › tests/e2e/m2-background.spec.ts:70:5 › M2 Hintergrund-Import › M2-01/02: plan-1zu1000.pdf wird importiert und angezeigt
+[88/514] [chromium] › tests/e2e/m2-background.spec.ts:83:3 › M2 Hintergrund-Import › M2-01: mehrseitiges PDF – Seitenauswahl, nur die gewählte Seite wird eingebettet
+[89/514] [chromium] › tests/e2e/m2-background.spec.ts:109:3 › M2 Hintergrund-Import › M2-01: nicht unterstütztes Format wird abgelehnt
+[90/514] [chromium] › tests/e2e/m2-background.spec.ts:101:3 › M2 Hintergrund-Import › M2-01: Seitenauswahl abbrechen importiert nichts
+[91/514] [chromium] › tests/e2e/m2-background.spec.ts:120:3 › M2 Hintergrund-Import › Projektdatei: Plan eingebettet, nach Neuladen wieder da; Import ist rückgängig machbar
+[92/514] [chromium] › tests/e2e/m2-background.spec.ts:151:3 › M2 Kalibrierung und Maßstab › M2-06: Kalibrieren über zwei Punkte ist exakt, sperrt den Plan und wechselt zur Auswahl
+[93/514] [chromium] › tests/e2e/m2-background.spec.ts:168:3 › M2 Kalibrierung und Maßstab › M2-06: erneute Kalibrierung skaliert nur den Hintergrund; Undo stellt den alten Maßstab her
+[94/514] [chromium] › tests/e2e/m2-background.spec.ts:184:3 › M2 Kalibrierung und Maßstab › M2-06: ungültige Abstände werden abgelehnt, Esc bricht ab
+[95/514] [chromium] › tests/e2e/m2-background.spec.ts:202:3 › M2 Kalibrierung und Maßstab › M2-06: ohne Hintergrund ist Kalibrieren nicht möglich
+[96/514] [chromium] › tests/e2e/m2-background.spec.ts:210:3 › M2 Kalibrierung und Maßstab › Planmaßstab 1:1000 bei PDF: ein Kästchen (10 mm) misst 10 m
+[97/514] [chromium] › tests/e2e/m2-background.spec.ts:229:3 › M2 Hintergrund bearbeiten › M2-03: Deckkraft einstellbar
+[98/514] [chromium] › tests/e2e/m2-background.spec.ts:239:3 › M2 Hintergrund bearbeiten › M2-04/07: nicht gesperrt lässt sich der Plan verschieben, gesperrt nicht
+[99/514] [chromium] › tests/e2e/m2-background.spec.ts:263:3 › M2 Hintergrund bearbeiten › M2-07: Drehung numerisch; Undo in einem Schritt
+[100/514] [chromium] › tests/e2e/m2-background.spec.ts:274:3 › M2 Hintergrund bearbeiten › M2-05: Ersetzen behält Position und Breite in Metern
+[101/514] [chromium] › tests/e2e/m2-background.spec.ts:284:3 › M2 Hintergrund bearbeiten › PDF: beim Hineinzoomen wird ein scharfes Detailbild nachgeladen
+[102/514] [chromium] › tests/e2e/m2-background.spec.ts:294:3 › M2 Raster, Norden, Messen › M2-09: Raster ein/aus über die Werkzeugleiste, Weite einstellbar
+[103/514] [chromium] › tests/e2e/m2-background.spec.ts:311:3 › M2 Raster, Norden, Messen › M2-08: Nordrichtung dreht den Nordpfeil
+[104/514] [chromium] › tests/e2e/m2-background.spec.ts:321:3 › M2 Raster, Norden, Messen › M2-10: Messung bleibt bis zum Werkzeugwechsel; Esc löscht; Shift = 45°
+[105/514] [chromium] › tests/e2e/m2-nacharbeit.spec.ts:35:3 › Nacharbeit M2: Plausibilität des Maßstabs (QA-M2-07) › unplausible Kalibrierung: Rückfrage, „Zurück“ lässt alles unverändert, „Trotzdem“ übernimmt
+[106/514] [chromium] › tests/e2e/m2-nacharbeit.spec.ts:51:3 › Nacharbeit M2: Plausibilität des Maßstabs (QA-M2-07) › Neukalibrierung mit mehr als Faktor 2 Abweichung fragt nach
+[107/514] [chromium] › tests/e2e/m2-nacharbeit.spec.ts:66:3 › Nacharbeit M2: Plausibilität des Maßstabs (QA-M2-07) › Planmaßstab außerhalb 1:50 bis 1:10.000 fragt nach
+[108/514] [chromium] › tests/e2e/m2-nacharbeit.spec.ts:78:3 › Nacharbeit M2: Sperre und Ansicht › QA-M2-06: gesperrt sind Drehung und Planmaßstab deaktiviert, Kalibrieren bleibt möglich
+[109/514] [chromium] › tests/e2e/m2-nacharbeit.spec.ts:90:3 › Nacharbeit M2: Sperre und Ansicht › QA-M2-05: Raster ein/aus ist kein Undo-Schritt und markiert nicht als ungespeichert
+[110/514] [chromium] › tests/e2e/m2-nacharbeit.spec.ts:102:3 › Nacharbeit M1: Wischrichtung (QA-M1-07) › Menü „Wischrichtung umkehren“ dreht das Verschieben um und bleibt nach Neuladen erhalten
+[111/514] [chromium] › tests/e2e/m2-nacharbeit.spec.ts:132:3 › Nacharbeit M2: Dateien › QA-M2-02: abgeschnittenes JPEG wird mit deutscher Meldung abgewiesen (auch in WebKit)
+[112/514] [chromium] › tests/e2e/m2-nacharbeit.spec.ts:142:3 › Nacharbeit M2: Dateien › QA-M2-03: große Rasterbilder werden als Übersicht plus Kacheln gezeichnet
+[113/514] [chromium] › tests/e2e/m2-qa.spec.ts:77:5 › QA M2: Kalibrierung mit den Testdateien › M2-06: raster-10m.png – Kalibrieren, Nachmessen, Neukalibrieren (Abweichung < 0,6 m)
+[114/514] [chromium] › tests/e2e/m2-qa.spec.ts:77:5 › QA M2: Kalibrierung mit den Testdateien › M2-06: raster-10m.jpg – Kalibrieren, Nachmessen, Neukalibrieren (Abweichung < 0,6 m)
+[115/514] [chromium] › tests/e2e/m2-qa.spec.ts:77:5 › QA M2: Kalibrierung mit den Testdateien › M2-06: raster-10m.svg – Kalibrieren, Nachmessen, Neukalibrieren (Abweichung < 0,6 m)
+[116/514] [chromium] › tests/e2e/m2-qa.spec.ts:77:5 › QA M2: Kalibrierung mit den Testdateien › M2-06: plan-1zu1000.pdf – Kalibrieren, Nachmessen, Neukalibrieren (Abweichung < 0,6 m)
+[117/514] [chromium] › tests/e2e/m2-qa.spec.ts:77:5 › QA M2: Kalibrierung mit den Testdateien › M2-06: plan-2seiten.pdf – Kalibrieren, Nachmessen, Neukalibrieren (Abweichung < 0,6 m)
+[118/514] [chromium] › tests/e2e/m2-qa.spec.ts:99:3 › QA M2: Kalibrierung mit den Testdateien › M2-06/07: Kalibrieren eines gedrehten Plans
+[119/514] [chromium] › tests/e2e/m2-qa.spec.ts:140:3 › QA M2: Kalibrierung mit den Testdateien › M2-06: Undo/Redo der Kalibrierung stellt Maßstab und Sperre wieder her
+[120/514] [chromium] › tests/e2e/m2-qa.spec.ts:159:3 › QA M2: Zahleneingaben mit Tausenderpunkt (QA-M2-01) › QA-M2-01: Planmaßstab 1:1000 bleibt nach bloßem Hinein- und Herausklicken erhalten
+[121/514] [chromium] › tests/e2e/m2-qa.spec.ts:171:3 › QA M2: Zahleneingaben mit Tausenderpunkt (QA-M2-01) › QA-M2-01: Pfeiltaste im Planmaßstab 1:1.200 erhöht um 50 auf 1:1.250
+[122/514] [chromium] › tests/e2e/m2-qa.spec.ts:181:3 › QA M2: Zahleneingaben mit Tausenderpunkt (QA-M2-01) › QA-M2-01: Rasterweite 1000 m bleibt nach Fokus/Tab erhalten
+[123/514] [chromium] › tests/e2e/m2-qa.spec.ts:191:3 › QA M2: Zahleneingaben mit Tausenderpunkt (QA-M2-01) › QA-M2-01: Vorbelegter Abstand ≥ 1000 m wird beim Anwenden nicht durch 1000 geteilt
+[124/514] [chromium] › tests/e2e/m2-qa.spec.ts:214:5 › QA M2: ungültige und leere Dateien › M2-01/02: leer.pdf → verständliche Meldung, App läuft weiter
+[125/514] [chromium] › tests/e2e/m2-qa.spec.ts:214:5 › QA M2: ungültige und leere Dateien › M2-01/02: leer.png → verständliche Meldung, App läuft weiter
+[126/514] [chromium] › tests/e2e/m2-qa.spec.ts:214:5 › QA M2: ungültige und leere Dateien › M2-01/02: leer.svg → verständliche Meldung, App läuft weiter
+[127/514] [chromium] › tests/e2e/m2-qa.spec.ts:214:5 › QA M2: ungültige und leere Dateien › M2-01/02: kaputt.svg → verständliche Meldung, App läuft weiter
+[128/514] [chromium] › tests/e2e/m2-qa.spec.ts:214:5 › QA M2: ungültige und leere Dateien › M2-01/02: ohne-groesse.svg → verständliche Meldung, App läuft weiter
+[129/514] [chromium] › tests/e2e/m2-qa.spec.ts:228:3 › QA M2: ungültige und leere Dateien › QA-M2-02: beschädigtes PDF → Meldung auf Deutsch (nicht „Invalid PDF structure.“)
+[130/514] [chromium] › tests/e2e/m2-qa.spec.ts:236:3 › QA M2: ungültige und leere Dateien › QA-M2-02: abgeschnittenes PNG → Meldung auf Deutsch (nicht „The source image could not be decoded.“)
+[131/514] [chromium] › tests/e2e/m2-qa.spec.ts:254:5 › QA M2: Speichern, Neuladen, Dateigröße › Speichern/Öffnen raster-10m.png: Maßstab, Drehung, Deckkraft, Sperre, Raster, Norden bleiben
+[132/514] [chromium] › tests/e2e/m2-qa.spec.ts:254:5 › QA M2: Speichern, Neuladen, Dateigröße › Speichern/Öffnen raster-10m.svg: Maßstab, Drehung, Deckkraft, Sperre, Raster, Norden bleiben
+[133/514] [chromium] › tests/e2e/m2-qa.spec.ts:254:5 › QA M2: Speichern, Neuladen, Dateigröße › Speichern/Öffnen plan-2seiten.pdf: Maßstab, Drehung, Deckkraft, Sperre, Raster, Norden bleiben
+[134/514] [chromium] › tests/e2e/m2-qa.spec.ts:298:3 › QA M2: Speichern, Neuladen, Dateigröße › Autosave (Browser) sichert den Plan mit und stellt ihn wieder her
+[135/514] [chromium] › tests/e2e/m2-qa.spec.ts:315:3 › QA M2: Speichern, Neuladen, Dateigröße › QA-M2-04: dieselbe PDF-Seite auf zwei Festplätzen wird nur einmal eingebettet
+[136/514] [chromium] › tests/e2e/m2-qa.spec.ts:331:3 › QA M2: Ersetzen, Sperre, Undo › M2-05: Ersetzen lässt gezeichnete Objekte unverändert; Undo stellt den alten Plan her
+[137/514] [chromium] › tests/e2e/m2-qa.spec.ts:356:3 › QA M2: Ersetzen, Sperre, Undo › M2-03: Deckkraft per Maus ziehen ist genau ein Undo-Schritt, auch beim Loslassen außerhalb
+[138/514] [chromium] › tests/e2e/m2-qa.spec.ts:374:3 › QA M2: Ersetzen, Sperre, Undo › M2-09: Raster per Cmd/Strg+# und Werkzeugleiste umschalten
+[139/514] [chromium] › tests/e2e/m2-qa.spec.ts:384:3 › QA M2: Ersetzen, Sperre, Undo › M2-06: Undo während einer laufenden Kalibrierung entfernt den Plan ohne Absturz
+[140/514] [chromium] › tests/e2e/m2-qa.spec.ts:400:3 › QA M2: Leistung mit großem Plan › A0-PDF (15.000 Linien, 3.000 Texte): Zoom und Pan ≥ 40 Bilder/s, Detailbild < 2 s
+[141/514] [chromium] › tests/e2e/m3-nacharbeit.spec.ts:62:3 › QA-M3-01: Esc nach Seitenwechseln bei allen Werkzeugen › Ziehen, Drehen, Größe, Aufziehen (Grundfläche, Geschäft), Messen und Kalibrieren
+[142/514] [chromium] › tests/e2e/m3-nacharbeit.spec.ts:125:3 › QA-Nacharbeit M3: Griffe, Aufziehen, Einfügen › QA-M3-03: Bewegung unter 3 px am Drehgriff und am Größengriff ändert nichts
+[143/514] [chromium] › tests/e2e/m3-nacharbeit.spec.ts:142:3 › QA-Nacharbeit M3: Griffe, Aufziehen, Einfügen › QA-M3-L2: flaches Aufziehen (< 0,5 m) legt einen Stand in Standardgröße an und ändert das Standardmaß nicht
+[144/514] [chromium] › tests/e2e/m3-nacharbeit.spec.ts:157:3 › QA-Nacharbeit M3: Griffe, Aufziehen, Einfügen › QA-M3-L3: Einfügen auf derselben Page 1 m versetzt, weiter versetzt; andere Page gleiche Position
+[145/514] [chromium] › tests/e2e/m3-objects.spec.ts:60:3 › M3: Anlegen › M3-02: Grundfläche aufziehen; Klick legt 20 × 8 m an; je ein Undo-Schritt
+[146/514] [chromium] › tests/e2e/m3-objects.spec.ts:80:3 › M3: Anlegen › M3-05: Geschäft per Klick 3 × 3 m, danach im zuletzt angelegten Maß
+[147/514] [chromium] › tests/e2e/m3-objects.spec.ts:95:3 › M3: Verschieben, Drehen, Undo › M3-21: Ziehen eines Stands ist genau ein Undo-Schritt; Esc bricht ab
+[148/514] [chromium] › tests/e2e/m3-objects.spec.ts:115:3 › M3: Verschieben, Drehen, Undo › M3-06: Drehgriff dreht; Shift rastet in 15°-Schritten ein; ein Undo-Schritt
+[149/514] [chromium] › tests/e2e/m3-objects.spec.ts:140:3 › M3: Verschieben, Drehen, Undo › M3-11/M3-10: Beschriftung bleibt bei 37° horizontal, feste Schriftgröße, nichts gekürzt
+[150/514] [chromium] › tests/e2e/m3-objects.spec.ts:162:3 › M3: Grundfläche › M3-03: Vorderseite per Kantenklick; die Fläche bleibt optisch exakt an derselben Stelle
+[151/514] [chromium] › tests/e2e/m3-objects.spec.ts:196:3 › M3: Grundfläche › M3-04: Beschriftung „Name · B × T m“ horizontal außerhalb vor der Vorderseite
+[152/514] [chromium] › tests/e2e/m3-objects.spec.ts:207:3 › M3: Grundfläche › M3-20: Größe per Griff, gegenüberliegende Ecke bleibt fest; ein Undo-Schritt
+[153/514] [chromium] › tests/e2e/m3-objects.spec.ts:218:3 › M3: Grundfläche › M3-15: Ziehen auf nicht ausgewählter Grundfläche zieht ein Auswahlrechteck auf; ausgewählt verschiebt es sie
+[154/514] [chromium] › tests/e2e/m3-objects.spec.ts:242:3 › M3: Steuerungs- und Seitenleiste › M3-12: X/Y/Breite in der Steuerungsleiste; je ein Undo-Schritt
+[155/514] [chromium] › tests/e2e/m3-objects.spec.ts:254:3 › M3: Steuerungs- und Seitenleiste › M3-12/M3-13: Mehrfachauswahl – unterschiedliche Werte leer, Eingabe gilt für alle
+[156/514] [chromium] › tests/e2e/m3-objects.spec.ts:281:3 › M3: Steuerungs- und Seitenleiste › M3-07: Attribute in der Seitenleiste; Name ist ein Undo-Schritt und erscheint in der Beschriftung
+[157/514] [chromium] › tests/e2e/m3-objects.spec.ts:303:3 › M3: Steuerungs- und Seitenleiste › M3-09: Beschriftungsvorlage und Schriftgröße sind projektweit
+[158/514] [chromium] › tests/e2e/m3-objects.spec.ts:313:3 › M3: Steuerungs- und Seitenleiste › M3-08/M3-19: Kategorie anlegen, zuordnen, eigene Farbe; Löschen mit Rückfrage
+[159/514] [chromium] › tests/e2e/m3-objects.spec.ts:342:3 › M3: Auswahl, Kopieren, Tastatur › M3-16/M3-17: Duplizieren, Kopieren/Einfügen über Pages, Pfeiltasten, Entf
+[160/514] [chromium] › tests/e2e/m3-objects.spec.ts:373:3 › M3: Auswahl, Kopieren, Tastatur › M3-15: Cmd/Strg+A wählt alles; Shift+Auswahlrechteck ergänzt; Esc hebt auf
+[161/514] [chromium] › tests/e2e/m3-objects.spec.ts:395:3 › M3: Auswahl, Kopieren, Tastatur › Kopieren/Einfügen in Textfeldern gehört dem Feld
+[162/514] [chromium] › tests/e2e/m3-objects.spec.ts:409:3 › M3: Ebenen, Messen, Speichern › M3-14: Ebenen erscheinen mit Objekten; gesperrt nicht auswählbar, ausgeblendet unsichtbar; kein Undo-Schritt
+[163/514] [chromium] › tests/e2e/m3-objects.spec.ts:428:3 › M3: Ebenen, Messen, Speichern › M3-18: Messwerkzeug fängt an Ecken eines gedrehten Stands (genau 8 m)
+[164/514] [chromium] › tests/e2e/m3-objects.spec.ts:443:3 › M3: Ebenen, Messen, Speichern › M3-01: Speichern enthält Grundflächen, Geschäfte und Kategorien mit gerundeten Werten
+[165/514] [chromium] › tests/e2e/m3-qa.spec.ts:95:5 › QA M3-03: Vorderseite wechseln bei gedrehten Flächen › Kantenklick (Kantenmitte und außerhalb der Mitte) bei 33.3°: Ecken bleiben, Markierung wandert
+[166/514] [chromium] › tests/e2e/m3-qa.spec.ts:95:5 › QA M3-03: Vorderseite wechseln bei gedrehten Flächen › Kantenklick (Kantenmitte und außerhalb der Mitte) bei 90°: Ecken bleiben, Markierung wandert
+[167/514] [chromium] › tests/e2e/m3-qa.spec.ts:95:5 › QA M3-03: Vorderseite wechseln bei gedrehten Flächen › Kantenklick (Kantenmitte und außerhalb der Mitte) bei 147.5°: Ecken bleiben, Markierung wandert
+[168/514] [chromium] › tests/e2e/m3-qa.spec.ts:95:5 › QA M3-03: Vorderseite wechseln bei gedrehten Flächen › Kantenklick (Kantenmitte und außerhalb der Mitte) bei 271.2°: Ecken bleiben, Markierung wandert
+[169/514] [chromium] › tests/e2e/m3-qa.spec.ts:146:3 › QA M3-03: Vorderseite wechseln bei gedrehten Flächen › Ziehen an der Kantenmitte einer gedrehten Fläche ändert die Größe, gegenüberliegende Kante bleibt fest
+[170/514] [chromium] › tests/e2e/m3-qa.spec.ts:167:3 › QA M3-03: Vorderseite wechseln bei gedrehten Flächen › Größe per Griff bleibt in den Grenzen der Zahlenfelder (Grundfläche höchstens 2000 m)
+[171/514] [chromium] › tests/e2e/m3-qa.spec.ts:181:3 › QA M3-03: Vorderseite wechseln bei gedrehten Flächen › Kante hat einen Tooltip „Als Vorderseite festlegen“; Vorderseite deutlich markiert (Screenshot)
+[172/514] [chromium] › tests/e2e/m3-qa.spec.ts:196:3 › QA M3-21: Undo/Redo pro Geste und Esc › Esc während des Ziehens ändert nichts – auch nach einem Besuch der Start-Page
+[173/514] [chromium] › tests/e2e/m3-qa.spec.ts:215:3 › QA M3-21: Undo/Redo pro Geste und Esc › Esc nach einem Besuch der Start-Page: Aufziehen abbrechen und Messung löschen (M2-Regression)
+[174/514] [chromium] › tests/e2e/m3-qa.spec.ts:240:3 › QA M3-21: Undo/Redo pro Geste und Esc › Esc nach einem Besuch der Start-Page bricht die Kalibrierung ab (M2-Regression)
+[175/514] [chromium] › tests/e2e/m3-qa.spec.ts:255:3 › QA M3-21: Undo/Redo pro Geste und Esc › Esc während des Ziehens ändert nichts (ohne Seitenwechsel), auch Drehen, Größe, Aufziehen
+[176/514] [chromium] › tests/e2e/m3-qa.spec.ts:286:3 › QA M3-21: Undo/Redo pro Geste und Esc › Ziehen, Drehen, Aufziehen, Größe: je genau ein Schritt; Undo/Redo stellt exakt her
+[177/514] [chromium] › tests/e2e/m3-qa.spec.ts:315:3 › QA M3-21: Undo/Redo pro Geste und Esc › Gedrückt gehaltene Pfeiltaste (Autorepeat) = ein Schritt
+[178/514] [chromium] › tests/e2e/m3-qa.spec.ts:329:3 › QA M3-21: Undo/Redo pro Geste und Esc › Zwei einzelne Pfeiltasten-Drücke (losgelassen) sind zwei Undo-Schritte
+[179/514] [chromium] › tests/e2e/m3-qa.spec.ts:340:3 › QA M3-21: Undo/Redo pro Geste und Esc › Seitenleisten- und Steuerungsleisten-Eingabe bei Mehrfachauswahl = ein Schritt
+[180/514] [chromium] › tests/e2e/m3-qa.spec.ts:375:3 › QA M3-21: Undo/Redo pro Geste und Esc › Klick auf den Drehgriff mit minimaler Mausbewegung ändert die Drehung nicht
+[181/514] [chromium] › tests/e2e/m3-qa.spec.ts:393:3 › QA M3-22: Rundung ohne aufsummierte Fehler › Stand 20× hin- und zurückziehen (gleiche Pixel) landet wieder exakt am Ausgangspunkt
+[182/514] [chromium] › tests/e2e/m3-qa.spec.ts:419:3 › QA M3-22: Rundung ohne aufsummierte Fehler › Gruppe 10× um +37° und −37° drehen: Mittelpunkte driften nicht
+[183/514] [chromium] › tests/e2e/m3-qa.spec.ts:472:3 › QA M3-22: Rundung ohne aufsummierte Fehler › Größe 10× per Griff ändern und zurück: feste Kante einer gedrehten Fläche driftet nicht
+[184/514] [chromium] › tests/e2e/m3-qa.spec.ts:489:3 › QA M3-22: Rundung ohne aufsummierte Fehler › Übernommene Drehung ist exakt auf 0,1° gerundet (kein Gleitkomma-Rest)
+[185/514] [chromium] › tests/e2e/m3-qa.spec.ts:498:3 › QA M3-22: Rundung ohne aufsummierte Fehler › Eingaben werden auf 0,01 m bzw. 0,1° gerundet; Drehung wird auf 0–360 normiert
+[186/514] [chromium] › tests/e2e/m3-qa.spec.ts:511:3 › QA M3-22: Rundung ohne aufsummierte Fehler › Ungültige Maße (0, negativ, zu groß, Text) werden abgewiesen und nicht übernommen
+[187/514] [chromium] › tests/e2e/m3-qa.spec.ts:528:3 › QA M3-12/M3-13: Mehrfachauswahl › Gemischte Werte leer (Steuerungs- und Seitenleiste, Auswahlfelder), gleiche Werte gefüllt
+[188/514] [chromium] › tests/e2e/m3-qa.spec.ts:570:3 › QA M3-12/M3-13: Mehrfachauswahl › Gemischte Auswahl (Grundfläche + Geschäft): Breite für alle, Stände auf 100 m begrenzt
+[189/514] [chromium] › tests/e2e/m3-qa.spec.ts:586:3 › QA M3-12/M3-13: Mehrfachauswahl › Steuerungsleiste X bei Mehrfachauswahl mit verschiedenen X-Werten
+[190/514] [chromium] › tests/e2e/m3-qa.spec.ts:603:3 › QA M3-12/M3-13: Mehrfachauswahl › Drehgriff dreht eine Mehrfachauswahl um die gemeinsame Mitte
+[191/514] [chromium] › tests/e2e/m3-qa.spec.ts:630:3 › QA M3-08: Kategorien löschen und rückgängig › Verwendete Kategorie auf zwei Pages löschen: Rückfrage mit Anzahl, Abbrechen ändert nichts, Undo/Redo
+[192/514] [chromium] › tests/e2e/m3-qa.spec.ts:679:3 › QA M3-08: Kategorien löschen und rückgängig › Kategorie umbenennen auf leeren Namen: Feld zeigt danach wieder den gültigen Namen
+[193/514] [chromium] › tests/e2e/m3-qa.spec.ts:687:3 › QA M3-08: Kategorien löschen und rückgängig › Kategoriefarbe ändern wirkt auf alle Stände der Kategorie, eigene Farbe bleibt
+[194/514] [chromium] › tests/e2e/m3-qa.spec.ts:714:3 › QA M3-09: Beschriftungsvorlage – Grenzfälle › Leere Platzhalter, Zeilen mit Text, Sonderzeichen, unbekannte Platzhalter, lange Namen
+[195/514] [chromium] › tests/e2e/m3-qa.spec.ts:769:3 › QA M3-09: Beschriftungsvorlage – Grenzfälle › Schriftgröße: Grenzen, Beschriftung skaliert mit; Undo
+[196/514] [chromium] › tests/e2e/m3-qa.spec.ts:787:3 › QA M3-09: Beschriftungsvorlage – Grenzfälle › Beschriftung der Grundfläche: gedreht und mit langem Namen außerhalb der Fläche
+[197/514] [chromium] › tests/e2e/m3-qa.spec.ts:828:3 › QA M3-01/M3-18: Speichern und Neuladen › Grundflächen, Stände (alle Attribute) und Kategorien überstehen Speichern und Öffnen
+[198/514] [chromium] › tests/e2e/m3-qa.spec.ts:882:3 › QA M3-14/M3-15/M3-16/M3-18: Auswahl, Ebenen, Kopieren › Gesperrte Ebene: Auswahlrechteck und Cmd+A wählen nichts davon; ausgeblendete Ebene fängt beim Messen nicht
+[199/514] [chromium] › tests/e2e/m3-qa.spec.ts:906:3 › QA M3-14/M3-15/M3-16/M3-18: Auswahl, Ebenen, Kopieren › Shift+Klick auf Grundfläche ergänzt/entfernt; Klick ohne Ziehen auf ein Objekt der Gruppe wählt nur dieses
+[200/514] [chromium] › tests/e2e/m3-qa.spec.ts:920:3 › QA M3-14/M3-15/M3-16/M3-18: Auswahl, Ebenen, Kopieren › Ausschneiden + Einfügen auf anderer Page; Kopie mit leerer Nummer; Undo des Einfügens
+[201/514] [chromium] › tests/e2e/m3-qa.spec.ts:939:3 › QA M3-14/M3-15/M3-16/M3-18: Auswahl, Ebenen, Kopieren › Steuerungsleiste zeigt Werte live während des Ziehens
+[202/514] [chromium] › tests/e2e/m4-freespace.spec.ts:65:3 › M4: Freiflächen › M4-01/02/05: Freiflächen werden berechnet und beschriftet; Ebene ein-/ausblendbar ohne Undo
+[203/514] [chromium] › tests/e2e/m4-freespace.spec.ts:83:3 › M4: Freiflächen › M4-04: live während des Ziehens, Esc stellt wieder her; Löschen rechnet neu
+[204/514] [chromium] › tests/e2e/m4-freespace.spec.ts:99:3 › M4: Freiflächen › M4-03: Mindestbreite einstellbar, Undo-Schritt
+[205/514] [chromium] › tests/e2e/m4-freespace.spec.ts:113:3 › M4: Freiflächen › M4-14: überlappende Grundflächen – die frühere gewinnt
+[206/514] [chromium] › tests/e2e/m4-freespace.spec.ts:121:3 › M4: Fang › M4-06: Vorderkante – rastet ein, übernimmt die Drehung, gleitet, löst sich; Hilfslinie
+[207/514] [chromium] › tests/e2e/m4-freespace.spec.ts:138:3 › M4: Fang › M4-08: Cmd/Strg beim Ziehen schaltet den Fang aus
+[208/514] [chromium] › tests/e2e/m4-freespace.spec.ts:145:3 › M4: Fang › M4-07: Umschalter in der Werkzeugleiste sind Ansichtseinstellungen (kein Undo, nicht ungespeichert)
+[209/514] [chromium] › tests/e2e/m4-freespace.spec.ts:171:3 › M4: Fang › M4-15: Nachbarstände – bündig anliegen
+[210/514] [chromium] › tests/e2e/m4-freespace.spec.ts:181:3 › M4: Fang › M4-16: Raster – Grundfläche rastet mit ihrem Rand an ganzen Metern ein
+[211/514] [chromium] › tests/e2e/m4-freespace.spec.ts:199:3 › M4: Tasten beim Ziehen › M4-11: Shift beschränkt auf waagerecht
+[212/514] [chromium] › tests/e2e/m4-freespace.spec.ts:213:3 › M4: Tasten beim Ziehen › M4-12: Alt+Ziehen dupliziert (ein Undo-Schritt, Kopie ausgewählt, leere Nummer); Alt vor dem Loslassen lösen verschiebt nur
+[213/514] [chromium] › tests/e2e/m4-freespace.spec.ts:239:3 › M4: Tasten beim Ziehen › M4-20: Kurzbefehle wirken während des Ziehens nicht
+[214/514] [chromium] › tests/e2e/m4-freespace.spec.ts:253:3 › M4: Tasten beim Ziehen › Übersicht (?) nennt die Tasten beim Ziehen
+[215/514] [chromium] › tests/e2e/m4-freespace.spec.ts:264:3 › M4: Warnungen › M4-09/10: außerhalb orange, Überlappung rot; ignorieren pro Stand und global, jeweils mit Undo
+[216/514] [chromium] › tests/e2e/m4-freespace.spec.ts:304:3 › M4: Warnungen › M4-18: Warnzähler am Tab zeigt Probleme auf anderen Pages
+[217/514] [chromium] › tests/e2e/m4-qa.spec.ts:133:3 › QA M4-01/05/13: Freiflächen-Fälle aus spec.md §4 in der Oberfläche › Beispiel 50 × 10 m mit Stand 8 m bei x = 20: 20 × 10 und 22 × 10; nie hinter dem Stand, auch wenn er hinten steht
+[218/514] [chromium] › tests/e2e/m4-qa.spec.ts:145:3 › QA M4-01/05/13: Freiflächen-Fälle aus spec.md §4 in der Oberfläche › Berührung von außen belegt nichts; Eindringen genau 0,01 m belegt nichts, 0,02 m belegt
+[219/514] [chromium] › tests/e2e/m4-qa.spec.ts:167:3 › QA M4-01/05/13: Freiflächen-Fälle aus spec.md §4 in der Oberfläche › Eindringen genau 0,01 m an allen vier Seiten und an anderen Koordinaten belegt nichts (Gleitkomma)
+[220/514] [chromium] › tests/e2e/m4-qa.spec.ts:191:3 › QA M4-01/05/13: Freiflächen-Fälle aus spec.md §4 in der Oberfläche › Seitlich überstehender Stand: nur der Teil innerhalb zählt; hinten überstehend ebenso
+[221/514] [chromium] › tests/e2e/m4-qa.spec.ts:184:3 › QA M4-01/05/13: Freiflächen-Fälle aus spec.md §4 in der Oberfläche › Gedrehter Stand belegt seine volle Projektion (45°, 4 × 4 m → 5,66 m)
+[222/514] [chromium] › tests/e2e/m4-qa.spec.ts:198:3 › QA M4-01/05/13: Freiflächen-Fälle aus spec.md §4 in der Oberfläche › Gedrehte Grundfläche (30°) mit Stand an der Vorderseite
+[223/514] [chromium] › tests/e2e/m4-qa.spec.ts:209:3 › QA M4-01/05/13: Freiflächen-Fälle aus spec.md §4 in der Oberfläche › Zwei aneinanderliegende Grundflächen, Stand über der Fuge: belegt beide, keine Warnung „außerhalb“
+[224/514] [chromium] › tests/e2e/m4-qa.spec.ts:216:3 › QA M4-01/05/13: Freiflächen-Fälle aus spec.md §4 in der Oberfläche › Überlappende Grundflächen: frühere gewinnt, spätere L-förmig mit Hüllmaßen; Stand im Überlappungsbereich belegt nur die frühere
+[225/514] [chromium] › tests/e2e/m4-qa.spec.ts:240:3 › QA M4-01/05/13: Freiflächen-Fälle aus spec.md §4 in der Oberfläche › Mindestbreite: Grenzen 0,05–100 m, leere und ungültige Eingaben, Undo/Redo
+[226/514] [chromium] › tests/e2e/m4-qa.spec.ts:281:3 › QA M4-01/05/13: Freiflächen-Fälle aus spec.md §4 in der Oberfläche › Beschriftung erscheint erst ab 6 px Schrifthöhe; Freiflächen bleiben sichtbar
+[227/514] [chromium] › tests/e2e/m4-qa.spec.ts:300:3 › QA M4-04: Live-Aktualisierung ohne Reste › Ziehen (live), Esc, Drehen (Drehgriff, live), Maße, Löschen, Undo, Redo
+[228/514] [chromium] › tests/e2e/m4-qa.spec.ts:370:3 › QA M4-04: Live-Aktualisierung ohne Reste › Einfügen, Duplizieren, Pfeiltasten und Alt+Ziehen (live, Esc ohne Reste)
+[229/514] [chromium] › tests/e2e/m4-qa.spec.ts:415:3 › QA M4-04: Live-Aktualisierung ohne Reste › Grundfläche verschieben, Größe am Griff, Vorderseite wechseln, Page wechseln
+[230/514] [chromium] › tests/e2e/m4-qa.spec.ts:461:3 › QA M4-06/15/16/17: Fang › Vorderkante einer gedrehten Grundfläche: rastet ein, übernimmt die Drehung, gleitet, Hilfslinie, löst sich mit ursprünglicher Drehung
+[231/514] [chromium] › tests/e2e/m4-qa.spec.ts:497:3 › QA M4-06/15/16/17: Fang › Eingerastet: fängt am Ende der Vorderseite und an Nachbarständen (Hilfslinien)
+[232/514] [chromium] › tests/e2e/m4-qa.spec.ts:519:3 › QA M4-06/15/16/17: Fang › Nachbarstand: anliegen und fluchten bei gedrehten Ständen; nicht parallele Nachbarn fangen nicht
+[233/514] [chromium] › tests/e2e/m4-qa.spec.ts:541:3 › QA M4-06/15/16/17: Fang › Raster fängt nur bei eingeblendetem Raster; Nachbar hat Vorrang vor dem näheren Raster
+[234/514] [chromium] › tests/e2e/m4-qa.spec.ts:567:3 › QA M4-06/15/16/17: Fang › Vorderkante hat Vorrang vor Nachbarstand
+[235/514] [chromium] › tests/e2e/m4-qa.spec.ts:579:3 › QA M4-06/15/16/17: Fang › Mehrfachauswahl: Fang am gegriffenen Stand, Gruppe nur parallel verschoben, nicht gedreht
+[236/514] [chromium] › tests/e2e/m4-qa.spec.ts:606:3 › QA M4-06/15/16/17: Fang › Cmd/Strg während des Ziehens schaltet den Fang sofort aus und beim Loslassen wieder an
+[237/514] [chromium] › tests/e2e/m4-qa.spec.ts:620:3 › QA M4-06/15/16/17: Fang › Shift: eingerastet bleibt der Stand an der Vorderseite, nicht eingerastet nur 0°/45°/90°
+[238/514] [chromium] › tests/e2e/m4-qa.spec.ts:651:5 › QA M4-20/M3-21: Esc bricht jede Kombination ab › Verschieben: ohne Taste
+[239/514] [chromium] › tests/e2e/m4-qa.spec.ts:651:5 › QA M4-20/M3-21: Esc bricht jede Kombination ab › Verschieben: Alt gehalten (Kopie sichtbar)
+[240/514] [chromium] › tests/e2e/m4-qa.spec.ts:651:5 › QA M4-20/M3-21: Esc bricht jede Kombination ab › Verschieben: Cmd/Strg gehalten
+[241/514] [chromium] › tests/e2e/m4-qa.spec.ts:651:5 › QA M4-20/M3-21: Esc bricht jede Kombination ab › Verschieben: Shift während des Ziehens
+[242/514] [chromium] › tests/e2e/m4-qa.spec.ts:651:5 › QA M4-20/M3-21: Esc bricht jede Kombination ab › Verschieben: Alt + Cmd/Strg + Shift
+[243/514] [chromium] › tests/e2e/m4-qa.spec.ts:679:3 › QA M4-20/M3-21: Esc bricht jede Kombination ab › Drehen mit Shift, Größe ändern, Auswahlrechteck, Aufziehen mit dem Geschäfts-Werkzeug
+[244/514] [chromium] › tests/e2e/m4-qa.spec.ts:723:3 › QA M4-09/10/13/18: Warnungen und Zähler › Toleranz Überlappung: bündig und genau 0,01 m keine Warnung, 0,02 m rot
+[245/514] [chromium] › tests/e2e/m4-qa.spec.ts:751:3 › QA M4-09/10/13/18: Warnungen und Zähler › Toleranz „außerhalb“: 0,01 m überstehend keine Warnung, 0,02 m orange; gedrehter Stand mit überstehender Ecke
+[246/514] [chromium] › tests/e2e/m4-qa.spec.ts:762:3 › QA M4-09/10/13/18: Warnungen und Zähler › Gedrehter Stand (45°), dessen Ecke 0,013 m über die Vorderseite ragt, ist „außerhalb“
+[247/514] [chromium] › tests/e2e/m4-qa.spec.ts:771:3 › QA M4-09/10/13/18: Warnungen und Zähler › Zähler am Tab nach Ziehen, Undo, Redo, Löschen, Duplizieren, Einfügen, Pfeiltasten, Maßen, Ignorieren
+[248/514] [chromium] › tests/e2e/m4-qa.spec.ts:828:3 › QA M4-09/10/13/18: Warnungen und Zähler › Ignorieren bei Mehrfachauswahl: ein Undo-Schritt; projektweit aus: markiert ungespeichert und ist rückgängig machbar
+[249/514] [chromium] › tests/e2e/m4-qa.spec.ts:853:3 › QA M4-09/10/13/18: Warnungen und Zähler › Zähler bleibt nach Speichern und Öffnen gleich (Ignorieren und Abschalten werden gespeichert)
+[250/514] [chromium] › tests/e2e/m4-qa.spec.ts:873:3 › QA M4-22: Dateiformat › Version-1-Datei (echte M3-Datei) öffnen: migriert, Warnungen aktiv; Speichern schreibt Version 2
+[251/514] [chromium] › tests/e2e/m4-qa.spec.ts:895:3 › QA M4-22: Dateiformat › Datei einer neueren Version wird mit deutscher Meldung abgewiesen, das offene Projekt bleibt
+[252/514] [chromium] › tests/e2e/m4-qa.spec.ts:920:3 › QA M4: weitere Grenzfälle › Ausgeblendete Ebenen fangen nicht (Grundflächen: keine Vorderkante, Geschäfte: kein Nachbar)
+[253/514] [chromium] › tests/e2e/m4-qa.spec.ts:933:3 › QA M4: weitere Grenzfälle › M4-19: Schlüssel einer Freifläche bleibt, solange dieselben Stände die Lücke begrenzen
+[254/514] [chromium] › tests/e2e/m4-qa.spec.ts:944:3 › QA M4: weitere Grenzfälle › Esc bricht auch das Verschieben des Hintergrunds ab (spec Allgemein, QA-M3-01)
+[255/514] [chromium] › tests/e2e/m4-qa.spec.ts:966:3 › QA M4: weitere Grenzfälle › Esc bricht das Ziehen ab, auch wenn vorher ein Zahlenfeld den Fokus hatte
+[256/514] [chromium] › tests/e2e/m4-qa.spec.ts:982:3 › QA M4: weitere Grenzfälle › Fang-Umschalter: Tooltips mit Shortcut, Zustand wird mitgespeichert
+[257/514] [chromium] › tests/e2e/smoke.spec.ts:4:3 › Smoke › App startet ohne Fehler und zeigt die Tab-Leiste
+[258/514] [webkit] › tests/e2e/m1-browser.spec.ts:7:3 › M1 Browser-Modus › Kein Tauri im Browser: keine Fehler über einen kompletten Bedienablauf
+[259/514] [webkit] › tests/e2e/m1-browser.spec.ts:28:3 › M1 Browser-Modus › Fenstertitel zeigt Projekt und Änderungsmarkierung (document.title)
+[260/514] [webkit] › tests/e2e/m1-browser.spec.ts:35:3 › M1 Browser-Modus › Schließen mit ungespeicherten Änderungen löst beforeunload-Warnung aus, ohne Änderungen nicht
+[261/514] [webkit] › tests/e2e/m1-browser.spec.ts:60:3 › M1 Browser-Modus › Öffnen-Dialog abbrechen (Browser „cancel“) lässt die App bedienbar
+[262/514] [webkit] › tests/e2e/m1-browser.spec.ts:70:3 › M1 Browser-Modus › Neu angelegte Page bleibt in einer vollen Tab-Leiste sichtbar
+[263/514] [webkit] › tests/e2e/m1-browser.spec.ts:47:3 › M1 Browser-Modus › Ohne Änderungen kein beforeunload-Hinweis
+[264/514] [webkit] › tests/e2e/m1-canvas.spec.ts:20:3 › M1 Zeichenfläche: Zoom und Pan › M1-15: QWERTZ-Plus (key "+") und Ziffernblock zoomen
+[265/514] [webkit] › tests/e2e/m1-canvas.spec.ts:30:3 › M1 Zeichenfläche: Zoom und Pan › M1-15: Zoom-Buttons in der Statusleiste mit Tooltip
+[266/514] [webkit] › tests/e2e/m1-canvas.spec.ts:41:3 › M1 Zeichenfläche: Zoom und Pan › M1-15: Zoom ist nach unten und oben begrenzt (0,2 … 500 px/m)
+[267/514] [webkit] › tests/e2e/m1-canvas.spec.ts:7:3 › M1 Zeichenfläche: Zoom und Pan › M1-15: Strg/Cmd + / − zoomen, Strg/Cmd+0 passt an
+[268/514] [webkit] › tests/e2e/m1-canvas.spec.ts:52:3 › M1 Zeichenfläche: Zoom und Pan › M1-15: Mausrad zoomt um den Mauszeiger (Chromium, echtes Rad-Ereignis)
+[269/514] [webkit] › tests/e2e/m1-canvas.spec.ts:71:3 › M1 Zeichenfläche: Zoom und Pan › M1-15: Mausrad (zeilenweise Deltas, Windows/Firefox-Stil) zoomt
+[270/514] [webkit] › tests/e2e/m1-canvas.spec.ts:78:3 › M1 Zeichenfläche: Zoom und Pan › M1-24: Mausrad mit wheelDeltaY = 120er-Vielfaches zoomt, verschiebt nicht
+[271/514] [webkit] › tests/e2e/m1-canvas.spec.ts:88:3 › M1 Zeichenfläche: Zoom und Pan › M1-24: Pinch (Rad mit Strg) zoomt
+[272/514] [webkit] › tests/e2e/m1-canvas.spec.ts:97:3 › M1 Zeichenfläche: Zoom und Pan › M1-24: Zwei-Finger-Wischen (pixelgenaue Deltas) verschiebt, zoomt nicht
+[273/514] [webkit] › tests/e2e/m1-canvas.spec.ts:108:3 › M1 Zeichenfläche: Zoom und Pan › M1-24: Safari-Pinch-Gesten (gesturechange) zoomen
+[274/514] [webkit] › tests/e2e/m1-canvas.spec.ts:130:3 › M1 Zeichenfläche: Zoom und Pan › M1-16: Leertaste + Ziehen verschiebt die Ansicht (temporäre Hand), danach wieder Auswahl
+[275/514] [webkit] › tests/e2e/m1-canvas.spec.ts:154:3 › M1 Zeichenfläche: Zoom und Pan › M1-16: Leertaste aktiviert keine fokussierten Buttons
+[276/514] [webkit] › tests/e2e/m1-canvas.spec.ts:162:3 › M1 Zeichenfläche: Zoom und Pan › M1-16/M1-17: Hand-Werkzeug (H) verschiebt beim Ziehen; V wechselt zurück
+[277/514] [webkit] › tests/e2e/m1-canvas.spec.ts:180:3 › M1 Zeichenfläche: Zoom und Pan › M1-16: Mittlere Maustaste verschiebt immer
+[278/514] [webkit] › tests/e2e/m1-canvas.spec.ts:191:3 › M1 Zeichenfläche: Zoom und Pan › M1-17: Zoom-Werkzeug (Z): Klick vergrößert ×2, Alt+Klick verkleinert
+[279/514] [webkit] › tests/e2e/m1-canvas.spec.ts:203:3 › M1 Zeichenfläche: Zoom und Pan › M1-17: Werkzeug-Buttons per Klick aktivieren; Werkzeug-Shortcuts in Textfeldern wirkungslos
+[280/514] [webkit] › tests/e2e/m1-canvas.spec.ts:218:3 › M1 Zeichenfläche: Zoom und Pan › Ansicht ist pro Page eigenständig und wird beim Wechsel beibehalten
+[281/514] [webkit] › tests/e2e/m1-canvas.spec.ts:229:3 › M1 Zeichenfläche: Zoom und Pan › Statusleiste zeigt Koordinaten in Metern unter dem Mauszeiger
+[282/514] [webkit] › tests/e2e/m1-file.spec.ts:32:3 › M1 Datei: Speichern, Laden, Autosave › M1-18/M1-02: Speichern erzeugt ZIP mit project.json, Formatkennung und Schema-Version
+[283/514] [webkit] › tests/e2e/m1-file.spec.ts:51:3 › M1 Datei: Speichern, Laden, Autosave › M1-18: Speichern und wieder Öffnen stellt Pages, Reihenfolge und Ansicht wieder her
+[284/514] [webkit] › tests/e2e/m1-file.spec.ts:79:3 › M1 Datei: Speichern, Laden, Autosave › M1-18: Beschädigte Datei → verständliche Fehlermeldung, Projekt bleibt erhalten
+[285/514] [webkit] › tests/e2e/m1-file.spec.ts:90:3 › M1 Datei: Speichern, Laden, Autosave › M1-02: Datei aus neuerer Formatversion wird abgelehnt
+[286/514] [webkit] › tests/e2e/m1-file.spec.ts:97:3 › M1 Datei: Speichern, Laden, Autosave › M1-02: Fehlende Felder werden mit Standardwerten ergänzt; ZIP ohne project.json abgelehnt
+[287/514] [webkit] › tests/e2e/m1-file.spec.ts:109:3 › M1 Datei: Speichern, Laden, Autosave › M1-18: Öffnen bei ungespeicherten Änderungen fragt nach; Abbrechen behält alles
+[288/514] [webkit] › tests/e2e/m1-file.spec.ts:124:3 › M1 Datei: Speichern, Laden, Autosave › M1-18: Neues Projekt fragt nach und „Speichern“ im Dialog lädt die Datei herunter
+[289/514] [webkit] › tests/e2e/m1-file.spec.ts:135:3 › M1 Datei: Speichern, Laden, Autosave › M1-20: Dirty-Markierung folgt Undo/Redo zurück zum gespeicherten Stand
+[290/514] [webkit] › tests/e2e/m1-file.spec.ts:150:3 › M1 Datei: Speichern, Laden, Autosave › M1-20: Undo/Redo projektweit über mehrere Pages; neue Aktion verwirft Redo
+[291/514] [webkit] › tests/e2e/m1-file.spec.ts:172:3 › M1 Datei: Speichern, Laden, Autosave › M1-20: Undo im Umbenennen-Feld gehört dem Feld, nicht dem Projekt
+[292/514] [webkit] › tests/e2e/m1-file.spec.ts:182:3 › M1 Datei: Speichern, Laden, Autosave › M1-19: Autosave nach 30 s, Wiederherstellung beim nächsten Start
+[293/514] [webkit] › tests/e2e/m1-file.spec.ts:201:3 › M1 Datei: Speichern, Laden, Autosave › M1-19: Sicherung verwerfen löscht sie; ohne Änderungen wird nicht gesichert
+[294/514] [webkit] › tests/e2e/m1-file.spec.ts:215:3 › M1 Datei: Speichern, Laden, Autosave › M1-19: Nach dem Speichern wird die Sicherung entfernt
+[295/514] [webkit] › tests/e2e/m1-file.spec.ts:227:3 › M1 Datei: Speichern, Laden, Autosave › M1-19: Zurück-Undo auf den gespeicherten Stand hinterlässt keine veraltete Sicherung
+[296/514] [webkit] › tests/e2e/m1-layout.spec.ts:23:3 › M1 Layout und Bedienung › M1-10: Grundlayout: Tab-Leiste oben, Steuerungsleiste, Werkzeugleiste links, Zeichenfläche Mitte, Seitenleiste rechts
+[297/514] [webkit] › tests/e2e/m1-layout.spec.ts:42:3 › M1 Layout und Bedienung › M1-11: Werkzeugleiste nur aus Icons mit allen Werkzeugen der Spec
+[298/514] [webkit] › tests/e2e/m1-layout.spec.ts:53:3 › M1 Layout und Bedienung › M1-11/M1-23: Tooltip mit Name, Kurzbeschreibung und Shortcut
+[299/514] [webkit] › tests/e2e/m1-layout.spec.ts:67:3 › M1 Layout und Bedienung › M1-23: Tooltips an Buttons außerhalb der Werkzeugleiste (Tabs, +, Seitenleiste, Zoom)
+[300/514] [webkit] › tests/e2e/m1-layout.spec.ts:77:3 › M1 Layout und Bedienung › M1-23: Tooltip verschwindet beim Klicken und beim Verlassen
+[301/514] [webkit] › tests/e2e/m1-layout.spec.ts:88:3 › M1 Layout und Bedienung › M1-11: Aktives Werkzeug ist farblich hervorgehoben
+[302/514] [webkit] › tests/e2e/m1-layout.spec.ts:101:3 › M1 Layout und Bedienung › M1-12: Icons sind lokal gebündelt; keine Anfrage an fremde Server
+[303/514] [webkit] › tests/e2e/m1-layout.spec.ts:118:3 › M1 Layout und Bedienung › M1-13: Dunkles Theme ist Standard, helles per Mod+Alt+T bzw. Menü; Einstellung bleibt nach Neuladen
+[304/514] [webkit] › tests/e2e/m1-layout.spec.ts:134:3 › M1 Layout und Bedienung › M1-13: Dunkles Theme ist neutrales Grau (kein Farbstich) und kompakte Schrift
+[305/514] [webkit] › tests/e2e/m1-layout.spec.ts:144:3 › M1 Layout und Bedienung › M1-14: Seitenleiste per Button und Shift+Tab einklappbar; Tab blendet alle Panels aus
+[306/514] [webkit] › tests/e2e/m1-layout.spec.ts:175:3 › M1 Layout und Bedienung › M1-14: Tab im Textfeld bleibt Tab (Panels bleiben sichtbar)
+[307/514] [webkit] › tests/e2e/m1-layout.spec.ts:182:3 › M1 Layout und Bedienung › M1-22: ? öffnet die Shortcut-Übersicht, Esc und Klick daneben schließen sie
+[308/514] [webkit] › tests/e2e/m1-layout.spec.ts:200:3 › M1 Layout und Bedienung › M1-22: Übersicht ist auch auf der Start-Page und über das Menü erreichbar
+[309/514] [webkit] › tests/e2e/m1-layout.spec.ts:211:3 › M1 Layout und Bedienung › M1-21: Shortcuts zeigen auf macOS Cmd-Symbole, sonst Strg
+[310/514] [webkit] › tests/e2e/m1-layout.spec.ts:220:3 › M1 Layout und Bedienung › Menü enthält Datei- und Bearbeiten-Befehle; Rückgängig ist anfangs deaktiviert
+[311/514] [webkit] › tests/e2e/m1-pages.spec.ts:7:3 › M1 Pages / Tab-Leiste › M1-03/M1-04: Start-Page ist ganz links, danach die Festplatz-Pages; Wechsel per Klick
+[312/514] [webkit] › tests/e2e/m1-pages.spec.ts:21:3 › M1 Pages / Tab-Leiste › M1-03: Start-Page hat kein Kontextmenü zum Löschen und lässt sich nicht umbenennen
+[313/514] [webkit] › tests/e2e/m1-pages.spec.ts:35:3 › M1 Pages / Tab-Leiste › M1-05: „+“ legt eine neue Festplatz-Page an und aktiviert sie; Undo/Redo
+[314/514] [webkit] › tests/e2e/m1-pages.spec.ts:49:3 › M1 Pages / Tab-Leiste › M1-05: Shortcut Neuer Festplatz (Mod+Shift+N) und Start-Page-Karte
+[315/514] [webkit] › tests/e2e/m1-pages.spec.ts:58:3 › M1 Pages / Tab-Leiste › M1-06: Umbenennen per Doppelklick: Enter übernimmt, Esc bricht ab, leer wird ignoriert
+[316/514] [webkit] › tests/e2e/m1-pages.spec.ts:94:3 › M1 Pages / Tab-Leiste › M1-06: Umbenennen mit sehr langem Namen sprengt die Tab-Leiste nicht
+[317/514] [webkit] › tests/e2e/m1-pages.spec.ts:106:3 › M1 Pages / Tab-Leiste › M1-06: F2 benennt die aktive Page um; Blur übernimmt
+[318/514] [webkit] › tests/e2e/m1-pages.spec.ts:116:3 › M1 Pages / Tab-Leiste › M1-07: Kontextmenü Duplizieren und Löschen, beides rückgängig machbar
+[319/514] [webkit] › tests/e2e/m1-pages.spec.ts:140:3 › M1 Pages / Tab-Leiste › M1-07: Esc und Klick daneben schließen das Kontextmenü
+[320/514] [webkit] › tests/e2e/m1-pages.spec.ts:151:3 › M1 Pages / Tab-Leiste › M1-07: Letzte Festplatz-Page löschen → nur Start-Page bleibt, App bleibt bedienbar
+[321/514] [webkit] › tests/e2e/m1-pages.spec.ts:167:3 › M1 Pages / Tab-Leiste › M1-08: Pages per Ziehen umsortieren, Undo stellt die Reihenfolge wieder her
+[322/514] [webkit] › tests/e2e/m1-pages.spec.ts:186:3 › M1 Pages / Tab-Leiste › M1-08: Start-Page lässt sich nicht verschieben, Page nicht vor die Start-Page ziehen
+[323/514] [webkit] › tests/e2e/m1-pages.spec.ts:205:3 › M1 Pages / Tab-Leiste › M1-08: Kurzer Klick (unter 5 px Bewegung) sortiert nicht um und erzeugt keinen Undo-Schritt
+[324/514] [webkit] › tests/e2e/m1-pages.spec.ts:215:3 › M1 Pages / Tab-Leiste › M1-09: Pages per Shortcut durchschalten (Strg+Tab, Strg+Shift+Tab, Strg+Bild, Alt+Ziffer)
+[325/514] [webkit] › tests/e2e/m1-pages.spec.ts:241:3 › M1 Pages / Tab-Leiste › M1-07: Shortcuts Duplizieren (Mod+Alt+D) und Löschen (Mod+Alt+Backspace)
+[326/514] [webkit] › tests/e2e/m1-pages.spec.ts:249:3 › M1 Pages / Tab-Leiste › Seitenwechsel ist kein Undo-Schritt
+[327/514] [webkit] › tests/e2e/m1-recheck-lint.spec.ts:37:3 › M1 Nachprüfung: Reinheit von src/core/ (QA-M1-05) › Verbotene Importe und DOM-Globals in src/core/ sind Lint-Fehler, in src/ui/ nicht
+[328/514] [webkit] › tests/e2e/m1-recheck-lint.spec.ts:65:3 › M1 Nachprüfung: Reinheit von src/core/ (QA-M1-05) › QA-M1-10: Weitere DOM-Zugriffe in src/core/ werden ebenfalls gemeldet
+[329/514] [webkit] › tests/e2e/m1-recheck.spec.ts:30:3 › M1 Nachprüfung: Autosave nach Undo (QA-M1-03) › Undo zum gespeicherten Stand entfernt die Sicherung sofort, ohne auf das Intervall zu warten
+[330/514] [webkit] › tests/e2e/m1-recheck.spec.ts:41:3 › M1 Nachprüfung: Autosave nach Undo (QA-M1-03) › Redo nach dem Entfernen: wieder ungespeichert, nach 30 s erneut gesichert und wiederherstellbar
+[331/514] [webkit] › tests/e2e/m1-recheck.spec.ts:80:3 › M1 Nachprüfung: Autosave nach Undo (QA-M1-03) › QA-M1-08: Sicherung per Esc „behalten“ geht verloren, sobald im neuen Projekt gesichert und per Undo zurückgegangen wird
+[332/514] [webkit] › tests/e2e/m1-recheck.spec.ts:60:3 › M1 Nachprüfung: Autosave nach Undo (QA-M1-03) › Wiederhergestelltes Projekt: Änderung + Undo bleibt ungespeichert, die Sicherung bleibt erhalten
+[333/514] [webkit] › tests/e2e/m1-recheck.spec.ts:111:3 › M1 Nachprüfung: Tab-Leiste hält aktive Page sichtbar (QA-M1-04) › Alt+1 / Alt+0 / Strg+Tab-Umlauf scrollen den aktiven Tab in Sicht
+[334/514] [webkit] › tests/e2e/m1-recheck.spec.ts:130:3 › M1 Nachprüfung: Tab-Leiste hält aktive Page sichtbar (QA-M1-04) › Duplizieren und Undo in voller Leiste: aktiver Tab bleibt sichtbar
+[335/514] [webkit] › tests/e2e/m1-recheck.spec.ts:140:3 › M1 Nachprüfung: Tab-Leiste hält aktive Page sichtbar (QA-M1-04) › QA-M1-09: Nach Verkleinern des Fensters bleibt der aktive Tab sichtbar
+[336/514] [webkit] › tests/e2e/m1-recheck.spec.ts:150:3 › M1 Nachprüfung: Tab-Leiste hält aktive Page sichtbar (QA-M1-04) › QA-M1-09: Nach Umbenennen in einen langen Namen ist der aktive Tab vollständig sichtbar
+[337/514] [webkit] › tests/e2e/m1-recheck.spec.ts:158:3 › M1 Nachprüfung: Tab-Leiste hält aktive Page sichtbar (QA-M1-04) › Mausrad über der Tab-Leiste scrollt sie seitwärts
+[338/514] [webkit] › tests/e2e/m1-recheck.spec.ts:170:3 › M1 Nachprüfung: zugängliche Namen (QA-M1-06) › Karte und „+“-Button haben unterschiedliche Namen; Tooltips unverändert
+[339/514] [webkit] › tests/e2e/m1-recheck.spec.ts:189:3 › M1 Nachprüfung: Wischrichtung (QA-M1-02 / QA-M1-07) › QA-M1-07: Waagerechtes Wischen bewegt Zeichenfläche und Tab-Leiste in dieselbe Richtung
+[340/514] [webkit] › tests/e2e/m2-background.spec.ts:70:5 › M2 Hintergrund-Import › M2-01/02: raster-10m.png wird importiert und angezeigt
+[341/514] [webkit] › tests/e2e/m2-background.spec.ts:70:5 › M2 Hintergrund-Import › M2-01/02: raster-10m.jpg wird importiert und angezeigt
+[342/514] [webkit] › tests/e2e/m2-background.spec.ts:70:5 › M2 Hintergrund-Import › M2-01/02: plan-1zu1000.pdf wird importiert und angezeigt
+[343/514] [webkit] › tests/e2e/m2-background.spec.ts:70:5 › M2 Hintergrund-Import › M2-01/02: raster-10m.svg wird importiert und angezeigt
+[344/514] [webkit] › tests/e2e/m2-background.spec.ts:70:5 › M2 Hintergrund-Import › M2-01/02: raster-10m-viewbox.svg wird importiert und angezeigt
+[345/514] [webkit] › tests/e2e/m2-background.spec.ts:83:3 › M2 Hintergrund-Import › M2-01: mehrseitiges PDF – Seitenauswahl, nur die gewählte Seite wird eingebettet
+[346/514] [webkit] › tests/e2e/m2-background.spec.ts:101:3 › M2 Hintergrund-Import › M2-01: Seitenauswahl abbrechen importiert nichts
+[347/514] [webkit] › tests/e2e/m2-background.spec.ts:109:3 › M2 Hintergrund-Import › M2-01: nicht unterstütztes Format wird abgelehnt
+[348/514] [webkit] › tests/e2e/m2-background.spec.ts:120:3 › M2 Hintergrund-Import › Projektdatei: Plan eingebettet, nach Neuladen wieder da; Import ist rückgängig machbar
+[349/514] [webkit] › tests/e2e/m2-background.spec.ts:151:3 › M2 Kalibrierung und Maßstab › M2-06: Kalibrieren über zwei Punkte ist exakt, sperrt den Plan und wechselt zur Auswahl
+[350/514] [webkit] › tests/e2e/m2-background.spec.ts:168:3 › M2 Kalibrierung und Maßstab › M2-06: erneute Kalibrierung skaliert nur den Hintergrund; Undo stellt den alten Maßstab her
+[351/514] [webkit] › tests/e2e/m2-background.spec.ts:184:3 › M2 Kalibrierung und Maßstab › M2-06: ungültige Abstände werden abgelehnt, Esc bricht ab
+[352/514] [webkit] › tests/e2e/m2-background.spec.ts:202:3 › M2 Kalibrierung und Maßstab › M2-06: ohne Hintergrund ist Kalibrieren nicht möglich
+[353/514] [webkit] › tests/e2e/m2-background.spec.ts:210:3 › M2 Kalibrierung und Maßstab › Planmaßstab 1:1000 bei PDF: ein Kästchen (10 mm) misst 10 m
+[354/514] [webkit] › tests/e2e/m2-background.spec.ts:229:3 › M2 Hintergrund bearbeiten › M2-03: Deckkraft einstellbar
+[355/514] [webkit] › tests/e2e/m2-background.spec.ts:239:3 › M2 Hintergrund bearbeiten › M2-04/07: nicht gesperrt lässt sich der Plan verschieben, gesperrt nicht
+[356/514] [webkit] › tests/e2e/m2-background.spec.ts:263:3 › M2 Hintergrund bearbeiten › M2-07: Drehung numerisch; Undo in einem Schritt
+[357/514] [webkit] › tests/e2e/m2-background.spec.ts:274:3 › M2 Hintergrund bearbeiten › M2-05: Ersetzen behält Position und Breite in Metern
+[358/514] [webkit] › tests/e2e/m2-background.spec.ts:284:3 › M2 Hintergrund bearbeiten › PDF: beim Hineinzoomen wird ein scharfes Detailbild nachgeladen
+[359/514] [webkit] › tests/e2e/m2-background.spec.ts:294:3 › M2 Raster, Norden, Messen › M2-09: Raster ein/aus über die Werkzeugleiste, Weite einstellbar
+[360/514] [webkit] › tests/e2e/m2-background.spec.ts:311:3 › M2 Raster, Norden, Messen › M2-08: Nordrichtung dreht den Nordpfeil
+[361/514] [webkit] › tests/e2e/m2-background.spec.ts:321:3 › M2 Raster, Norden, Messen › M2-10: Messung bleibt bis zum Werkzeugwechsel; Esc löscht; Shift = 45°
+[362/514] [webkit] › tests/e2e/m2-nacharbeit.spec.ts:35:3 › Nacharbeit M2: Plausibilität des Maßstabs (QA-M2-07) › unplausible Kalibrierung: Rückfrage, „Zurück“ lässt alles unverändert, „Trotzdem“ übernimmt
+[363/514] [webkit] › tests/e2e/m2-nacharbeit.spec.ts:51:3 › Nacharbeit M2: Plausibilität des Maßstabs (QA-M2-07) › Neukalibrierung mit mehr als Faktor 2 Abweichung fragt nach
+[364/514] [webkit] › tests/e2e/m2-nacharbeit.spec.ts:66:3 › Nacharbeit M2: Plausibilität des Maßstabs (QA-M2-07) › Planmaßstab außerhalb 1:50 bis 1:10.000 fragt nach
+[365/514] [webkit] › tests/e2e/m2-nacharbeit.spec.ts:78:3 › Nacharbeit M2: Sperre und Ansicht › QA-M2-06: gesperrt sind Drehung und Planmaßstab deaktiviert, Kalibrieren bleibt möglich
+[366/514] [webkit] › tests/e2e/m2-nacharbeit.spec.ts:90:3 › Nacharbeit M2: Sperre und Ansicht › QA-M2-05: Raster ein/aus ist kein Undo-Schritt und markiert nicht als ungespeichert
+[367/514] [webkit] › tests/e2e/m2-nacharbeit.spec.ts:102:3 › Nacharbeit M1: Wischrichtung (QA-M1-07) › Menü „Wischrichtung umkehren“ dreht das Verschieben um und bleibt nach Neuladen erhalten
+[368/514] [webkit] › tests/e2e/m2-nacharbeit.spec.ts:132:3 › Nacharbeit M2: Dateien › QA-M2-02: abgeschnittenes JPEG wird mit deutscher Meldung abgewiesen (auch in WebKit)
+[369/514] [webkit] › tests/e2e/m2-nacharbeit.spec.ts:142:3 › Nacharbeit M2: Dateien › QA-M2-03: große Rasterbilder werden als Übersicht plus Kacheln gezeichnet
+[370/514] [webkit] › tests/e2e/m2-qa.spec.ts:77:5 › QA M2: Kalibrierung mit den Testdateien › M2-06: raster-10m.png – Kalibrieren, Nachmessen, Neukalibrieren (Abweichung < 0,6 m)
+[371/514] [webkit] › tests/e2e/m2-qa.spec.ts:77:5 › QA M2: Kalibrierung mit den Testdateien › M2-06: raster-10m.jpg – Kalibrieren, Nachmessen, Neukalibrieren (Abweichung < 0,6 m)
+[372/514] [webkit] › tests/e2e/m2-qa.spec.ts:77:5 › QA M2: Kalibrierung mit den Testdateien › M2-06: raster-10m.svg – Kalibrieren, Nachmessen, Neukalibrieren (Abweichung < 0,6 m)
+[373/514] [webkit] › tests/e2e/m2-qa.spec.ts:77:5 › QA M2: Kalibrierung mit den Testdateien › M2-06: plan-1zu1000.pdf – Kalibrieren, Nachmessen, Neukalibrieren (Abweichung < 0,6 m)
+[374/514] [webkit] › tests/e2e/m2-qa.spec.ts:77:5 › QA M2: Kalibrierung mit den Testdateien › M2-06: plan-2seiten.pdf – Kalibrieren, Nachmessen, Neukalibrieren (Abweichung < 0,6 m)
+[375/514] [webkit] › tests/e2e/m2-qa.spec.ts:99:3 › QA M2: Kalibrierung mit den Testdateien › M2-06/07: Kalibrieren eines gedrehten Plans
+[376/514] [webkit] › tests/e2e/m2-qa.spec.ts:140:3 › QA M2: Kalibrierung mit den Testdateien › M2-06: Undo/Redo der Kalibrierung stellt Maßstab und Sperre wieder her
+[377/514] [webkit] › tests/e2e/m2-qa.spec.ts:159:3 › QA M2: Zahleneingaben mit Tausenderpunkt (QA-M2-01) › QA-M2-01: Planmaßstab 1:1000 bleibt nach bloßem Hinein- und Herausklicken erhalten
+[378/514] [webkit] › tests/e2e/m2-qa.spec.ts:171:3 › QA M2: Zahleneingaben mit Tausenderpunkt (QA-M2-01) › QA-M2-01: Pfeiltaste im Planmaßstab 1:1.200 erhöht um 50 auf 1:1.250
+[379/514] [webkit] › tests/e2e/m2-qa.spec.ts:181:3 › QA M2: Zahleneingaben mit Tausenderpunkt (QA-M2-01) › QA-M2-01: Rasterweite 1000 m bleibt nach Fokus/Tab erhalten
+[380/514] [webkit] › tests/e2e/m2-qa.spec.ts:191:3 › QA M2: Zahleneingaben mit Tausenderpunkt (QA-M2-01) › QA-M2-01: Vorbelegter Abstand ≥ 1000 m wird beim Anwenden nicht durch 1000 geteilt
+[381/514] [webkit] › tests/e2e/m2-qa.spec.ts:214:5 › QA M2: ungültige und leere Dateien › M2-01/02: leer.pdf → verständliche Meldung, App läuft weiter
+[382/514] [webkit] › tests/e2e/m2-qa.spec.ts:214:5 › QA M2: ungültige und leere Dateien › M2-01/02: leer.png → verständliche Meldung, App läuft weiter
+[383/514] [webkit] › tests/e2e/m2-qa.spec.ts:214:5 › QA M2: ungültige und leere Dateien › M2-01/02: leer.svg → verständliche Meldung, App läuft weiter
+[384/514] [webkit] › tests/e2e/m2-qa.spec.ts:214:5 › QA M2: ungültige und leere Dateien › M2-01/02: kaputt.svg → verständliche Meldung, App läuft weiter
+[385/514] [webkit] › tests/e2e/m2-qa.spec.ts:214:5 › QA M2: ungültige und leere Dateien › M2-01/02: ohne-groesse.svg → verständliche Meldung, App läuft weiter
+[386/514] [webkit] › tests/e2e/m2-qa.spec.ts:228:3 › QA M2: ungültige und leere Dateien › QA-M2-02: beschädigtes PDF → Meldung auf Deutsch (nicht „Invalid PDF structure.“)
+[387/514] [webkit] › tests/e2e/m2-qa.spec.ts:236:3 › QA M2: ungültige und leere Dateien › QA-M2-02: abgeschnittenes PNG → Meldung auf Deutsch (nicht „The source image could not be decoded.“)
+[388/514] [webkit] › tests/e2e/m2-qa.spec.ts:254:5 › QA M2: Speichern, Neuladen, Dateigröße › Speichern/Öffnen raster-10m.png: Maßstab, Drehung, Deckkraft, Sperre, Raster, Norden bleiben
+[389/514] [webkit] › tests/e2e/m2-qa.spec.ts:254:5 › QA M2: Speichern, Neuladen, Dateigröße › Speichern/Öffnen raster-10m.svg: Maßstab, Drehung, Deckkraft, Sperre, Raster, Norden bleiben
+[390/514] [webkit] › tests/e2e/m2-qa.spec.ts:254:5 › QA M2: Speichern, Neuladen, Dateigröße › Speichern/Öffnen plan-2seiten.pdf: Maßstab, Drehung, Deckkraft, Sperre, Raster, Norden bleiben
+[391/514] [webkit] › tests/e2e/m2-qa.spec.ts:298:3 › QA M2: Speichern, Neuladen, Dateigröße › Autosave (Browser) sichert den Plan mit und stellt ihn wieder her
+[392/514] [webkit] › tests/e2e/m2-qa.spec.ts:315:3 › QA M2: Speichern, Neuladen, Dateigröße › QA-M2-04: dieselbe PDF-Seite auf zwei Festplätzen wird nur einmal eingebettet
+[393/514] [webkit] › tests/e2e/m2-qa.spec.ts:331:3 › QA M2: Ersetzen, Sperre, Undo › M2-05: Ersetzen lässt gezeichnete Objekte unverändert; Undo stellt den alten Plan her
+[394/514] [webkit] › tests/e2e/m2-qa.spec.ts:356:3 › QA M2: Ersetzen, Sperre, Undo › M2-03: Deckkraft per Maus ziehen ist genau ein Undo-Schritt, auch beim Loslassen außerhalb
+[395/514] [webkit] › tests/e2e/m2-qa.spec.ts:374:3 › QA M2: Ersetzen, Sperre, Undo › M2-09: Raster per Cmd/Strg+# und Werkzeugleiste umschalten
+[396/514] [webkit] › tests/e2e/m2-qa.spec.ts:384:3 › QA M2: Ersetzen, Sperre, Undo › M2-06: Undo während einer laufenden Kalibrierung entfernt den Plan ohne Absturz
+[397/514] [webkit] › tests/e2e/m2-qa.spec.ts:400:3 › QA M2: Leistung mit großem Plan › A0-PDF (15.000 Linien, 3.000 Texte): Zoom und Pan ≥ 40 Bilder/s, Detailbild < 2 s
+[398/514] [webkit] › tests/e2e/m3-nacharbeit.spec.ts:62:3 › QA-M3-01: Esc nach Seitenwechseln bei allen Werkzeugen › Ziehen, Drehen, Größe, Aufziehen (Grundfläche, Geschäft), Messen und Kalibrieren
+[399/514] [webkit] › tests/e2e/m3-nacharbeit.spec.ts:125:3 › QA-Nacharbeit M3: Griffe, Aufziehen, Einfügen › QA-M3-03: Bewegung unter 3 px am Drehgriff und am Größengriff ändert nichts
+[400/514] [webkit] › tests/e2e/m3-nacharbeit.spec.ts:142:3 › QA-Nacharbeit M3: Griffe, Aufziehen, Einfügen › QA-M3-L2: flaches Aufziehen (< 0,5 m) legt einen Stand in Standardgröße an und ändert das Standardmaß nicht
+[401/514] [webkit] › tests/e2e/m3-nacharbeit.spec.ts:157:3 › QA-Nacharbeit M3: Griffe, Aufziehen, Einfügen › QA-M3-L3: Einfügen auf derselben Page 1 m versetzt, weiter versetzt; andere Page gleiche Position
+[402/514] [webkit] › tests/e2e/m3-objects.spec.ts:60:3 › M3: Anlegen › M3-02: Grundfläche aufziehen; Klick legt 20 × 8 m an; je ein Undo-Schritt
+[403/514] [webkit] › tests/e2e/m3-objects.spec.ts:80:3 › M3: Anlegen › M3-05: Geschäft per Klick 3 × 3 m, danach im zuletzt angelegten Maß
+[404/514] [webkit] › tests/e2e/m3-objects.spec.ts:95:3 › M3: Verschieben, Drehen, Undo › M3-21: Ziehen eines Stands ist genau ein Undo-Schritt; Esc bricht ab
+[405/514] [webkit] › tests/e2e/m3-objects.spec.ts:115:3 › M3: Verschieben, Drehen, Undo › M3-06: Drehgriff dreht; Shift rastet in 15°-Schritten ein; ein Undo-Schritt
+[406/514] [webkit] › tests/e2e/m3-objects.spec.ts:140:3 › M3: Verschieben, Drehen, Undo › M3-11/M3-10: Beschriftung bleibt bei 37° horizontal, feste Schriftgröße, nichts gekürzt
+[407/514] [webkit] › tests/e2e/m3-objects.spec.ts:162:3 › M3: Grundfläche › M3-03: Vorderseite per Kantenklick; die Fläche bleibt optisch exakt an derselben Stelle
+[408/514] [webkit] › tests/e2e/m3-objects.spec.ts:196:3 › M3: Grundfläche › M3-04: Beschriftung „Name · B × T m“ horizontal außerhalb vor der Vorderseite
+[409/514] [webkit] › tests/e2e/m3-objects.spec.ts:207:3 › M3: Grundfläche › M3-20: Größe per Griff, gegenüberliegende Ecke bleibt fest; ein Undo-Schritt
+[410/514] [webkit] › tests/e2e/m3-objects.spec.ts:218:3 › M3: Grundfläche › M3-15: Ziehen auf nicht ausgewählter Grundfläche zieht ein Auswahlrechteck auf; ausgewählt verschiebt es sie
+[411/514] [webkit] › tests/e2e/m3-objects.spec.ts:242:3 › M3: Steuerungs- und Seitenleiste › M3-12: X/Y/Breite in der Steuerungsleiste; je ein Undo-Schritt
+[412/514] [webkit] › tests/e2e/m3-objects.spec.ts:254:3 › M3: Steuerungs- und Seitenleiste › M3-12/M3-13: Mehrfachauswahl – unterschiedliche Werte leer, Eingabe gilt für alle
+[413/514] [webkit] › tests/e2e/m3-objects.spec.ts:281:3 › M3: Steuerungs- und Seitenleiste › M3-07: Attribute in der Seitenleiste; Name ist ein Undo-Schritt und erscheint in der Beschriftung
+[414/514] [webkit] › tests/e2e/m3-objects.spec.ts:303:3 › M3: Steuerungs- und Seitenleiste › M3-09: Beschriftungsvorlage und Schriftgröße sind projektweit
+[415/514] [webkit] › tests/e2e/m3-objects.spec.ts:313:3 › M3: Steuerungs- und Seitenleiste › M3-08/M3-19: Kategorie anlegen, zuordnen, eigene Farbe; Löschen mit Rückfrage
+[416/514] [webkit] › tests/e2e/m3-objects.spec.ts:342:3 › M3: Auswahl, Kopieren, Tastatur › M3-16/M3-17: Duplizieren, Kopieren/Einfügen über Pages, Pfeiltasten, Entf
+[417/514] [webkit] › tests/e2e/m3-objects.spec.ts:373:3 › M3: Auswahl, Kopieren, Tastatur › M3-15: Cmd/Strg+A wählt alles; Shift+Auswahlrechteck ergänzt; Esc hebt auf
+[418/514] [webkit] › tests/e2e/m3-objects.spec.ts:395:3 › M3: Auswahl, Kopieren, Tastatur › Kopieren/Einfügen in Textfeldern gehört dem Feld
+[419/514] [webkit] › tests/e2e/m3-objects.spec.ts:409:3 › M3: Ebenen, Messen, Speichern › M3-14: Ebenen erscheinen mit Objekten; gesperrt nicht auswählbar, ausgeblendet unsichtbar; kein Undo-Schritt
+[420/514] [webkit] › tests/e2e/m3-objects.spec.ts:428:3 › M3: Ebenen, Messen, Speichern › M3-18: Messwerkzeug fängt an Ecken eines gedrehten Stands (genau 8 m)
+[421/514] [webkit] › tests/e2e/m3-objects.spec.ts:443:3 › M3: Ebenen, Messen, Speichern › M3-01: Speichern enthält Grundflächen, Geschäfte und Kategorien mit gerundeten Werten
+[422/514] [webkit] › tests/e2e/m3-qa.spec.ts:95:5 › QA M3-03: Vorderseite wechseln bei gedrehten Flächen › Kantenklick (Kantenmitte und außerhalb der Mitte) bei 33.3°: Ecken bleiben, Markierung wandert
+[423/514] [webkit] › tests/e2e/m3-qa.spec.ts:95:5 › QA M3-03: Vorderseite wechseln bei gedrehten Flächen › Kantenklick (Kantenmitte und außerhalb der Mitte) bei 90°: Ecken bleiben, Markierung wandert
+[424/514] [webkit] › tests/e2e/m3-qa.spec.ts:95:5 › QA M3-03: Vorderseite wechseln bei gedrehten Flächen › Kantenklick (Kantenmitte und außerhalb der Mitte) bei 147.5°: Ecken bleiben, Markierung wandert
+[425/514] [webkit] › tests/e2e/m3-qa.spec.ts:95:5 › QA M3-03: Vorderseite wechseln bei gedrehten Flächen › Kantenklick (Kantenmitte und außerhalb der Mitte) bei 271.2°: Ecken bleiben, Markierung wandert
+[426/514] [webkit] › tests/e2e/m3-qa.spec.ts:146:3 › QA M3-03: Vorderseite wechseln bei gedrehten Flächen › Ziehen an der Kantenmitte einer gedrehten Fläche ändert die Größe, gegenüberliegende Kante bleibt fest
+[427/514] [webkit] › tests/e2e/m3-qa.spec.ts:167:3 › QA M3-03: Vorderseite wechseln bei gedrehten Flächen › Größe per Griff bleibt in den Grenzen der Zahlenfelder (Grundfläche höchstens 2000 m)
+[428/514] [webkit] › tests/e2e/m3-qa.spec.ts:181:3 › QA M3-03: Vorderseite wechseln bei gedrehten Flächen › Kante hat einen Tooltip „Als Vorderseite festlegen“; Vorderseite deutlich markiert (Screenshot)
+[429/514] [webkit] › tests/e2e/m3-qa.spec.ts:196:3 › QA M3-21: Undo/Redo pro Geste und Esc › Esc während des Ziehens ändert nichts – auch nach einem Besuch der Start-Page
+[430/514] [webkit] › tests/e2e/m3-qa.spec.ts:215:3 › QA M3-21: Undo/Redo pro Geste und Esc › Esc nach einem Besuch der Start-Page: Aufziehen abbrechen und Messung löschen (M2-Regression)
+[431/514] [webkit] › tests/e2e/m3-qa.spec.ts:240:3 › QA M3-21: Undo/Redo pro Geste und Esc › Esc nach einem Besuch der Start-Page bricht die Kalibrierung ab (M2-Regression)
+[432/514] [webkit] › tests/e2e/m3-qa.spec.ts:255:3 › QA M3-21: Undo/Redo pro Geste und Esc › Esc während des Ziehens ändert nichts (ohne Seitenwechsel), auch Drehen, Größe, Aufziehen
+[433/514] [webkit] › tests/e2e/m3-qa.spec.ts:286:3 › QA M3-21: Undo/Redo pro Geste und Esc › Ziehen, Drehen, Aufziehen, Größe: je genau ein Schritt; Undo/Redo stellt exakt her
+[434/514] [webkit] › tests/e2e/m3-qa.spec.ts:315:3 › QA M3-21: Undo/Redo pro Geste und Esc › Gedrückt gehaltene Pfeiltaste (Autorepeat) = ein Schritt
+[435/514] [webkit] › tests/e2e/m3-qa.spec.ts:329:3 › QA M3-21: Undo/Redo pro Geste und Esc › Zwei einzelne Pfeiltasten-Drücke (losgelassen) sind zwei Undo-Schritte
+[436/514] [webkit] › tests/e2e/m3-qa.spec.ts:340:3 › QA M3-21: Undo/Redo pro Geste und Esc › Seitenleisten- und Steuerungsleisten-Eingabe bei Mehrfachauswahl = ein Schritt
+[437/514] [webkit] › tests/e2e/m3-qa.spec.ts:375:3 › QA M3-21: Undo/Redo pro Geste und Esc › Klick auf den Drehgriff mit minimaler Mausbewegung ändert die Drehung nicht
+[438/514] [webkit] › tests/e2e/m3-qa.spec.ts:393:3 › QA M3-22: Rundung ohne aufsummierte Fehler › Stand 20× hin- und zurückziehen (gleiche Pixel) landet wieder exakt am Ausgangspunkt
+[439/514] [webkit] › tests/e2e/m3-qa.spec.ts:419:3 › QA M3-22: Rundung ohne aufsummierte Fehler › Gruppe 10× um +37° und −37° drehen: Mittelpunkte driften nicht
+[440/514] [webkit] › tests/e2e/m3-qa.spec.ts:472:3 › QA M3-22: Rundung ohne aufsummierte Fehler › Größe 10× per Griff ändern und zurück: feste Kante einer gedrehten Fläche driftet nicht
+[441/514] [webkit] › tests/e2e/m3-qa.spec.ts:489:3 › QA M3-22: Rundung ohne aufsummierte Fehler › Übernommene Drehung ist exakt auf 0,1° gerundet (kein Gleitkomma-Rest)
+[442/514] [webkit] › tests/e2e/m3-qa.spec.ts:498:3 › QA M3-22: Rundung ohne aufsummierte Fehler › Eingaben werden auf 0,01 m bzw. 0,1° gerundet; Drehung wird auf 0–360 normiert
+[443/514] [webkit] › tests/e2e/m3-qa.spec.ts:511:3 › QA M3-22: Rundung ohne aufsummierte Fehler › Ungültige Maße (0, negativ, zu groß, Text) werden abgewiesen und nicht übernommen
+[444/514] [webkit] › tests/e2e/m3-qa.spec.ts:528:3 › QA M3-12/M3-13: Mehrfachauswahl › Gemischte Werte leer (Steuerungs- und Seitenleiste, Auswahlfelder), gleiche Werte gefüllt
+[445/514] [webkit] › tests/e2e/m3-qa.spec.ts:570:3 › QA M3-12/M3-13: Mehrfachauswahl › Gemischte Auswahl (Grundfläche + Geschäft): Breite für alle, Stände auf 100 m begrenzt
+[446/514] [webkit] › tests/e2e/m3-qa.spec.ts:586:3 › QA M3-12/M3-13: Mehrfachauswahl › Steuerungsleiste X bei Mehrfachauswahl mit verschiedenen X-Werten
+[447/514] [webkit] › tests/e2e/m3-qa.spec.ts:603:3 › QA M3-12/M3-13: Mehrfachauswahl › Drehgriff dreht eine Mehrfachauswahl um die gemeinsame Mitte
+[448/514] [webkit] › tests/e2e/m3-qa.spec.ts:630:3 › QA M3-08: Kategorien löschen und rückgängig › Verwendete Kategorie auf zwei Pages löschen: Rückfrage mit Anzahl, Abbrechen ändert nichts, Undo/Redo
+[449/514] [webkit] › tests/e2e/m3-qa.spec.ts:679:3 › QA M3-08: Kategorien löschen und rückgängig › Kategorie umbenennen auf leeren Namen: Feld zeigt danach wieder den gültigen Namen
+[450/514] [webkit] › tests/e2e/m3-qa.spec.ts:687:3 › QA M3-08: Kategorien löschen und rückgängig › Kategoriefarbe ändern wirkt auf alle Stände der Kategorie, eigene Farbe bleibt
+[451/514] [webkit] › tests/e2e/m3-qa.spec.ts:714:3 › QA M3-09: Beschriftungsvorlage – Grenzfälle › Leere Platzhalter, Zeilen mit Text, Sonderzeichen, unbekannte Platzhalter, lange Namen
+[452/514] [webkit] › tests/e2e/m3-qa.spec.ts:769:3 › QA M3-09: Beschriftungsvorlage – Grenzfälle › Schriftgröße: Grenzen, Beschriftung skaliert mit; Undo
+[453/514] [webkit] › tests/e2e/m3-qa.spec.ts:787:3 › QA M3-09: Beschriftungsvorlage – Grenzfälle › Beschriftung der Grundfläche: gedreht und mit langem Namen außerhalb der Fläche
+[454/514] [webkit] › tests/e2e/m3-qa.spec.ts:828:3 › QA M3-01/M3-18: Speichern und Neuladen › Grundflächen, Stände (alle Attribute) und Kategorien überstehen Speichern und Öffnen
+[455/514] [webkit] › tests/e2e/m3-qa.spec.ts:882:3 › QA M3-14/M3-15/M3-16/M3-18: Auswahl, Ebenen, Kopieren › Gesperrte Ebene: Auswahlrechteck und Cmd+A wählen nichts davon; ausgeblendete Ebene fängt beim Messen nicht
+[456/514] [webkit] › tests/e2e/m3-qa.spec.ts:906:3 › QA M3-14/M3-15/M3-16/M3-18: Auswahl, Ebenen, Kopieren › Shift+Klick auf Grundfläche ergänzt/entfernt; Klick ohne Ziehen auf ein Objekt der Gruppe wählt nur dieses
+[457/514] [webkit] › tests/e2e/m3-qa.spec.ts:920:3 › QA M3-14/M3-15/M3-16/M3-18: Auswahl, Ebenen, Kopieren › Ausschneiden + Einfügen auf anderer Page; Kopie mit leerer Nummer; Undo des Einfügens
+[458/514] [webkit] › tests/e2e/m3-qa.spec.ts:939:3 › QA M3-14/M3-15/M3-16/M3-18: Auswahl, Ebenen, Kopieren › Steuerungsleiste zeigt Werte live während des Ziehens
+[459/514] [webkit] › tests/e2e/m4-freespace.spec.ts:65:3 › M4: Freiflächen › M4-01/02/05: Freiflächen werden berechnet und beschriftet; Ebene ein-/ausblendbar ohne Undo
+[460/514] [webkit] › tests/e2e/m4-freespace.spec.ts:83:3 › M4: Freiflächen › M4-04: live während des Ziehens, Esc stellt wieder her; Löschen rechnet neu
+[461/514] [webkit] › tests/e2e/m4-freespace.spec.ts:99:3 › M4: Freiflächen › M4-03: Mindestbreite einstellbar, Undo-Schritt
+[462/514] [webkit] › tests/e2e/m4-freespace.spec.ts:113:3 › M4: Freiflächen › M4-14: überlappende Grundflächen – die frühere gewinnt
+[463/514] [webkit] › tests/e2e/m4-freespace.spec.ts:121:3 › M4: Fang › M4-06: Vorderkante – rastet ein, übernimmt die Drehung, gleitet, löst sich; Hilfslinie
+[464/514] [webkit] › tests/e2e/m4-freespace.spec.ts:138:3 › M4: Fang › M4-08: Cmd/Strg beim Ziehen schaltet den Fang aus
+[465/514] [webkit] › tests/e2e/m4-freespace.spec.ts:145:3 › M4: Fang › M4-07: Umschalter in der Werkzeugleiste sind Ansichtseinstellungen (kein Undo, nicht ungespeichert)
+[466/514] [webkit] › tests/e2e/m4-freespace.spec.ts:171:3 › M4: Fang › M4-15: Nachbarstände – bündig anliegen
+[467/514] [webkit] › tests/e2e/m4-freespace.spec.ts:181:3 › M4: Fang › M4-16: Raster – Grundfläche rastet mit ihrem Rand an ganzen Metern ein
+[468/514] [webkit] › tests/e2e/m4-freespace.spec.ts:199:3 › M4: Tasten beim Ziehen › M4-11: Shift beschränkt auf waagerecht
+[469/514] [webkit] › tests/e2e/m4-freespace.spec.ts:213:3 › M4: Tasten beim Ziehen › M4-12: Alt+Ziehen dupliziert (ein Undo-Schritt, Kopie ausgewählt, leere Nummer); Alt vor dem Loslassen lösen verschiebt nur
+[470/514] [webkit] › tests/e2e/m4-freespace.spec.ts:239:3 › M4: Tasten beim Ziehen › M4-20: Kurzbefehle wirken während des Ziehens nicht
+[471/514] [webkit] › tests/e2e/m4-freespace.spec.ts:253:3 › M4: Tasten beim Ziehen › Übersicht (?) nennt die Tasten beim Ziehen
+[472/514] [webkit] › tests/e2e/m4-freespace.spec.ts:264:3 › M4: Warnungen › M4-09/10: außerhalb orange, Überlappung rot; ignorieren pro Stand und global, jeweils mit Undo
+[473/514] [webkit] › tests/e2e/m4-freespace.spec.ts:304:3 › M4: Warnungen › M4-18: Warnzähler am Tab zeigt Probleme auf anderen Pages
+[474/514] [webkit] › tests/e2e/m4-qa.spec.ts:133:3 › QA M4-01/05/13: Freiflächen-Fälle aus spec.md §4 in der Oberfläche › Beispiel 50 × 10 m mit Stand 8 m bei x = 20: 20 × 10 und 22 × 10; nie hinter dem Stand, auch wenn er hinten steht
+[475/514] [webkit] › tests/e2e/m4-qa.spec.ts:145:3 › QA M4-01/05/13: Freiflächen-Fälle aus spec.md §4 in der Oberfläche › Berührung von außen belegt nichts; Eindringen genau 0,01 m belegt nichts, 0,02 m belegt
+[476/514] [webkit] › tests/e2e/m4-qa.spec.ts:167:3 › QA M4-01/05/13: Freiflächen-Fälle aus spec.md §4 in der Oberfläche › Eindringen genau 0,01 m an allen vier Seiten und an anderen Koordinaten belegt nichts (Gleitkomma)
+[477/514] [webkit] › tests/e2e/m4-qa.spec.ts:184:3 › QA M4-01/05/13: Freiflächen-Fälle aus spec.md §4 in der Oberfläche › Gedrehter Stand belegt seine volle Projektion (45°, 4 × 4 m → 5,66 m)
+[478/514] [webkit] › tests/e2e/m4-qa.spec.ts:191:3 › QA M4-01/05/13: Freiflächen-Fälle aus spec.md §4 in der Oberfläche › Seitlich überstehender Stand: nur der Teil innerhalb zählt; hinten überstehend ebenso
+[479/514] [webkit] › tests/e2e/m4-qa.spec.ts:198:3 › QA M4-01/05/13: Freiflächen-Fälle aus spec.md §4 in der Oberfläche › Gedrehte Grundfläche (30°) mit Stand an der Vorderseite
+[480/514] [webkit] › tests/e2e/m4-qa.spec.ts:209:3 › QA M4-01/05/13: Freiflächen-Fälle aus spec.md §4 in der Oberfläche › Zwei aneinanderliegende Grundflächen, Stand über der Fuge: belegt beide, keine Warnung „außerhalb“
+[481/514] [webkit] › tests/e2e/m4-qa.spec.ts:216:3 › QA M4-01/05/13: Freiflächen-Fälle aus spec.md §4 in der Oberfläche › Überlappende Grundflächen: frühere gewinnt, spätere L-förmig mit Hüllmaßen; Stand im Überlappungsbereich belegt nur die frühere
+[482/514] [webkit] › tests/e2e/m4-qa.spec.ts:240:3 › QA M4-01/05/13: Freiflächen-Fälle aus spec.md §4 in der Oberfläche › Mindestbreite: Grenzen 0,05–100 m, leere und ungültige Eingaben, Undo/Redo
+[483/514] [webkit] › tests/e2e/m4-qa.spec.ts:281:3 › QA M4-01/05/13: Freiflächen-Fälle aus spec.md §4 in der Oberfläche › Beschriftung erscheint erst ab 6 px Schrifthöhe; Freiflächen bleiben sichtbar
+[484/514] [webkit] › tests/e2e/m4-qa.spec.ts:300:3 › QA M4-04: Live-Aktualisierung ohne Reste › Ziehen (live), Esc, Drehen (Drehgriff, live), Maße, Löschen, Undo, Redo
+[485/514] [webkit] › tests/e2e/m4-qa.spec.ts:370:3 › QA M4-04: Live-Aktualisierung ohne Reste › Einfügen, Duplizieren, Pfeiltasten und Alt+Ziehen (live, Esc ohne Reste)
+[486/514] [webkit] › tests/e2e/m4-qa.spec.ts:415:3 › QA M4-04: Live-Aktualisierung ohne Reste › Grundfläche verschieben, Größe am Griff, Vorderseite wechseln, Page wechseln
+[487/514] [webkit] › tests/e2e/m4-qa.spec.ts:461:3 › QA M4-06/15/16/17: Fang › Vorderkante einer gedrehten Grundfläche: rastet ein, übernimmt die Drehung, gleitet, Hilfslinie, löst sich mit ursprünglicher Drehung
+[488/514] [webkit] › tests/e2e/m4-qa.spec.ts:497:3 › QA M4-06/15/16/17: Fang › Eingerastet: fängt am Ende der Vorderseite und an Nachbarständen (Hilfslinien)
+[489/514] [webkit] › tests/e2e/m4-qa.spec.ts:519:3 › QA M4-06/15/16/17: Fang › Nachbarstand: anliegen und fluchten bei gedrehten Ständen; nicht parallele Nachbarn fangen nicht
+[490/514] [webkit] › tests/e2e/m4-qa.spec.ts:541:3 › QA M4-06/15/16/17: Fang › Raster fängt nur bei eingeblendetem Raster; Nachbar hat Vorrang vor dem näheren Raster
+[491/514] [webkit] › tests/e2e/m4-qa.spec.ts:567:3 › QA M4-06/15/16/17: Fang › Vorderkante hat Vorrang vor Nachbarstand
+[492/514] [webkit] › tests/e2e/m4-qa.spec.ts:579:3 › QA M4-06/15/16/17: Fang › Mehrfachauswahl: Fang am gegriffenen Stand, Gruppe nur parallel verschoben, nicht gedreht
+[493/514] [webkit] › tests/e2e/m4-qa.spec.ts:606:3 › QA M4-06/15/16/17: Fang › Cmd/Strg während des Ziehens schaltet den Fang sofort aus und beim Loslassen wieder an
+[494/514] [webkit] › tests/e2e/m4-qa.spec.ts:620:3 › QA M4-06/15/16/17: Fang › Shift: eingerastet bleibt der Stand an der Vorderseite, nicht eingerastet nur 0°/45°/90°
+[495/514] [webkit] › tests/e2e/m4-qa.spec.ts:651:5 › QA M4-20/M3-21: Esc bricht jede Kombination ab › Verschieben: ohne Taste
+[496/514] [webkit] › tests/e2e/m4-qa.spec.ts:651:5 › QA M4-20/M3-21: Esc bricht jede Kombination ab › Verschieben: Alt gehalten (Kopie sichtbar)
+[497/514] [webkit] › tests/e2e/m4-qa.spec.ts:651:5 › QA M4-20/M3-21: Esc bricht jede Kombination ab › Verschieben: Cmd/Strg gehalten
+[498/514] [webkit] › tests/e2e/m4-qa.spec.ts:651:5 › QA M4-20/M3-21: Esc bricht jede Kombination ab › Verschieben: Shift während des Ziehens
+[499/514] [webkit] › tests/e2e/m4-qa.spec.ts:651:5 › QA M4-20/M3-21: Esc bricht jede Kombination ab › Verschieben: Alt + Cmd/Strg + Shift
+[500/514] [webkit] › tests/e2e/m4-qa.spec.ts:679:3 › QA M4-20/M3-21: Esc bricht jede Kombination ab › Drehen mit Shift, Größe ändern, Auswahlrechteck, Aufziehen mit dem Geschäfts-Werkzeug
+[501/514] [webkit] › tests/e2e/m4-qa.spec.ts:723:3 › QA M4-09/10/13/18: Warnungen und Zähler › Toleranz Überlappung: bündig und genau 0,01 m keine Warnung, 0,02 m rot
+[502/514] [webkit] › tests/e2e/m4-qa.spec.ts:751:3 › QA M4-09/10/13/18: Warnungen und Zähler › Toleranz „außerhalb“: 0,01 m überstehend keine Warnung, 0,02 m orange; gedrehter Stand mit überstehender Ecke
+[503/514] [webkit] › tests/e2e/m4-qa.spec.ts:762:3 › QA M4-09/10/13/18: Warnungen und Zähler › Gedrehter Stand (45°), dessen Ecke 0,013 m über die Vorderseite ragt, ist „außerhalb“
+[504/514] [webkit] › tests/e2e/m4-qa.spec.ts:771:3 › QA M4-09/10/13/18: Warnungen und Zähler › Zähler am Tab nach Ziehen, Undo, Redo, Löschen, Duplizieren, Einfügen, Pfeiltasten, Maßen, Ignorieren
+[505/514] [webkit] › tests/e2e/m4-qa.spec.ts:828:3 › QA M4-09/10/13/18: Warnungen und Zähler › Ignorieren bei Mehrfachauswahl: ein Undo-Schritt; projektweit aus: markiert ungespeichert und ist rückgängig machbar
+[506/514] [webkit] › tests/e2e/m4-qa.spec.ts:853:3 › QA M4-09/10/13/18: Warnungen und Zähler › Zähler bleibt nach Speichern und Öffnen gleich (Ignorieren und Abschalten werden gespeichert)
+[507/514] [webkit] › tests/e2e/m4-qa.spec.ts:873:3 › QA M4-22: Dateiformat › Version-1-Datei (echte M3-Datei) öffnen: migriert, Warnungen aktiv; Speichern schreibt Version 2
+[508/514] [webkit] › tests/e2e/m4-qa.spec.ts:895:3 › QA M4-22: Dateiformat › Datei einer neueren Version wird mit deutscher Meldung abgewiesen, das offene Projekt bleibt
+[509/514] [webkit] › tests/e2e/m4-qa.spec.ts:920:3 › QA M4: weitere Grenzfälle › Ausgeblendete Ebenen fangen nicht (Grundflächen: keine Vorderkante, Geschäfte: kein Nachbar)
+[510/514] [webkit] › tests/e2e/m4-qa.spec.ts:933:3 › QA M4: weitere Grenzfälle › M4-19: Schlüssel einer Freifläche bleibt, solange dieselben Stände die Lücke begrenzen
+[511/514] [webkit] › tests/e2e/m4-qa.spec.ts:944:3 › QA M4: weitere Grenzfälle › Esc bricht auch das Verschieben des Hintergrunds ab (spec Allgemein, QA-M3-01)
+[512/514] [webkit] › tests/e2e/m4-qa.spec.ts:966:3 › QA M4: weitere Grenzfälle › Esc bricht das Ziehen ab, auch wenn vorher ein Zahlenfeld den Fokus hatte
+[513/514] [webkit] › tests/e2e/m4-qa.spec.ts:982:3 › QA M4: weitere Grenzfälle › Fang-Umschalter: Tooltips mit Shortcut, Zustand wird mitgespeichert
+[514/514] [webkit] › tests/e2e/smoke.spec.ts:4:3 › Smoke › App startet ohne Fehler und zeigt die Tab-Leiste
+  7 skipped
+  507 passed (2.2m)
+EXIT 0
