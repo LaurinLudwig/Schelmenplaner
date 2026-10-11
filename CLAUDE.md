@@ -38,7 +38,8 @@ BACKLOG.md ist die Quelle für den Projektstand. Vor jeder Arbeit lesen, nach je
 | `npm run lint` | Linter (oxlint, Warnungen gelten als Fehler) |
 | `npm test` | Unit-Tests (Vitest, `src/**/*.test.ts`) |
 | `npm run test:watch` | Unit-Tests im Watch-Modus |
-| `npm run test:e2e` | E2E-Tests (Playwright, `tests/e2e/`, Chromium + WebKit; startet den Dev-Server selbst) |
+| `npm run test:e2e` | E2E-Tests (Playwright, `tests/e2e/`, Chromium + WebKit; startet den Dev-Server selbst). Ohne Lasttests |
+| `npm run test:perf` | Lasttests (`tests/e2e/*perf.spec.ts`, 500 Stände, ≥ 50 Bilder/s) seriell mit einem Worker, getrennt von `test:e2e` (parallele Browser verfälschen die Bildrate) |
 | `npx playwright install chromium webkit` | Browser für die E2E-Tests installieren (einmalig) |
 | `npm run build` | Typecheck + Produktions-Build nach `dist/` |
 | `npm run check` | typecheck, lint, test und build nacheinander |

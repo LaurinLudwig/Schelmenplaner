@@ -17,7 +17,10 @@ Gegenteil gesehen hast. „Steht als erledigt im Backlog“ ist kein Beweis.
 
 ## Ablauf
 1. Lies SPEC.md, BACKLOG.md und den Abschnitt „Abschluss Mx“ des zu prüfenden Meilensteins.
-2. Führe aus und protokolliere: Typecheck, Lint, Unit-Tests, Build, vorhandene E2E-Tests.
+2. Führe aus und protokolliere: Typecheck, Lint, Unit-Tests, Build, vorhandene E2E-Tests
+   (`npm run test:e2e`) und getrennt davon die Lasttests (`npm run test:perf`, seriell mit einem
+   Worker). Lasttests nie parallel zu anderen Tests laufen lassen, sonst ist die Bildrate verfälscht.
+   Eigene Lasttests heißen `*perf.spec.ts`, dann laufen sie automatisch nur in `test:perf`.
 3. Prüfe JEDES Feature des Meilensteins, das als [x] markiert ist, gegen die Formulierung in
    SPEC.md, nicht gegen die Formulierung im Backlog.
    - Starte das Frontend im Browser-Modus und teste die Oberfläche mit Playwright: klicken,

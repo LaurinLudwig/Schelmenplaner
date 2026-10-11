@@ -72,7 +72,13 @@ const dist = (a: Vec, b: Vec) => Math.hypot(a.x - b.x, a.y - b.y);
 export function hitHandle(g: SelectionGeometry | null, p: Vec): HandleHit | null {
   if (!g) return null;
   if (dist(g.rotateHandle, p) <= HANDLE_HIT) return { kind: 'rotate' };
-  for (const r of g.resize) if (dist(r.p, p) <= HANDLE_HIT) return { kind: 'resize', handle: r.handle };
+  // Liegen Griffe übereinander (sehr kleine Fläche auf dem Bildschirm), gewinnt der nächstgelegene
+  let best: { handle: Handle; d: number } | null = null;
+  for (const r of g.resize) {
+    const d = dist(r.p, p);
+    if (d <= HANDLE_HIT && (!best || d < best.d)) best = { handle: r.handle, d };
+  }
+  if (best) return { kind: 'resize', handle: best.handle };
   for (const e of g.edges) if (dist(closestPointOnSegment(p, e.a, e.b), p) <= HANDLE_HIT - 1) return { kind: 'edge', edge: e.edge };
   return null;
 }

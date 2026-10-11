@@ -55,6 +55,9 @@ ungefragt umgesetzt; erst nach Freigabe wandert ein Eintrag in einen Meilenstein
 - [x] [QA] QA-M2-05 (gering, Klärung; M2-09) „Raster ein/aus“ ist ein Undo-Schritt und markiert das Projekt als ungespeichert (`src/state/pageSettings.ts:25-31`). In Illustrator ist das eine reine Ansichtsoption. Gewollt? **Erledigt 2026-10-10:** Raster ein/aus ist eine Ansichtseinstellung (`changeView`): kein Undo-Schritt, keine Änderungsmarkierung, wird beim Speichern mitgeschrieben.
 - [x] [QA] QA-M2-06 (gering, Klärung; M2-04) Ein gesperrter Hintergrund lässt sich weiter über das Zahlenfeld drehen (und per Planmaßstab umskalieren); die Sperre wirkt nur auf das Ziehen. Soll sie auch Drehen schützen? **Erledigt 2026-10-10:** Gesperrt sind Drehung und Planmaßstab deaktiviert; Kalibrieren bleibt möglich. Der Planmaßstab sperrt nicht mehr automatisch (nur die 2-Punkt-Kalibrierung).
 - [x] [QA] QA-M2-07 (gering; M2-06) Keine Plausibilitätsprüfung der Kalibrierung (0,001 m oder 1.000.000 m werden still übernommen); „An Fenster anpassen“ zeigt Pläne über ca. 5 km wegen der Zoomgrenze 0,2 px/m nicht vollständig. Ein Hinweis bei ungewöhnlichen Planmaßen würde Faktor-1000-Fehler (vgl. QA-M2-01) auffangen. **Erledigt 2026-10-10:** Rückfrage „Maßstab prüfen“: PDF außerhalb 1:50–1:10.000, Bild/SVG mit Planbreite außerhalb 10 m–5 km, Neukalibrierung mit mehr als Faktor 2 Abweichung.
+- [x] [QA] QA-M3-L1 (gering, Test-Infrastruktur; M3-23) Der Lasttest `tests/e2e/m3-perf.spec.ts` schlägt im vollen parallelen `npm run test:e2e` in WebKit fehl (47,6 Bilder/s beim Verschieben, `qa/logs/m3-e2e-final.log`); allein gestartet besteht er (55–60). Lasttests getrennt bzw. mit einem Worker laufen lassen. Siehe `qa/M3.md`. **Erledigt 2026-10-11:** `npm run test:perf` (seriell, ein Worker); `test:e2e` ohne Lasttests; CLAUDE.md und QA-Agent ergänzt.
+- [x] [QA] QA-M3-L2 (Idee; M3-05) Waagerechtes Aufziehen mit dem Geschäfts-Werkzeug erzeugt einen Stand 10 × 0,1 m, der danach Standardmaß für Klicks wird. Mindestmaß beim Aufziehen erwägen. Siehe `qa/M3.md`. **Erledigt 2026-10-11:** unter 0,5 m in einer Richtung zählt Aufziehen als Klick; nur plausible Maße werden Standard (Spec §2/§3).
+- [x] [QA] QA-M3-L3 (gering, Doku) `tests/fixtures/README.md` Punkt 4: Einfügen von einer anderen Page erfolgt an derselben Position, nicht „1 m versetzt“. **Erledigt 2026-10-11:** Regel festgelegt (auf derselben Page 1 m versetzt, auch nach Ausschneiden; andere Page gleiche Position), Spec und README angepasst.
 
 ---
 
@@ -110,29 +113,29 @@ ungefragt umgesetzt; erst nach Freigabe wandert ein Eintrag in einen Meilenstein
 
 ## M3 – Grundflächen, Geschäfte, Seitenleiste, Steuerungsleiste, Beschriftung
 Entscheidungen aus der Planung (2026-10-10) stehen in `spec.md` (Begriffe, §2, §3, Allgemein, NFA).
-- [x] M3-01 Grundfläche = Rechteck, frei rotierbar, Breite = Länge der Vorderseite, Tiefe senkrecht dazu; nur Rechtecke; Position = Mittelpunkt, Drehung um den Mittelpunkt (Begriffe)
-- [x] M3-02 Grundflächen-Werkzeug: Rechteck aufziehen (Klick = 20 × 8 m), drehen per Drehgriff (Shift 15°) und numerisch (§2, Layout)
-- [x] M3-03 Vorderseite per Klick auf eine Kante festlegen, deutlich markiert; zusätzlich Kantenwähler in der Seitenleiste. Beim Wechsel bleibt die Fläche optisch exakt an derselben Stelle, nur die Markierung wandert (mit Test abgesichert) (§2)
-- [x] M3-04 Automatische Grundflächen-Beschriftung mit Name und Maßen, z. B. „50 × 10 m“: horizontal, feste Schriftgröße, außerhalb der Fläche vor der Mitte der Vorderseite (§2)
-- [x] M3-05 Geschäfts-Werkzeug: Klick legt Stand mit Standardmaß an (3 × 3 m, danach zuletzt angelegtes Maß), Ziehen zieht ihn auf (§3, Layout)
-- [x] M3-06 Geschäfte frei verschieben und drehen: Drehgriff und numerisch, Shift rastet in 15°-Schritten ein; Größe nur über Zahlen (§3)
-- [x] M3-07 Geschäfts-Attribute in der Seitenleiste: Platznummer, Geschäftsname, Eigentümer, Typ/Ware, Breite, Tiefe, Strom in kW, Anschlussart (230 V / CEE 16 A / CEE 32 A), Notiz (§3)
-- [x] M3-08 Kategorien (Name + Farbe, projektweit) im Seitenleisten-Bereich „Kategorien“ anlegen, umbenennen, umfärben, löschen; Löschen einer verwendeten Kategorie mit Rückfrage, Stände verlieren die Kategorie (§3)
-- [x] M3-19 Eigene Farbe pro Stand, überschreibt die Kategoriefarbe; ohne beides neutrales Grau (§3)
-- [x] M3-09 Standbeschriftung mittig aus konfigurierbarer Vorlage mit Platzhaltern; leere Zeilen entfallen. Vorlage und Schriftgröße projektweit in einem eigenen Seitenleisten-Bereich „Beschriftung“ (bis M6) (§3)
-- [x] M3-10 Standbeschriftung immer horizontal, unabhängig von der Drehung, auf oberster Ebene (§3)
-- [x] M3-11 Feste Schriftgröße in Planeinheiten, skaliert mit dem Zoom; Text darf über den Stand ragen, nichts wird gekürzt oder verkleinert (§3)
-- [x] M3-12 Steuerungsleiste: X, Y, Breite, Tiefe, Drehung des ausgewählten Objekts direkt bearbeitbar; bei Mehrfachauswahl unterschiedliche Werte als leeres Feld, Eingabe gilt für alle (Layout, Allgemein)
-- [x] M3-13 Seitenleiste: Eigenschaften des ausgewählten Objekts; bei Mehrfachauswahl gemeinsame Felder, unterschiedliche Werte leer, Eingabe gilt für alle (Layout, Allgemein)
-- [x] M3-14 Ebenen-Panel: Ebenen (Hintergrund, Grundflächen, Freiflächen, Geschäfte, Infrastruktur, Beschriftung) ein-/ausblendbar und sperrbar (Ansichtseinstellung, kein Undo); jede Ebene erscheint, sobald ihre Objekte existieren; eine einzige Hintergrund-Sperre (aus E-13) (Layout, Allgemein)
-- [x] M3-15 Mehrfachauswahl: Shift+Klick, Auswahlrechteck (nur vollständig enthaltene Objekte); Ziehen auf nicht ausgewählter Grundfläche = Auswahlrechteck (Allgemein, §2)
-- [x] M3-16 Kopieren/Einfügen (interne Zwischenablage, auch zwischen Pages), Duplizieren um 1 m versetzt; Kopien mit leerer Platznummer (Allgemein)
-- [x] M3-17 Verschieben per Pfeiltasten (0,1 m, mit Shift 1 m), Entf/Backspace löscht (Allgemein)
-- [x] M3-18 Messwerkzeug fängt an Ecken und Kanten von Objekten (nur sichtbare Ebenen) (Messwerkzeug)
-- [x] M3-20 Größe von Grundflächen per Ziehen an 8 Griffen ändern; gegenüberliegende Kante/Ecke bleibt fest (§2)
-- [x] M3-21 Undo: Ziehen, Drehen, Aufziehen, Größe ändern = genau ein Schritt; Feldänderung = ein Schritt; gedrückt gehaltene Pfeiltaste = ein Schritt; Esc bricht eine laufende Geste ab (Allgemein)
-- [x] M3-22 Rundung beim Übernehmen: Positionen und Maße 0,01 m, Drehung 0,1° (Begriffe)
-- [x] M3-23 Lasttest 500 Stände auf einer Page: ≥ 50 Bilder/s beim Zoomen, Verschieben der Ansicht und Ziehen eines Stands, Chromium und WebKit (NFA, Abnahmekriterium; Teil von Q-04)
+- [x] M3-01 Grundfläche = Rechteck, frei rotierbar, Breite = Länge der Vorderseite, Tiefe senkrecht dazu; nur Rechtecke; Position = Mittelpunkt, Drehung um den Mittelpunkt (Begriffe) (QA ✓ M3)
+- [x] M3-02 Grundflächen-Werkzeug: Rechteck aufziehen (Klick = 20 × 8 m), drehen per Drehgriff (Shift 15°) und numerisch (§2, Layout) (QA ✓ M3)
+- [x] M3-03 Vorderseite per Klick auf eine Kante festlegen, deutlich markiert; zusätzlich Kantenwähler in der Seitenleiste. Beim Wechsel bleibt die Fläche optisch exakt an derselben Stelle, nur die Markierung wandert (mit Test abgesichert) (§2) (QA ✓ M3)
+- [x] M3-04 Automatische Grundflächen-Beschriftung mit Name und Maßen, z. B. „50 × 10 m“: horizontal, feste Schriftgröße, außerhalb der Fläche vor der Mitte der Vorderseite (§2) (QA ✓ M3)
+- [x] M3-05 Geschäfts-Werkzeug: Klick legt Stand mit Standardmaß an (3 × 3 m, danach zuletzt angelegtes Maß), Ziehen zieht ihn auf (§3, Layout) (QA ✓ M3)
+- [x] M3-06 Geschäfte frei verschieben und drehen: Drehgriff und numerisch, Shift rastet in 15°-Schritten ein; Größe nur über Zahlen (§3) (QA M3: Nacharbeit, QA-M3-03 in `qa/M3.md`) **Erledigt 2026-10-11:** QA-M3-03 behoben (3-px-Toleranz am Drehgriff).
+- [x] M3-07 Geschäfts-Attribute in der Seitenleiste: Platznummer, Geschäftsname, Eigentümer, Typ/Ware, Breite, Tiefe, Strom in kW, Anschlussart (230 V / CEE 16 A / CEE 32 A), Notiz (§3) (QA ✓ M3)
+- [x] M3-08 Kategorien (Name + Farbe, projektweit) im Seitenleisten-Bereich „Kategorien“ anlegen, umbenennen, umfärben, löschen; Löschen einer verwendeten Kategorie mit Rückfrage, Stände verlieren die Kategorie (§3) (QA M3: Nacharbeit, QA-M3-06 in `qa/M3.md`) **Erledigt 2026-10-11:** QA-M3-06 behoben (Feld zeigt nach abgewiesenem Namen wieder den gültigen).
+- [x] M3-19 Eigene Farbe pro Stand, überschreibt die Kategoriefarbe; ohne beides neutrales Grau (§3) (QA ✓ M3)
+- [x] M3-09 Standbeschriftung mittig aus konfigurierbarer Vorlage mit Platzhaltern; leere Zeilen entfallen. Vorlage und Schriftgröße projektweit in einem eigenen Seitenleisten-Bereich „Beschriftung“ (bis M6) (§3) (QA ✓ M3)
+- [x] M3-10 Standbeschriftung immer horizontal, unabhängig von der Drehung, auf oberster Ebene (§3) (QA ✓ M3)
+- [x] M3-11 Feste Schriftgröße in Planeinheiten, skaliert mit dem Zoom; Text darf über den Stand ragen, nichts wird gekürzt oder verkleinert (§3) (QA ✓ M3)
+- [x] M3-12 Steuerungsleiste: X, Y, Breite, Tiefe, Drehung des ausgewählten Objekts direkt bearbeitbar; bei Mehrfachauswahl unterschiedliche Werte als leeres Feld, Eingabe gilt für alle (Layout, Allgemein) (QA M3: Nacharbeit, QA-M3-07 in `qa/M3.md`) **Erledigt 2026-10-11:** QA-M3-07 entschieden: X/Y = Mitte der Auswahl, verschiebt als Ganzes; Spec angepasst.
+- [x] M3-13 Seitenleiste: Eigenschaften des ausgewählten Objekts; bei Mehrfachauswahl gemeinsame Felder, unterschiedliche Werte leer, Eingabe gilt für alle (Layout, Allgemein) (QA ✓ M3)
+- [x] M3-14 Ebenen-Panel: Ebenen (Hintergrund, Grundflächen, Freiflächen, Geschäfte, Infrastruktur, Beschriftung) ein-/ausblendbar und sperrbar (Ansichtseinstellung, kein Undo); jede Ebene erscheint, sobald ihre Objekte existieren; eine einzige Hintergrund-Sperre (aus E-13) (Layout, Allgemein) (QA ✓ M3)
+- [x] M3-15 Mehrfachauswahl: Shift+Klick, Auswahlrechteck (nur vollständig enthaltene Objekte); Ziehen auf nicht ausgewählter Grundfläche = Auswahlrechteck (Allgemein, §2) (QA ✓ M3)
+- [x] M3-16 Kopieren/Einfügen (interne Zwischenablage, auch zwischen Pages), Duplizieren um 1 m versetzt; Kopien mit leerer Platznummer (Allgemein) (QA ✓ M3)
+- [x] M3-17 Verschieben per Pfeiltasten (0,1 m, mit Shift 1 m), Entf/Backspace löscht (Allgemein) (QA ✓ M3)
+- [x] M3-18 Messwerkzeug fängt an Ecken und Kanten von Objekten (nur sichtbare Ebenen) (Messwerkzeug) (QA ✓ M3)
+- [x] M3-20 Größe von Grundflächen per Ziehen an 8 Griffen ändern; gegenüberliegende Kante/Ecke bleibt fest (§2) (QA M3: Nacharbeit, QA-M3-02 in `qa/M3.md`) **Erledigt 2026-10-11:** QA-M3-02 behoben (Höchstmaß 2000 m auch am Griff).
+- [x] M3-21 Undo: Ziehen, Drehen, Aufziehen, Größe ändern = genau ein Schritt; Feldänderung = ein Schritt; gedrückt gehaltene Pfeiltaste = ein Schritt; Esc bricht eine laufende Geste ab (Allgemein) (QA M3: Nacharbeit, QA-M3-01, QA-M3-05 in `qa/M3.md`) **Erledigt 2026-10-11:** QA-M3-01 behoben (Tastatur-Reihenfolge fest im Code, Interaktion vor Kurzbefehlen), QA-M3-05 behoben (jeder Pfeiltasten-Druck ein Schritt, gehaltene Taste einer).
+- [x] M3-22 Rundung beim Übernehmen: Positionen und Maße 0,01 m, Drehung 0,1° (Begriffe) (QA M3: Nacharbeit, QA-M3-04 in `qa/M3.md`) **Erledigt 2026-10-11:** QA-M3-04 behoben (Drehung exakt auf 0,1°).
+- [x] M3-23 Lasttest 500 Stände auf einer Page: ≥ 50 Bilder/s beim Zoomen, Verschieben der Ansicht und Ziehen eines Stands, Chromium und WebKit (NFA, Abnahmekriterium; Teil von Q-04) (QA ✓ M3)
 
 ## M4 – Freiflächen, Fang, Warnungen
 - [ ] M4-01 Freiflächen-Kernlogik aus dem Prototyp mit Unit-Tests: Achse entlang der Vorderseite [0, Breite], belegtes Intervall = Projektion der Schnittmenge, Freiflächen = [0, Breite] minus Vereinigung, volle Tiefe, nie hinter einem Stand (§4)
@@ -437,3 +440,12 @@ Einzeln gemessen erreicht WebKit 57–60 Bilder/s. Beim ersten Messen lag WebKit
 
 ### Nachtrag M3 (2026-10-10)
 - Testprojekt `tests/fixtures/last-500-staende.schelme` für die manuelle Prüfung der Bildrate in der Desktop-App: 500 Stände auf 4 Festplätzen (je 6 Grundflächen à 170 m, teils gedreht), 5 Kategorien. Erzeugt mit `node scripts/make-load-project.mjs`; `src/core/fixtures.test.ts` prüft, dass es sich mit dem echten Ladecode vollständig öffnet. Anleitung in `tests/fixtures/README.md`.
+
+### QA-Nacharbeit M3 (2026-10-11)
+Befunde aus `qa/M3.md` abgearbeitet; Details im Abschnitt „Behoben“ des Berichts.
+- **QA-M3-01 (hoch):** Ein einziger globaler Tastatur-Handler mit fester Reihenfolge: Dialoge, laufende Interaktion, Kurzbefehle. Unabhängig davon, wann sich etwas anmeldet. E2E-Test über mehrfache Seitenwechsel und alle Werkzeuge.
+- **QA-M3-07:** Spec angepasst. X/Y bei Mehrfachauswahl = Mitte der Auswahl (Illustrator); Breite, Tiefe, Drehung und Attribute gelten je Objekt, die Drehung um den eigenen Mittelpunkt.
+- **QA-M3-05:** Jeder Pfeiltasten-Druck ein Schritt, gehaltene Taste einer (über `KeyboardEvent.repeat` statt Zeitfenster).
+- **QA-M3-03, -04, -02, -06, L2, L3, L1:** 3-px-Toleranz am Drehgriff; exakt gerundete Drehungen; Höchstmaß am Griff; Kategoriename-Feld; Mindestmaß beim Aufziehen; Einfüge-Regel; `npm run test:perf`.
+- **Geänderter Entwicklertest:** `m3-objects.spec.ts` „Duplizieren, Kopieren/Einfügen …, Pfeiltasten“ erwartete 1 Undo-Schritt für 6 einzelne Pfeiltasten-Drücke; nach QA-M3-05 sind es 6. Entfernte `test.fail`: 3 × QA-M3-01, QA-M3-02, -03, -04, -05, -06.
+- Läufe: `npm run check` grün (103 Unit-Tests), `npm run test:e2e` 397 bestanden, 7 übersprungen, `npm run test:perf` 4 bestanden (WebKit 57–60, Chromium 60 Bilder/s).

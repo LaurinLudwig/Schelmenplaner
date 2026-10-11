@@ -15,6 +15,12 @@ export const LIMITS: Record<ObjectKind, { min: number; max: number }> = {
 };
 export const LAYER_OF: Record<ObjectKind, LayerId> = { area: 'areas', stand: 'stands' };
 
+/**
+ * Beim Aufziehen zählt eine Geste mit weniger als 0,5 m in einer Richtung als Klick (Standardmaß),
+ * damit versehentlich flache Rechtecke wie 10 × 0,1 m nicht entstehen (QA-M3-L2).
+ */
+export const MIN_DRAW_SIZE = 0.5;
+
 /** Neutrale Farbe für Stände ohne Kategorie und eigene Farbe. */
 export const DEFAULT_STAND_COLOR = '#a7adb3';
 
@@ -72,8 +78,6 @@ export interface Clipboard {
   areas: Area[];
   stands: Stand[];
   sourcePageId: Id;
-  /** Ausgeschnitten: die Originale existieren nicht mehr. */
-  cut: boolean;
 }
 
 /**

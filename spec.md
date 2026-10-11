@@ -58,12 +58,14 @@ Freiflächen-Logik wurde bereits erfolgreich getestet (prototype/freiflaechen.ht
 
 ### 2. Grundflächen
 - Rechteck mit dem Grundflächen-Werkzeug aufziehen, drehen, Vorderseite per Klick auf eine Kante
-  festlegen (deutlich markiert). Klick ohne Ziehen legt eine Grundfläche 20 × 8 m an.
+  festlegen (deutlich markiert). Klick ohne Ziehen legt eine Grundfläche 20 × 8 m an; ebenso ein
+  Aufziehen mit weniger als 0,5 m in einer Richtung.
 - Vorderseite wechseln: Die Fläche bleibt optisch exakt an derselben Stelle, nur die Markierung der
   Vorderseite wandert. Breite und Tiefe beziehen sich danach auf die neue Vorderseite (können tauschen),
   die angezeigte Drehung kann um 90°/180° springen. Zusätzlich Kantenwähler in der Seitenleiste.
 - Größe zusätzlich per Ziehen an 8 Griffen (Ecken, Kantenmitten) änderbar; die gegenüberliegende
-  Kante bzw. Ecke bleibt fest. Drehen per Drehgriff (Shift = 15°-Schritte) und numerisch.
+  Kante bzw. Ecke bleibt fest. Es gelten dieselben Grenzen wie in den Zahlenfeldern (0,5–2000 m).
+  Drehen per Drehgriff (Shift = 15°-Schritte) und numerisch.
 - Verschieben: Ein Klick wählt die Grundfläche aus; nur eine bereits ausgewählte Grundfläche wird per
   Ziehen verschoben. Ziehen auf einer nicht ausgewählten Grundfläche zieht ein Auswahlrechteck auf.
 - Beschriftung automatisch mit Name und Maßen, z. B. „Grundfläche Nord · 50 × 10 m“: horizontal, feste
@@ -72,7 +74,8 @@ Freiflächen-Logik wurde bereits erfolgreich getestet (prototype/freiflaechen.ht
 
 ### 3. Geschäfte
 - Mit dem Geschäfts-Werkzeug anlegen (Klick: Standardmaß, anfangs 3 × 3 m, danach das zuletzt
-  angelegte Maß; Ziehen: Rechteck aufziehen), frei verschieben und drehen (Drehgriff und numerisch,
+  angelegte plausible Maß, also beide Seiten mindestens 0,5 m; Ziehen: Rechteck aufziehen, unter 0,5 m in
+  einer Richtung zählt es als Klick), frei verschieben und drehen (Drehgriff und numerisch,
   Einrasten in 15°-Schritten mit gedrückter Shift-Taste). Die Größe eines Stands ändert sich nur über
   Zahlenfelder, nicht per Griff.
 - Fang an der Vorderseite: Beim Ziehen in eine Grundfläche rastet der Stand an der Vorderseite ein
@@ -212,14 +215,25 @@ Freiflächen-Logik wurde bereits erfolgreich getestet (prototype/freiflaechen.ht
 - Mehrfachauswahl (Shift+Klick, Auswahlrechteck), Kopieren/Einfügen, Duplizieren,
   Verschieben per Pfeiltasten (0,1 m, mit Shift 1 m), Entf zum Löschen.
   - Auswahlrechteck wählt nur Objekte, die vollständig darin liegen; Shift ergänzt.
-  - Steuerungsleiste und Seitenleiste bei Mehrfachauswahl: unterschiedliche Werte erscheinen als
-    leeres Feld; eine Eingabe gilt für alle ausgewählten Objekte (Drehgriff dreht um die gemeinsame Mitte).
-  - Kopieren/Einfügen über eine interne Zwischenablage, auch zwischen Pages. Kopien erhalten eine leere,
-    nicht fixierte Platznummer. Duplizieren (Cmd/Strg+D) setzt die Kopie um 1 m nach rechts unten versetzt.
+  - Steuerungsleiste und Seitenleiste bei Mehrfachauswahl: X und Y zeigen die Mitte der Auswahl; eine
+    Eingabe verschiebt die Auswahl als Ganzes (wie in Illustrator). Breite, Tiefe, Drehung und Attribute:
+    unterschiedliche Werte erscheinen als leeres Feld, eine Eingabe gilt für jedes ausgewählte Objekt;
+    die Drehung erfolgt dabei jeweils um den eigenen Mittelpunkt. Der Drehgriff dreht eine
+    Mehrfachauswahl um die gemeinsame Mitte (Entscheidung 2026-10-11, QA-M3-07).
+  - Griffe (Drehgriff, Größengriffe, Kanten) haben eine Toleranz von 3 px: Bewegungen darunter zählen
+    als Klick, ohne Änderung und ohne Undo-Schritt.
+  - Kopieren/Einfügen über eine interne Zwischenablage, auch zwischen Pages. Einfügen auf derselben Page
+    setzt die Kopie um 1 m nach rechts unten versetzt, jedes weitere Einfügen 1 m weiter; auf einer
+    anderen Page landet sie an derselben Position (liegt diese außerhalb des sichtbaren Bereichs, mittig
+    in der Ansicht). Kopien erhalten eine leere, nicht fixierte Platznummer. Duplizieren (Cmd/Strg+D)
+    setzt die Kopie um 1 m nach rechts unten versetzt.
   - Beim Verschieben beschränkt Shift die Richtung auf waagerecht/senkrecht/45°; Alt+Ziehen dupliziert
     die Auswahl (Illustrator-Konventionen, ab M4; Entscheidung 2026-10-10).
   - Ein Ziehen, Drehen oder Aufziehen ist genau ein Undo-Schritt; ebenso eine Feldänderung in der
-    Seiten- oder Steuerungsleiste und eine gedrückt gehaltene Pfeiltaste.
+    Seiten- oder Steuerungsleiste. Jeder einzelne Pfeiltasten-Druck ist ein eigener Undo-Schritt; nur
+    eine gedrückt gehaltene Taste (Tastenwiederholung) ergibt zusammen einen Schritt (QA-M3-05).
+  - Esc bricht eine laufende Interaktion (Ziehen, Aufziehen, Messen, Kalibrieren) immer zuerst ab, erst
+    danach greifen globale Kurzbefehle wie „Auswahl aufheben“ (QA-M3-01).
 - Oberfläche auf Deutsch, auch alle Fehlermeldungen.
 - Zahleneingaben: Komma als Dezimaltrennzeichen, Punkt wird ebenfalls als Dezimaltrennzeichen
   akzeptiert. Eingabefelder zeigen keine Tausendertrennzeichen (nur reine Anzeigen).

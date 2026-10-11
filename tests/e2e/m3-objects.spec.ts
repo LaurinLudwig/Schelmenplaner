@@ -346,13 +346,13 @@ test.describe('M3: Auswahl, Kopieren, Tastatur', () => {
     await page.keyboard.press(`${MOD}+d`);
     let st = (await activePage(page)).stands;
     expect(st[1]).toMatchObject({ cx: 1, cy: 1, nr: '', name: 'A' });
-    // Pfeiltasten: 0,1 m bzw. 1 m; gehalten ein Undo-Schritt
+    // Pfeiltasten: 0,1 m bzw. 1 m; jeder Druck ein Undo-Schritt (QA-M3-05), gehalten einer
     const n0 = await pastLen(page);
     for (let i = 0; i < 5; i++) await page.keyboard.press('ArrowRight');
     await page.keyboard.press('Shift+ArrowDown');
     st = (await activePage(page)).stands;
     expect(st[1]).toMatchObject({ cx: 1.5, cy: 2 });
-    expect(await pastLen(page)).toBe(n0 + 1);
+    expect(await pastLen(page)).toBe(n0 + 6);
     // Kopieren und auf neuer Page einfügen: gleiche Position
     await page.keyboard.press(`${MOD}+c`);
     await page.getByRole('button', { name: 'Festplatz-Tab hinzufügen' }).click();

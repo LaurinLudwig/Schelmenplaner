@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { fmt } from '../../../core/format';
 import type { Vec } from '../../../core/model/types';
-import { AREA_DEFAULT } from '../../../core/objects';
+import { AREA_DEFAULT, MIN_DRAW_SIZE } from '../../../core/objects';
 import { addArea, addStand, standDefaultSize } from '../../../state/objects';
 import type { ToolContext, ToolHandlers } from './types';
 
@@ -15,8 +15,9 @@ const HINT = {
 
 /**
  * Grundflächen-Werkzeug (F) und Geschäfts-Werkzeug (G): Rechteck aufziehen (achsenparallel,
- * Vorderseite unten) oder klicken für das Standardmaß. Das Werkzeug bleibt aktiv; das neue Objekt
- * ist ausgewählt. Anlegen ist ein Undo-Schritt.
+ * Vorderseite unten) oder klicken für das Standardmaß. Unter 0,5 m in einer Richtung zählt das
+ * Aufziehen als Klick. Das Werkzeug bleibt aktiv; das neue Objekt ist ausgewählt. Anlegen ist ein
+ * Undo-Schritt.
  */
 export function useCreateTool(ctx: ToolContext, kind: 'area' | 'stand', active: boolean): ToolHandlers {
   const [draft, setDraft] = useState<{ a: Vec; b: Vec; screen: Vec } | null>(null);
@@ -42,11 +43,13 @@ export function useCreateTool(ctx: ToolContext, kind: 'area' | 'stand', active: 
     onPointerUp(p) {
       if (!active || !draft) return;
       setDraft(null);
-      const clicked = Math.hypot(p.screen.x - draft.screen.x, p.screen.y - draft.screen.y) < CLICK_PX;
+      const w = Math.abs(p.world.x - draft.a.x);
+      const d = Math.abs(p.world.y - draft.a.y);
+      const clicked = Math.hypot(p.screen.x - draft.screen.x, p.screen.y - draft.screen.y) < CLICK_PX || w < MIN_DRAW_SIZE || d < MIN_DRAW_SIZE;
       const size = defaultSize();
       const rect = clicked
         ? { cx: draft.a.x, cy: draft.a.y, w: size.w, d: size.d, rot: 0 }
-        : { cx: (draft.a.x + p.world.x) / 2, cy: (draft.a.y + p.world.y) / 2, w: Math.abs(p.world.x - draft.a.x), d: Math.abs(p.world.y - draft.a.y), rot: 0 };
+        : { cx: (draft.a.x + p.world.x) / 2, cy: (draft.a.y + p.world.y) / 2, w, d, rot: 0 };
       if (kind === 'area') addArea(ctx.page.id, rect);
       else addStand(ctx.page.id, rect);
     },

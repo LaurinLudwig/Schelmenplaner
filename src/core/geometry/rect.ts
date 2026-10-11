@@ -31,10 +31,14 @@ export function boundsOfRects(rects: readonly Rect[]): Bounds | null {
   return b;
 }
 
-/** Winkel auf 0 ≤ a < 360 normieren. */
+/**
+ * Winkel auf 0 ≤ a < 360 normieren. Werte im Bereich bleiben bitgenau unverändert (kein
+ * „+ 360 % 360“, das z. B. aus 12,3 den Wert 12.300000000000011 macht, QA-M3-04).
+ */
 export function normAngle(deg: number): number {
-  const a = ((deg % 360) + 360) % 360;
-  return a >= 360 - 1e-9 ? 0 : a;
+  let a = deg % 360;
+  if (a < 0) a += 360;
+  return a >= 360 - 1e-9 || Object.is(a, -0) ? 0 : a;
 }
 
 const round = (n: number, f: number) => {
@@ -44,7 +48,8 @@ const round = (n: number, f: number) => {
 
 /** Genauigkeit beim Übernehmen ins Projekt: Positionen und Maße 0,01 m, Drehung 0,1°. */
 export function roundRect<T extends Rect>(r: T): T {
-  return { ...r, cx: round(r.cx, 100), cy: round(r.cy, 100), w: round(r.w, 100), d: round(r.d, 100), rot: normAngle(round(r.rot, 10)) };
+  // Erst normieren, dann runden: Das Ergebnis ist exakt die nächste Zehntelzahl (12.3, nicht 12.300000000000011)
+  return { ...r, cx: round(r.cx, 100), cy: round(r.cy, 100), w: round(r.w, 100), d: round(r.d, 100), rot: normAngle(round(normAngle(r.rot), 10)) };
 }
 
 /** Weltpunkt → lokale Koordinaten des Rechtecks (Ursprung im Mittelpunkt, ungedreht). */
@@ -142,21 +147,22 @@ export const handlePoint = (r: Rect, h: Handle): Vec => fromLocal(r, vec((h.hx *
 
 /**
  * Größenänderung per Griff: Der Griff folgt dem Punkt p, die gegenüberliegende Kante bzw. Ecke
- * bleibt fest. Drehung bleibt; Maße werden nach unten auf `min` begrenzt.
+ * bleibt fest. Drehung bleibt; Maße werden auf [min, max] begrenzt (dieselben Grenzen wie die
+ * Zahlenfelder, QA-M3-02).
  */
-export function resizeRect<T extends Rect>(r: T, h: Handle, p: Vec, min: number): T {
+export function resizeRect<T extends Rect>(r: T, h: Handle, p: Vec, min: number, max = Infinity): T {
   const l = toLocal(r, p);
   let { w, d } = r;
   let cx = 0;
   let cy = 0;
   if (h.hx !== 0) {
     const anchor = (-h.hx * r.w) / 2;
-    w = Math.max(min, h.hx * (l.x - anchor));
+    w = Math.min(max, Math.max(min, h.hx * (l.x - anchor)));
     cx = anchor + (h.hx * w) / 2;
   }
   if (h.hy !== 0) {
     const anchor = (-h.hy * r.d) / 2;
-    d = Math.max(min, h.hy * (l.y - anchor));
+    d = Math.min(max, Math.max(min, h.hy * (l.y - anchor)));
     cy = anchor + (h.hy * d) / 2;
   }
   const c = fromLocal(r, vec(cx, cy));

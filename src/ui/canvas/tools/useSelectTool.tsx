@@ -19,7 +19,7 @@ type Gesture =
   /** Maus gedrückt, noch nicht bewegt: Klick oder Ziehen? */
   | { kind: 'pending'; start: Vec; startWorld: Vec; onClick: () => void; onDrag: 'move' | 'marquee' | 'none'; shift: boolean }
   | { kind: 'move'; startWorld: Vec; rects0: RectMap }
-  | { kind: 'rotate'; pivot: Vec; a0: number; rects0: RectMap; single: number | null }
+  | { kind: 'rotate'; pivot: Vec; a0: number; rects0: RectMap; single: number | null; start: Vec; moved: boolean }
   | { kind: 'resize'; id: Id; handle: Handle; rects0: RectMap; start: Vec; moved: boolean }
   | { kind: 'marquee'; start: Vec; cur: Vec; base: Id[] }
   | { kind: 'background'; start: Vec; transform0: BgTransform };
@@ -82,7 +82,7 @@ export function useSelectTool(ctx: ToolContext, active: boolean): ToolHandlers {
       if (handle?.kind === 'rotate' && geo) {
         const rects0 = rectsOf(current);
         const single = current.length === 1 ? (rects0[current[0]!]?.rot ?? 0) : null;
-        startGesture({ kind: 'rotate', pivot: geo.pivot, a0: angleTo(geo.pivot, p.world), rects0, single });
+        startGesture({ kind: 'rotate', pivot: geo.pivot, a0: angleTo(geo.pivot, p.world), rects0, single, start: p.screen, moved: false });
         return true;
       }
       if (handle?.kind === 'resize') {
@@ -183,6 +183,9 @@ export function useSelectTool(ctx: ToolContext, active: boolean): ToolHandlers {
           setPreview(moveRects(g.rects0, { x: p.world.x - g.startWorld.x, y: p.world.y - g.startWorld.y }, undefined, { altKey: p.altKey }));
           return;
         case 'rotate': {
+          // Unter 3 px ist es ein Klick: keine Änderung, kein Undo-Schritt (QA-M3-03)
+          if (!g.moved && Math.hypot(p.screen.x - g.start.x, p.screen.y - g.start.y) < DRAG_PX) return;
+          g.moved = true;
           const delta = angleTo(g.pivot, p.world) - g.a0;
           const step = p.shiftKey ? 15 : 1;
           const applied = g.single !== null ? snapAngle(g.single + delta, step) - g.single : snapAngle(delta, step);
@@ -193,7 +196,7 @@ export function useSelectTool(ctx: ToolContext, active: boolean): ToolHandlers {
           if (!g.moved && Math.hypot(p.screen.x - g.start.x, p.screen.y - g.start.y) < DRAG_PX) return;
           g.moved = true;
           const r0 = g.rects0[g.id];
-          if (r0) setPreview({ [g.id]: resizeRect(r0, g.handle, p.world, LIMITS.area.min) });
+          if (r0) setPreview({ [g.id]: resizeRect(r0, g.handle, p.world, LIMITS.area.min, LIMITS.area.max) });
           return;
         }
         case 'marquee':

@@ -33,6 +33,10 @@ export function TextField({ id, label, value, onCommit, multiline, rows = 3, pla
     if (!edited) return;
     setEdited(false);
     if (text !== value) onCommit(text);
+    // Wieder den gespeicherten Wert zeigen: Übernimmt der Aufrufer die Eingabe, kommt der neue Wert
+    // im selben Rendern als `value` zurück; weist er sie ab (z. B. leerer Name), steht wieder der
+    // gültige Wert im Feld (QA-M3-06).
+    setText(value ?? '');
   };
 
   const common = {

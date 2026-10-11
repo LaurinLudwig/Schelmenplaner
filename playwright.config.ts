@@ -3,9 +3,14 @@ import { defineConfig, devices } from '@playwright/test';
 /**
  * E2E-Tests gegen das Frontend im Browser-Modus (Vite-Dev-Server, ohne Tauri).
  * Chromium entspricht WebView2 (Windows), WebKit entspricht WKWebView (macOS).
+ * Lasttests (`*perf.spec.ts`) laufen nicht hier, sondern seriell über `npm run test:perf`
+ * (playwright.perf.config.ts): Parallel laufende Browser verfälschen die Bildrate (QA-M3-L1).
  */
+export const PERF_TESTS = '**/*perf.spec.ts';
+
 export default defineConfig({
   testDir: 'tests/e2e',
+  testIgnore: PERF_TESTS,
   outputDir: 'test-results',
   fullyParallel: true,
   forbidOnly: !!process.env.CI,

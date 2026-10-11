@@ -1,5 +1,6 @@
 import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { runCommand } from '../../app/commands';
+import { setInteractionKeyHandler } from '../../app/keyboard';
 import { effectivePage } from '../../core/derive';
 import { fmt } from '../../core/format';
 import type { FestplatzPage, Rect, Vec, View } from '../../core/model/types';
@@ -97,16 +98,9 @@ export function Canvas({ page: storedPage }: { page: FestplatzPage }) {
     activeToolRef.current = activeTool;
   });
 
-  // Esc und weitere Tasten zuerst dem Werkzeug anbieten (bricht z. B. eine Geste ab); sonst greifen
-  // die zentralen Shortcuts (Esc hebt dann die Auswahl auf, siehe edit.deselect)
-  useEffect(() => {
-    const onKey = (e: KeyboardEvent) => {
-      if (e.defaultPrevented || isTextField(e.target)) return;
-      if (activeToolRef.current?.onKeyDown(e)) e.preventDefault();
-    };
-    window.addEventListener('keydown', onKey);
-    return () => window.removeEventListener('keydown', onKey);
-  }, []);
+  // Das aktive Werkzeug bekommt Tasten vor allen Kurzbefehlen (Esc bricht eine Geste ab); die
+  // Reihenfolge legt app/keyboard.ts fest, nicht die Anmeldereihenfolge (QA-M3-01)
+  useEffect(() => setInteractionKeyHandler((e) => !!activeToolRef.current?.onKeyDown(e)), []);
 
   // Größe der Zeichenfläche verfolgen
   useLayoutEffect(() => {

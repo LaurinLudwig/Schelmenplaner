@@ -1,4 +1,4 @@
-import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { beforeEach, describe, expect, it } from 'vitest';
 import { createProject } from '../core/model/defaults';
 import { moveRects } from '../core/transform';
 import {
@@ -30,9 +30,15 @@ const past = () => s().history.past.length;
 beforeEach(() => {
   s().loadBundle({ project: createProject('T'), assets: {} }, { path: null, name: null });
 });
-afterEach(() => vi.useRealTimers());
 
 describe('Anlegen und Rundung', () => {
+  it('nur plausible Maße (beide ≥ 0,5 m) werden neues Standmaß (QA-M3-L2)', async () => {
+    const { standDefaultSize } = await import('./objects');
+    addStand(page().id, { cx: 0, cy: 0, w: 4, d: 2.5, rot: 0 });
+    addStand(page().id, { cx: 0, cy: 0, w: 10, d: 0.2, rot: 0 });
+    expect(standDefaultSize()).toEqual({ w: 4, d: 2.5 });
+  });
+
   it('Grundfläche und Geschäft: je ein Undo-Schritt, ausgewählt, gerundet', () => {
     const id = addArea(page().id, { cx: 10.123, cy: 5.456, w: 20.004, d: 8, rot: 0 });
     expect(page().areas[0]).toMatchObject({ cx: 10.12, cy: 5.46, w: 20 });
@@ -79,31 +85,29 @@ describe('Undo: eine Geste = ein Schritt (M3-21)', () => {
     expect(s().preview).toBeNull();
   });
 
-  it('gedrückt gehaltene Pfeiltaste = ein Schritt; nach einer Pause ein neuer', () => {
-    vi.useFakeTimers();
-    vi.setSystemTime(1_000_000);
+  it('gedrückt gehaltene Pfeiltaste (Wiederholung) = ein Schritt; jeder einzelne Druck ein eigener (QA-M3-05)', () => {
     addStand(page().id, { cx: 0, cy: 0, w: 3, d: 3, rot: 0 });
     const n0 = past();
-    for (let i = 0; i < 10; i++) {
-      nudge(0.1, 0);
-      vi.advanceTimersByTime(30);
-    }
+    nudge(0.1, 0); // erster Druck
+    for (let i = 0; i < 9; i++) nudge(0.1, 0, true); // Tastenwiederholung
     expect(page().stands[0]!.cx).toBe(1);
     expect(past()).toBe(n0 + 1);
-    vi.advanceTimersByTime(1500);
-    nudge(0, 1);
-    expect(past()).toBe(n0 + 2);
+    nudge(0.1, 0); // neuer Druck derselben Taste
+    nudge(0, 1); // andere Taste
+    expect(past()).toBe(n0 + 3);
     s().undo();
+    s().undo();
+    expect(page().stands[0]).toMatchObject({ cx: 1, cy: 0 });
     s().undo();
     expect(page().stands[0]).toMatchObject({ cx: 0, cy: 0 });
   });
 
-  it('nach Speichern und weiterem Verschieben gilt das Projekt als geändert', () => {
-    vi.useFakeTimers();
+  it('nach Speichern und weiterer Tastenwiederholung gilt das Projekt als geändert', () => {
     addStand(page().id, { cx: 0, cy: 0, w: 3, d: 3, rot: 0 });
     nudge(1, 0);
     s().markSaved(null, 'x.schelme');
-    nudge(1, 0); // innerhalb des Zeitfensters zusammengefasst
+    nudge(1, 0, true); // verschmilzt mit dem gespeicherten Schritt
+    expect(past()).toBe(2);
     expect(selectDirty(s())).toBe(true);
   });
 });
@@ -172,6 +176,13 @@ describe('Löschen, Kopieren, Einfügen, Duplizieren (M3-16, M3-17)', () => {
     addPage();
     paste({ minX: -50, minY: -50, maxX: 50, maxY: 50 });
     expect(page().stands.map((x) => [x.cx, x.cy])).toEqual([[2, 3]]);
+  });
+
+  it('nach Ausschneiden auf derselben Page ebenfalls 1 m versetzt (QA-M3-L3)', () => {
+    addStand(page().id, { cx: 2, cy: 3, w: 3, d: 3, rot: 0 });
+    cutSelection();
+    paste(null);
+    expect(page().stands[0]).toMatchObject({ cx: 3, cy: 4 });
   });
 
   it('außerhalb des sichtbaren Bereichs wird mittig eingefügt', () => {

@@ -13,7 +13,8 @@ import { fitView, visibleBounds, zoomBy } from './view';
  * der ID in ui/shortcuts/definitions.ts.
  */
 export interface Command {
-  run: () => void;
+  /** `event` ist gesetzt, wenn der Befehl per Taste ausgelöst wurde (z. B. für `repeat`). */
+  run: (event?: KeyboardEvent) => void;
   enabled?: () => boolean;
   /** Hinweis, wenn der Befehl per Taste ausgelöst wird, aber gerade nicht möglich ist. */
   disabledMessage?: string;
@@ -25,7 +26,7 @@ const activePage = () => s().project.pages.find((p) => p.id === s().ui.activePag
 const hasBackground = () => !!activePage()?.background;
 const setTool = (tool: ToolId) => () => s().setUi({ tool });
 const hasObjects = () => onDrawingPage() && selectedIds().length > 0;
-const nudgeCmd = (dx: number, dy: number): Command => ({ run: () => nudge(dx, dy), enabled: hasObjects });
+const nudgeCmd = (dx: number, dy: number): Command => ({ run: (e) => nudge(dx, dy, !!e?.repeat), enabled: hasObjects });
 
 export async function confirmDeletePage(id: string) {
   const page = s().project.pages.find((p) => p.id === id);
@@ -130,13 +131,13 @@ export const COMMANDS: Record<string, Command> = {
   'ui.shortcuts': { run: () => s().setUi({ shortcutsOpen: !s().ui.shortcutsOpen }) },
 };
 
-export function runCommand(id: string): boolean {
+export function runCommand(id: string, event?: KeyboardEvent): boolean {
   const cmd = COMMANDS[id];
   if (!cmd) return false;
   if (cmd.enabled && !cmd.enabled()) {
     if (cmd.disabledMessage && onDrawingPage()) notify(cmd.disabledMessage);
     return false;
   }
-  cmd.run();
+  cmd.run(event);
   return true;
 }

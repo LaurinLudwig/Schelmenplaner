@@ -8,18 +8,17 @@ export interface HistoryEntry {
   label: string;
   patches: Patch[];
   inverse: Patch[];
-  /** Folgeschritte mit gleichem Schlüssel werden kurz hintereinander zusammengefasst (z. B. Pfeiltasten). */
+  /** Schlüssel, unter dem Folgeschritte in diesen Eintrag verschmelzen dürfen (z. B. gehaltene Pfeiltaste). */
   mergeKey?: string;
-  time?: number;
 }
-
-/** Zeitfenster, in dem Schritte mit gleichem `mergeKey` zu einem Undo-Schritt verschmelzen. */
-export const MERGE_WINDOW_MS = 1000;
 
 export interface RecordOptions {
   mergeKey?: string;
-  /** Zeitpunkt in ms (für Tests); Standard Date.now(). */
-  now?: number;
+  /**
+   * In den letzten Eintrag einfügen, wenn er denselben `mergeKey` hat (z. B. Tastenwiederholung einer
+   * gehaltenen Pfeiltaste). Ohne diese Angabe beginnt immer ein neuer Undo-Schritt.
+   */
+  mergeIntoPrevious?: boolean;
 }
 
 export interface History {
@@ -53,14 +52,13 @@ export function record(
     const open = { ...h.open, patches: [...h.open.patches, ...patches], inverse: [...inverse, ...h.open.inverse] };
     return { project: next, history: { ...h, open } };
   }
-  const now = opts.now ?? Date.now();
   const last = h.past.at(-1);
-  if (opts.mergeKey && last && last.mergeKey === opts.mergeKey && !h.future.length && now - (last.time ?? 0) <= MERGE_WINDOW_MS) {
+  if (opts.mergeIntoPrevious && opts.mergeKey && last && last.mergeKey === opts.mergeKey && !h.future.length) {
     // Neue ID: Der zusammengefasste Stand ist ein anderer als ein womöglich gespeicherter (dirty-Erkennung).
-    const merged: HistoryEntry = { ...last, id: nextEntryId++, patches: [...last.patches, ...patches], inverse: [...inverse, ...last.inverse], time: now };
+    const merged: HistoryEntry = { ...last, id: nextEntryId++, patches: [...last.patches, ...patches], inverse: [...inverse, ...last.inverse] };
     return { project: next, history: { past: [...h.past.slice(0, -1), merged], future: [], open: null } };
   }
-  const entry: HistoryEntry = { id: nextEntryId++, label, patches, inverse, time: now, ...(opts.mergeKey ? { mergeKey: opts.mergeKey } : {}) };
+  const entry: HistoryEntry = { id: nextEntryId++, label, patches, inverse, ...(opts.mergeKey ? { mergeKey: opts.mergeKey } : {}) };
   return { project: next, history: { past: [...h.past, entry].slice(-MAX_HISTORY), future: [], open: null } };
 }
 

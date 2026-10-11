@@ -19,5 +19,6 @@ Erzeugt mit `node scripts/make-fixtures.mjs` (Pläne) bzw. `node scripts/make-lo
 3. Zoomen (Pinch/Mausrad), Ansicht verschieben (Wischen/Leertaste) und einen Stand ziehen: Das sollte
    flüssig bleiben (Ziel ≥ 50 Bilder/s).
 4. Härtester Fall, alle 500 Stände auf einer Page: auf jedem Festplatz Cmd/Strg+A, Cmd/Strg+C und auf
-   dem Obermarkt Cmd/Strg+V (eingefügt wird jeweils 1 m versetzt). Denselben Fall misst der
-   automatische Lasttest `tests/e2e/m3-perf.spec.ts` im Browser.
+   dem Obermarkt Cmd/Strg+V. Beim Einfügen auf einer anderen Page landen die Stände an derselben
+   Position wie auf ihrer Ursprungs-Page, liegen also über denen des Obermarkts (auf derselben Page
+   würde 1 m versetzt eingefügt). Denselben Fall messen die Lasttests (`npm run test:perf`) im Browser.

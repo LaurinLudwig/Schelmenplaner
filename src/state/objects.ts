@@ -2,7 +2,7 @@ import { normAngle, roundRect, setFront } from '../core/geometry/rect';
 import { allSelectable } from '../core/hit';
 import { newId } from '../core/id';
 import type { Area, Category, EdgeIndex, FestplatzPage, Id, Project, Rect, Stand } from '../core/model/types';
-import { cloneObjects, createArea, createStand, findObjects, LIMITS, PALETTE, STAND_DEFAULT, type Clipboard, type ObjectKind } from '../core/objects';
+import { cloneObjects, createArea, createStand, findObjects, LIMITS, MIN_DRAW_SIZE, PALETTE, STAND_DEFAULT, type Clipboard, type ObjectKind } from '../core/objects';
 import { groupCenter, moveRects, type RectMap } from '../core/transform';
 import type { Bounds } from '../core/viewport';
 import { START_PAGE, useStore } from './store';
@@ -50,7 +50,10 @@ const clamp = (v: number, kind: ObjectKind) => Math.min(LIMITS[kind].max, Math.m
 
 // ---------- Anlegen ----------
 
-/** Zuletzt angelegtes Standmaß; neue Stände per Klick bekommen es (anfangs 3 × 3 m). */
+/**
+ * Zuletzt angelegtes Standmaß; neue Stände per Klick bekommen es (anfangs 3 × 3 m). Nur plausible
+ * Maße (beide mindestens 0,5 m) werden übernommen (QA-M3-L2).
+ */
 let lastStandSize = { ...STAND_DEFAULT };
 export const standDefaultSize = () => lastStandSize;
 
@@ -63,7 +66,7 @@ export function addArea(pageId: Id, rect: Rect): Id {
 
 export function addStand(pageId: Id, rect: Rect): Id {
   const stand = createStand(roundRect({ ...rect, w: clamp(rect.w, 'stand'), d: clamp(rect.d, 'stand') }));
-  lastStandSize = { w: stand.w, d: stand.d };
+  if (stand.w >= MIN_DRAW_SIZE && stand.d >= MIN_DRAW_SIZE) lastStandSize = { w: stand.w, d: stand.d };
   st().change('Geschäft anlegen', (p) => void pageOf(p, pageId)?.stands.push(stand));
   select([stand.id]);
   return stand.id;
@@ -102,7 +105,7 @@ export function moveGroupTo(pageId: Id, ids: Id[], target: { x?: number; y?: num
   moveBy(pageId, ids, (target.x ?? c.x) - c.x, (target.y ?? c.y) - c.y, 'Verschieben');
 }
 
-export function moveBy(pageId: Id, ids: Id[], dx: number, dy: number, label: string, mergeKey?: string) {
+export function moveBy(pageId: Id, ids: Id[], dx: number, dy: number, label: string, merge?: { mergeKey: string; mergeIntoPrevious: boolean }) {
   const page = st().project.pages.find((p) => p.id === pageId);
   if (!page) return;
   const rects: RectMap = Object.fromEntries(findObjects(page, ids).map((o) => [o.obj.id, o.obj]));
@@ -113,16 +116,19 @@ export function moveBy(pageId: Id, ids: Id[], dx: number, dy: number, label: str
       const pg = pageOf(p, pageId);
       if (pg) eachObject(pg, ids, (o) => assignRect(o, moved[o.id]!));
     },
-    mergeKey ? { mergeKey } : {},
+    merge ?? {},
   );
 }
 
-/** Pfeiltasten: eine gedrückt gehaltene Taste ergibt einen Undo-Schritt. */
-export function nudge(dx: number, dy: number) {
+/**
+ * Pfeiltasten: jeder Druck ist ein eigener Undo-Schritt; die Wiederholungen einer gedrückt gehaltenen
+ * Taste (`repeat`) verschmelzen mit dem ersten Druck zu einem Schritt (QA-M3-05).
+ */
+export function nudge(dx: number, dy: number, repeat = false) {
   const page = activePage();
   const ids = selectedIds();
   if (!page || !ids.length) return;
-  moveBy(page.id, ids, dx, dy, 'Verschieben', `nudge:${page.id}:${ids.join(',')}`);
+  moveBy(page.id, ids, dx, dy, 'Verschieben', { mergeKey: `nudge:${page.id}:${dx},${dy}:${ids.join(',')}`, mergeIntoPrevious: repeat });
 }
 
 /** Kante `edge` der Grundfläche wird Vorderseite; die Fläche bleibt an derselben Stelle. */
@@ -176,7 +182,7 @@ let pasteCounts: Record<Id, number> = {};
 
 export const hasClipboard = () => !!clipboard;
 
-function copyInternal(cut: boolean): boolean {
+function copyInternal(): boolean {
   const page = activePage();
   const ids = new Set(selectedIds());
   if (!page || !ids.size) return false;
@@ -184,18 +190,17 @@ function copyInternal(cut: boolean): boolean {
     areas: structuredClone(page.areas.filter((a) => ids.has(a.id))),
     stands: structuredClone(page.stands.filter((s) => ids.has(s.id))),
     sourcePageId: page.id,
-    cut,
   };
   pasteCounts = {};
   return true;
 }
 
 export function copySelection() {
-  copyInternal(false);
+  copyInternal();
 }
 
 export function cutSelection() {
-  if (copyInternal(true)) deleteSelection();
+  if (copyInternal()) deleteSelection();
 }
 
 function insertObjects(pageId: Id, areas: Area[], stands: Stand[], label: string) {
@@ -209,8 +214,9 @@ function insertObjects(pageId: Id, areas: Area[], stands: Stand[], label: string
 }
 
 /**
- * Einfügen: an derselben Position, wenn sie im sichtbaren Bereich `view` liegt, sonst mittig darin.
- * Liegen die Originale noch auf der Ziel-Page, rückt jede Kopie um 1 m weiter nach rechts unten.
+ * Einfügen: auf derselben Page 1 m nach rechts unten versetzt, jedes weitere Einfügen 1 m weiter; auf
+ * einer anderen Page an derselben Position (weitere Male ebenfalls je 1 m weiter). Liegt die Position
+ * außerhalb des sichtbaren Bereichs `view`, mittig darin.
  */
 export function paste(view: Bounds | null) {
   const page = activePage();
@@ -220,8 +226,8 @@ export function paste(view: Bounds | null) {
   if (!c) return;
   const n = pasteCounts[page.id] ?? 0;
   pasteCounts[page.id] = n + 1;
-  const originalsHere = clipboard.sourcePageId === page.id && !clipboard.cut;
-  let off = n + (originalsHere ? 1 : 0);
+  const samePage = clipboard.sourcePageId === page.id;
+  let off = n + (samePage ? 1 : 0);
   let dx = off;
   let dy = off;
   if (view && (c.x < view.minX || c.x > view.maxX || c.y < view.minY || c.y > view.maxY)) {

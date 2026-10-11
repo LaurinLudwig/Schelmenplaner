@@ -35,6 +35,16 @@ describe('Rundung (M3-22)', () => {
     expect(roundRect({ cx: 0, cy: 0, w: 1, d: 1, rot: -37.26 }).rot).toBe(322.7);
   });
 
+  it('gerundete Drehungen sind exakt (12.3, nicht 12.300000000000011; QA-M3-04)', () => {
+    for (const rot of [12.3, 33.3, 271.2, 0.3, -37.3, 372.3, 359.96, -0.04]) {
+      const r = roundRect({ cx: 0, cy: 0, w: 1, d: 1, rot }).rot;
+      expect(r).toBe(Number((((rot % 360) + 360) % 360).toFixed(1)) % 360);
+      expect(String(r).length).toBeLessThanOrEqual(5);
+    }
+    expect(normAngle(12.3)).toBe(12.3);
+    expect(normAngle(271.2)).toBe(271.2);
+  });
+
   it('normAngle liefert 0 ≤ a < 360', () => {
     expect(normAngle(-90)).toBe(270);
     expect(normAngle(720)).toBe(0);
@@ -117,9 +127,12 @@ describe('Größe per Griff (M3-20)', () => {
     expect(side.d).toBeCloseTo(6.5, 6);
   });
 
-  it('nicht kleiner als das Minimum', () => {
+  it('nicht kleiner als das Minimum, nicht größer als das Maximum (QA-M3-02)', () => {
     const r: Rect = { cx: 0, cy: 0, w: 4, d: 4, rot: 0 };
     expect(resizeRect(r, { hx: 1, hy: 0 }, { x: -10, y: 0 }, 0.5).w).toBe(0.5);
+    const big = resizeRect(r, { hx: 1, hy: 1 }, { x: 5000, y: 3000 }, 0.5, 2000);
+    expect(big).toMatchObject({ w: 2000, d: 2000 });
+    expect(handlePoint(big, { hx: -1, hy: -1 })).toEqual({ x: -2, y: -2 }); // feste Ecke bleibt
   });
 });
 

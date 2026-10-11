@@ -1,0 +1,134 @@
+{
+  "angepasst": {
+    "zoomEcht": {
+      "fps": 59.05511811023622,
+      "maxMs": 45,
+      "p95Ms": 28,
+      "frames": 256,
+      "updates": 120
+    },
+    "panEcht": {
+      "fps": 54.26018740466333,
+      "maxMs": 53,
+      "p95Ms": 31,
+      "frames": 250,
+      "updates": 240
+    },
+    "dragEcht": {
+      "fps": 59.10353034510115,
+      "maxMs": 48,
+      "p95Ms": 25,
+      "frames": 150,
+      "updates": 246
+    },
+    "zoomProFrame": {
+      "fps": 56.28517823639775,
+      "maxMs": 27,
+      "p95Ms": 24,
+      "frames": 151,
+      "updates": 150
+    },
+    "panProFrame": {
+      "fps": 56.158742044178204,
+      "maxMs": 29,
+      "p95Ms": 25,
+      "frames": 151,
+      "updates": 150
+    },
+    "dragProFrame": {
+      "fps": 59.3589236248516,
+      "maxMs": 34,
+      "p95Ms": 26,
+      "frames": 151,
+      "updates": 150
+    }
+  },
+  "6px_m": {
+    "zoomEcht": {
+      "fps": 60.18829858776059,
+      "maxMs": 36,
+      "p95Ms": 27,
+      "frames": 180,
+      "updates": 120
+    },
+    "panEcht": {
+      "fps": 59.83709273182957,
+      "maxMs": 35,
+      "p95Ms": 25,
+      "frames": 192,
+      "updates": 240
+    },
+    "dragEcht": {
+      "fps": 60.202450719232814,
+      "maxMs": 29,
+      "p95Ms": 25,
+      "frames": 114,
+      "updates": 246
+    },
+    "zoomProFrame": {
+      "fps": 59.429477020602214,
+      "maxMs": 38,
+      "p95Ms": 27,
+      "frames": 151,
+      "updates": 150
+    },
+    "panProFrame": {
+      "fps": 59.73715651135006,
+      "maxMs": 29,
+      "p95Ms": 26,
+      "frames": 151,
+      "updates": 150
+    },
+    "dragProFrame": {
+      "fps": 59.71337579617835,
+      "maxMs": 31,
+      "p95Ms": 27,
+      "frames": 151,
+      "updates": 150
+    }
+  },
+  "20px_m": {
+    "zoomEcht": {
+      "fps": 60.22304832713755,
+      "maxMs": 30,
+      "p95Ms": 25,
+      "frames": 163,
+      "updates": 120
+    },
+    "panEcht": {
+      "fps": 60.204081632653065,
+      "maxMs": 33,
+      "p95Ms": 25,
+      "frames": 178,
+      "updates": 240
+    },
+    "dragEcht": {
+      "fps": 60.03638568829594,
+      "maxMs": 31,
+      "p95Ms": 25,
+      "frames": 100,
+      "updates": 246
+    },
+    "zoomProFrame": {
+      "fps": 59.665871121718375,
+      "maxMs": 31,
+      "p95Ms": 26,
+      "frames": 151,
+      "updates": 150
+    },
+    "panProFrame": {
+      "fps": 59.80861244019139,
+      "maxMs": 30,
+      "p95Ms": 26,
+      "frames": 151,
+      "updates": 150
+    },
+    "dragProFrame": {
+      "fps": 59.97600959616153,
+      "maxMs": 30,
+      "p95Ms": 27,
+      "frames": 151,
+      "updates": 150
+    }
+  }
+}
