@@ -1,4 +1,4 @@
-import { strFromU8, strToU8, unzipSync, zipSync, type Zippable } from 'fflate';
+import { strFromU8, strToU8, unzipSync, zip, zipSync, type Zippable } from 'fflate';
 import { parseProjectFile, ProjectFileError, toProjectFile } from './model/schema';
 import type { Project } from './model/types';
 
@@ -18,13 +18,27 @@ export interface ProjectBundle {
   assets: Assets;
 }
 
-export function encodeProjectFile({ project, assets }: ProjectBundle): Uint8Array {
+function zipEntries({ project, assets }: ProjectBundle): Zippable {
   const entries: Zippable = {
     [PROJECT_ENTRY]: [strToU8(JSON.stringify(toProjectFile(project), null, 2)), { level: 6 }],
   };
   // PDF/JPEG/PNG sind bereits komprimiert; erneutes Packen kostet nur Zeit. SVG ist Text und schrumpft stark.
   for (const [name, data] of Object.entries(assets)) entries[ASSET_PREFIX + name] = [data, { level: name.endsWith('.svg') ? 6 : 0 }];
-  return zipSync(entries);
+  return entries;
+}
+
+export function encodeProjectFile(bundle: ProjectBundle): Uint8Array {
+  return zipSync(zipEntries(bundle));
+}
+
+/**
+ * Wie `encodeProjectFile`, aber ohne den Hauptthread zu blockieren (fflate packt in Web Workern, wo es
+ * sie gibt). Für den Autosave: Mit großen Plänen dauert das Packen sonst ein spürbares Bild (QA-M4-03).
+ */
+export function encodeProjectFileAsync(bundle: ProjectBundle): Promise<Uint8Array> {
+  return new Promise((resolve, reject) => {
+    zip(zipEntries(bundle), (err, data) => (err ? reject(err) : resolve(data)));
+  });
 }
 
 export function decodeProjectFile(bytes: Uint8Array): ProjectBundle {

@@ -73,6 +73,12 @@ export function commitTransaction(h: History): History {
   return { past: [...h.past, h.open].slice(-MAX_HISTORY), future: [], open: null };
 }
 
+/** Bricht die offene Transaktion ab: Ihre Änderungen werden zurückgenommen, kein Undo-Schritt (Esc, QA-M4-04). */
+export function abortTransaction(project: Project, h: History): { project: Project; history: History } {
+  if (!h.open) return { project, history: h };
+  return { project: h.open.patches.length ? applyPatches(project, h.open.inverse) : project, history: { ...h, open: null } };
+}
+
 export function undo(project: Project, h: History): { project: Project; history: History } | null {
   const h2 = commitTransaction(h);
   const entry = h2.past.at(-1);

@@ -12,11 +12,12 @@
  */
 import { AXIS_END, AXIS_START, mergeIntervals, subtractIntervals, type Gap, type Interval, type Merged } from './geometry/interval';
 import { boundsTouch, centroid, clipConvex, penetration, polygonArea, projectOn, rectGeo, subtractAll, thickness, type Polygon } from './geometry/polygon';
+import { exceedsTol, greaterThan, lessThan, TOL, withinTol } from './geometry/tolerance';
 import { fromFrame, frontFrame, type FrontFrame } from './geometry/rect';
 import type { Area, Id, Rect, Vec } from './model/types';
 
-/** Toleranz für alle geometrischen Vergleiche in Metern (= Speichergenauigkeit, spec.md Begriffe). */
-export const TOL = 0.01;
+/** Fachliche Toleranz (siehe geometry/tolerance.ts), hier weitergereicht für bestehende Importe. */
+export { TOL };
 
 /** Grenzen der Mindestbreite (immer größer als TOL). */
 export const MIN_FREE_WIDTH = { min: 0.05, max: 100 };
@@ -56,7 +57,7 @@ export interface AreaFreeSpaces {
 /** Polygone früherer Grundflächen, die `area` um mehr als TOL überlappen. */
 export function earlierOverlaps(area: Area, earlier: readonly Area[]): Polygon[] {
   const g = rectGeo(area);
-  return earlier.filter((e) => boundsTouch(g.bounds, rectGeo(e).bounds) && penetration(g.poly, rectGeo(e).poly) > TOL).map((e) => rectGeo(e).poly);
+  return earlier.filter((e) => boundsTouch(g.bounds, rectGeo(e).bounds) && exceedsTol(penetration(g.poly, rectGeo(e).poly))).map((e) => rectGeo(e).poly);
 }
 
 /**
@@ -66,9 +67,9 @@ export function earlierOverlaps(area: Area, earlier: readonly Area[]): Polygon[]
 export function occupiedInterval(area: Area, f: FrontFrame, stand: Rect, cutters: readonly Polygon[] = []): [number, number] | null {
   const ap = rectGeo(area).poly;
   const sp = rectGeo(stand).poly;
-  if (penetration(sp, ap) <= TOL) return null;
+  if (withinTol(penetration(sp, ap))) return null;
   let pieces: Polygon[] = [clipConvex(sp, ap)].filter((p) => p.length >= 3);
-  if (cutters.length) pieces = subtractAll(pieces, cutters).filter((p) => thickness(p) > TOL);
+  if (cutters.length) pieces = subtractAll(pieces, cutters).filter((p) => exceedsTol(thickness(p)));
   if (!pieces.length) return null;
   let lo = Infinity;
   let hi = -Infinity;
@@ -79,10 +80,10 @@ export function occupiedInterval(area: Area, f: FrontFrame, stand: Rect, cutters
   }
   lo = Math.max(0, Math.min(f.length, lo));
   hi = Math.max(0, Math.min(f.length, hi));
-  // Enden näher als TOL an den Achsenenden dorthin ziehen: keine Reststreifen von Millimetern
-  if (lo < TOL) lo = 0;
-  if (hi > f.length - TOL) hi = f.length;
-  return hi - lo > 1e-9 ? [lo, hi] : null;
+  // Enden bis einschließlich TOL an den Achsenenden dorthin ziehen: keine Reststreifen von Millimetern
+  if (withinTol(lo)) lo = 0;
+  if (withinTol(f.length - hi)) hi = f.length;
+  return greaterThan(hi, lo) ? [lo, hi] : null;
 }
 
 /** Schlüssel einer Freifläche; `part` nur, wenn eine Lücke in mehrere getrennte Teile zerfällt. */
@@ -97,7 +98,7 @@ function splitParts(f: FrontFrame, pieces: Polygon[]): Polygon[][] {
   const parts: { polys: Polygon[]; end: number }[] = [];
   for (const { p, r } of withRange) {
     const last = parts[parts.length - 1];
-    if (last && r[0] <= last.end + TOL) {
+    if (last && withinTol(r[0] - last.end)) {
       last.polys.push(p);
       last.end = Math.max(last.end, r[1]);
     } else parts.push({ polys: [p], end: r[1] });
@@ -148,21 +149,21 @@ export function areaFreeSpaces(area: Area, stands: readonly StandLike[], earlier
     const iv = occupiedInterval(area, f, s, cutters);
     if (iv) intervals.push({ a: iv[0], b: iv[1], id: s.id });
   }
-  const occupied = mergeIntervals(intervals, TOL);
+  const occupied = mergeIntervals(intervals);
   const gaps = subtractIntervals(f.length, occupied);
   const free: FreeSpace[] = [];
   for (const g of gaps) {
-    if (g.b - g.a < minWidth - 1e-9) continue;
+    if (lessThan(g.b - g.a, minWidth)) continue;
     const rect = strip(f, g.a, g.b);
     if (!cutters.length) {
       free.push(toFreeSpace(f, area.id, freeSpaceKey(area.id, g.left, g.right), [rect], false));
       continue;
     }
-    const pieces = subtractAll([rect], cutters).filter((p) => thickness(p) > TOL);
+    const pieces = subtractAll([rect], cutters).filter((p) => exceedsTol(thickness(p)));
     const parts = splitParts(f, pieces);
     parts.forEach((polys, k) => {
       const fs = toFreeSpace(f, area.id, freeSpaceKey(area.id, g.left, g.right, parts.length > 1 ? k : undefined), polys, true);
-      if (fs.width >= minWidth - 1e-9) free.push(fs);
+      if (!lessThan(fs.width, minWidth)) free.push(fs);
     });
   }
   return { areaId: area.id, occupied, gaps, free };
@@ -242,7 +243,7 @@ export function resolveFreeSpace(all: readonly AreaFreeSpaces[], ref: Omit<FreeS
   let bestOverlap = 0;
   for (const f of area.free) {
     const o = Math.min(f.end, ref.end) - Math.max(f.start, ref.start);
-    if (o > bestOverlap) {
+    if (greaterThan(o, bestOverlap)) {
       best = f;
       bestOverlap = o;
     }

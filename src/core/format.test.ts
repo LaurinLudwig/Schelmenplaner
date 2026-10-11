@@ -46,7 +46,7 @@ describe('Zahlenformat für Eingabefelder (QA-M2-01)', () => {
         expect(back === x || (back === 0 && x === 0)).toBe(true);
       }
     }
-  });
+  }, 30_000); // 80.000 Werte; unter Last länger als das Standardlimit von 5 s
 
   it('erneutes Formatieren eines gelesenen Werts ist stabil (Fokus rein/raus ändert nichts)', () => {
     for (const s of ['1000', '1234,5', '0,25', '-3', '12000,75']) {

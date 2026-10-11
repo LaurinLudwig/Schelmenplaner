@@ -143,8 +143,7 @@ test.describe('QA M4-01/05/13: Freiflächen-Fälle aus spec.md §4 in der Oberfl
   });
 
   test('Berührung von außen belegt nichts; Eindringen genau 0,01 m belegt nichts, 0,02 m belegt', async ({ page }) => {
-    // QA-M4-01: Toleranzgrenze hängt von Gleitkomma-Resten ab (1,49 − 1,5 = −0,010000000000000009)
-    test.fail();
+    // (behoben 2026-10-11, test.fail entfernt) QA-M4-01: Toleranzgrenze hängt von Gleitkomma-Resten ab (1,49 − 1,5 = −0,010000000000000009)
     await openApp(page);
     // Vorderseite y = 0; Stand vor der Fläche (y 0 … 3)
     await seed(page, { areas: [G], stands: [{ id: 'v', cx: 0, cy: 1.5, w: 3, d: 3 }] });
@@ -165,8 +164,7 @@ test.describe('QA M4-01/05/13: Freiflächen-Fälle aus spec.md §4 in der Oberfl
   });
 
   test('Eindringen genau 0,01 m an allen vier Seiten und an anderen Koordinaten belegt nichts (Gleitkomma)', async ({ page }) => {
-    // QA-M4-01: „hinten“ und „rechts“ belegen, „links“ und „vorn“ nicht (Gleitkomma)
-    test.fail();
+    // (behoben 2026-10-11, test.fail entfernt) QA-M4-01: „hinten“ und „rechts“ belegen, „links“ und „vorn“ nicht (Gleitkomma)
     await openApp(page);
     // Fläche A: x 10 … 30, y 10,37 … 18,37 (krumme Werte)
     const A = { id: 'A', cx: 20, cy: 14.37, w: 20, d: 8 };
@@ -721,8 +719,7 @@ test.describe('QA M4-20/M3-21: Esc bricht jede Kombination ab', () => {
 // =============================================================================================
 test.describe('QA M4-09/10/13/18: Warnungen und Zähler', () => {
   test('Toleranz Überlappung: bündig und genau 0,01 m keine Warnung, 0,02 m rot', async ({ page }) => {
-    // QA-M4-01: e/f (20,37 und 23,36, Tiefe 3) dringen genau 0,01 m ein und gelten als Überlappung (0,010000000000001563)
-    test.fail();
+    // (behoben 2026-10-11, test.fail entfernt) QA-M4-01: e/f (20,37 und 23,36, Tiefe 3) dringen genau 0,01 m ein und gelten als Überlappung (0,010000000000001563)
     await openApp(page);
     await seed(page, {
       stands: [
@@ -760,8 +757,7 @@ test.describe('QA M4-09/10/13/18: Warnungen und Zähler', () => {
   });
 
   test('Gedrehter Stand (45°), dessen Ecke 0,013 m über die Vorderseite ragt, ist „außerhalb“', async ({ page }) => {
-    // QA-M4-02: Die Toleranz wird entlang der Standachsen abgezogen; eine Ecke darf so bis 0,0141 m herausragen
-    test.fail();
+    // (behoben 2026-10-11, test.fail entfernt) QA-M4-02: Die Toleranz wird entlang der Standachsen abgezogen; eine Ecke darf so bis 0,0141 m herausragen
     await openApp(page);
     const half = 1.5 * Math.SQRT2;
     await seed(page, { areas: [G], stands: [{ id: 'ecke', cx: 10, cy: -half + 0.013, w: 3, d: 3, rot: 45 }] });
@@ -954,8 +950,7 @@ test.describe('QA M4: weitere Grenzfälle', () => {
     await page.mouse.down();
     await page.mouse.move(b0.x + 260, b0.y + 230, { steps: 4 });
     expect(await page.evaluate(() => JSON.stringify((window as any).__schelmeStore.getState().project.pages[0].background.transform))).not.toBe(t0);
-    // QA-M4-04: Esc wird nicht als Abbruch behandelt (useSelectTool.tsx: Geste „background“ gibt false zurück)
-    test.fail();
+    // (behoben 2026-10-11, test.fail entfernt) QA-M4-04: Esc wird nicht als Abbruch behandelt (useSelectTool.tsx: Geste „background“ gibt false zurück)
     await page.keyboard.press('Escape');
     await page.mouse.move(b0.x + 300, b0.y + 260, { steps: 3 });
     await page.mouse.up();

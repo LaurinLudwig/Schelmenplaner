@@ -28,6 +28,8 @@ export interface UiState {
   theme: Theme;
   /** App-Einstellung pro Rechner: Wischrichtung des Trackpads umkehren (QA-M1-07). */
   invertPan: boolean;
+  /** Bildraten-Anzeige über der Zeichenfläche (Messen in der Desktop-App); nicht gespeichert, anfangs aus. */
+  fpsVisible: boolean;
   /** Größe der Zeichenfläche in px (für Zoom-Befehle ohne Mausposition). */
   viewport: { w: number; h: number };
 }
@@ -42,6 +44,12 @@ export interface AppState {
   history: H.History;
   /** Ansicht je Page. Gehört nicht zur Undo-Historie. */
   views: Record<Id, View>;
+  /**
+   * Letzte Ansichtsänderung kam von einer fortlaufenden Geste (Mausrad, Pinch, Ansicht ziehen). Dann
+   * zeigt die Zeichenfläche zwischengespeicherte Ebenen per CSS-Transform; Sprünge (Knöpfe, Kurzbefehle,
+   * Einpassen) zeichnen sofort scharf (Canvas.tsx, QA-M4-03).
+   */
+  viewLive: boolean;
   ui: UiState;
   /**
    * Flüchtige Vorschau während einer Geste (Ziehen, Drehen, Größe ändern). Nicht in der Historie;
@@ -59,6 +67,8 @@ export interface AppState {
   changeView: (recipe: H.Recipe) => void;
   beginTransaction: (label: string) => void;
   commitTransaction: () => void;
+  /** Offene Transaktion verwerfen (Esc während einer Geste). */
+  abortTransaction: () => void;
   undo: () => void;
   redo: () => void;
   loadBundle: (bundle: ProjectBundle, file: { path: string | null; name: string | null; dirty?: boolean }) => void;
@@ -66,7 +76,7 @@ export interface AppState {
   setUi: (patch: Partial<UiState>) => void;
   /** Eingebettete Datei ablegen (nicht Teil der Undo-Historie; nur verwendete Dateien werden gespeichert). */
   addAsset: (id: string, bytes: Uint8Array) => void;
-  setView: (pageId: Id, view: View) => void;
+  setView: (pageId: Id, view: View, live?: boolean) => void;
 }
 
 const THEME_KEY = 'schelmeplaner.theme';
@@ -151,9 +161,11 @@ export const useStore = create<AppState>()((set, get) => {
       renamingPage: null,
       theme: loadTheme(),
       invertPan: loadPref(INVERT_PAN_KEY) === '1',
+      fpsVisible: false,
       viewport: { w: 0, h: 0 },
     },
     preview: null,
+    viewLive: false,
 
     change(label, recipe, opts) {
       const s = get();
@@ -173,6 +185,11 @@ export const useStore = create<AppState>()((set, get) => {
     },
     commitTransaction() {
       set({ history: H.commitTransaction(get().history) });
+    },
+    abortTransaction() {
+      const s = get();
+      const r = H.abortTransaction(s.project, s.history);
+      set({ project: r.project, history: r.history, ui: normalizeUi(r.project, s.ui) });
     },
     undo() {
       const s = get();
@@ -214,8 +231,8 @@ export const useStore = create<AppState>()((set, get) => {
       if (get().assets[id]) return;
       set({ assets: { ...get().assets, [id]: bytes } });
     },
-    setView(pageId, view) {
-      set({ views: { ...get().views, [pageId]: view } });
+    setView(pageId, view, live = false) {
+      set({ views: { ...get().views, [pageId]: view }, viewLive: live });
     },
   };
 });

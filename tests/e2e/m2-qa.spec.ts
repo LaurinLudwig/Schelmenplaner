@@ -32,7 +32,10 @@ async function importReady(page: Page, file: string, pdfPage?: number) {
 async function at(page: Page, size: Size) {
   await page.evaluate(() => new Promise((r) => requestAnimationFrame(() => requestAnimationFrame(() => r(null)))));
   const box = (await page.locator('.background-layer image').first().boundingBox())!;
-  return (u: number, v: number) => ({ x: box.x + (u / size.w) * box.width, y: box.y + (v / size.h) * box.height });
+  // Auf 1/1000 px gerundet (Entwickler, M4-Nacharbeit, siehe qa/M4.md): Playwright-WebKit schneidet Mauskoordinaten
+  // auf ganze Pixel ab; Rauschen von 1e-5 px in boundingBox() ließ denselben Punkt mal auf Pixel 200, mal auf 201 fallen.
+  const r = (n: number) => Math.round(n * 1000) / 1000;
+  return (u: number, v: number) => ({ x: r(box.x + (u / size.w) * box.width), y: r(box.y + (v / size.h) * box.height) });
 }
 
 async function bg(page: Page) {

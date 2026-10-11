@@ -12,8 +12,8 @@ Verweise `§n` beziehen sich auf die Abschnitte in `spec.md`.
 ## Eingang
 Bugs, Ideen und Lücken, die während der Arbeit auffallen, und eigene Wünsche. Nichts davon wird
 ungefragt umgesetzt; erst nach Freigabe wandert ein Eintrag in einen Meilenstein.
+Erledigte Einträge stehen in `docs/archiv/eingang-erledigt.md` bzw. im Archiv des Meilensteins.
 
-- ~~E-01 Trackpad-Verhalten~~ → entschieden und umgesetzt als M1-24.
 - E-02 (Lücke) Doppelklick auf eine `.schelme`-Datei im Finder/Explorer: Die Dateizuordnung ist in `tauri.conf.json` eingetragen, aber die App öffnet die übergebene Datei noch nicht. Braucht etwas Rust-Code (Startargumente / macOS-Open-Event).
 - E-03 (Idee) Natives Menü (macOS-Menüleiste, Windows-Fenstermenü) statt des In-App-Menüs links oben.
 - E-04 (Idee) Liste „Zuletzt geöffnet“ im Menü.
@@ -23,15 +23,12 @@ ungefragt umgesetzt; erst nach Freigabe wandert ein Eintrag in einen Meilenstein
 - E-10 (Idee) Plandatei per Drag & Drop auf die Zeichenfläche ziehen, um sie zu importieren.
 - E-11 (Hinweis) Autosave schreibt alle 30 s die ganze Datei inklusive Pläne. Bei sehr großen Projekten (> 100 MB) optimieren, z. B. Pläne nur einmal sichern und danach nur `project.json`.
 - E-12 (Idee) Gespeicherte Kalibrierpunkte anzeigen bzw. beim erneuten Kalibrieren als Startpunkte anbieten (werden bereits gespeichert).
-- ~~E-13 Zwei Sperren~~ → erledigt mit M3-14 (eine Sperre `background.locked`). Ursprünglich: Zwei Sperren für den Hintergrund: `background.locked` (M2) und die Ebenen-Sperre `layers.background.locked` (M3-14). In M3 zu einer zusammenführen.
 - E-14 (Idee) Hintergrund per Griff drehen oder per zwei Punkten waagerecht ausrichten (bisher nur Zahlenfeld).
 - E-15 (Idee) Mess- und Kalibrierpunkte fangen an Linien des Plans (Vektor-PDF/SVG). Bisher Fang nur an Objekten (ab M3).
 - E-16 (Hinweis) Kennwortgeschützte PDFs werden mit einer Meldung abgelehnt (Seitenextraktion nicht möglich).
-- ~~E-09 Einstellung „Wischrichtung umkehren“~~ → umgesetzt mit QA-M1-07 (Menü).
 - E-17 (Idee, Laurin) Lupe bzw. Vergrößerung beim Setzen der Kalibrierpunkte, um die Klickgenauigkeit zu verbessern.
 - E-18 (Hinweis) Der QA-Test „abgeschnittenes PNG“ (`m2-qa.spec.ts`) wird in WebKit übersprungen mit der Begründung „WebKit importiert das Teilbild“. Seit QA-M2-02 weist auch WebKit abgeschnittene Bilder ab; der Skip kann entfallen (nicht geändert, da kein `test.fail`).
 - E-19 (Lücke, → Feinschliff-Runde, Entscheidung Laurin 2026-10-10) Undo stellt die Auswahl nicht wieder her: Nach „Löschen“ und Rückgängig ist das Objekt wieder da, aber nicht ausgewählt (Illustrator wählt es wieder aus).
-- ~~E-20 Shift/Alt beim Ziehen~~ → M4-11/M4-12 (Entscheidung Laurin 2026-10-10).
 - E-21 (Idee) Taste zum Drehen um 90° (der Prototyp hatte R).
 - E-22 (Hinweis) Die Grundflächen-Beschriftung wird über eine geschätzte Textbreite (0,56 em pro Zeichen) vor die Vorderseite gesetzt, nicht gemessen. Bei stark gedrehten Flächen mit langem Namen kann der Abstand zur Fläche etwas größer oder kleiner ausfallen.
 - E-23 (Hinweis, M8) Der helle Rand um die Beschriftung erscheint erst ab 12 px Schrifthöhe (Leistung WebKit, siehe Abschluss M3). Für den PDF-Export (weißes Papier) separat entscheiden.
@@ -40,30 +37,12 @@ ungefragt umgesetzt; erst nach Freigabe wandert ein Eintrag in einen Meilenstein
 - E-26 (Idee, aus M4-Planung) Klick mit dem Geschäfts-Werkzeug in eine Grundfläche setzt den Stand gleich an deren Vorderseite.
 - E-27 (Idee, aus M4-Planung) Fang für Grundflächen untereinander (Kanten bündig, Flucht).
 - E-28 (Idee, aus M4-Planung) Drehgriff eines Stands rastet an der Drehung der Grundfläche ein, in der er steht.
-- E-29 (Hinweis, aus M4) Lasttest M4-21 in WebKit mit wenig Puffer: Verschieben in Lesegröße (20 px/m) 51–53 Bilder/s, Zoomen 52–53. Teuer sind Texte (je Zeichen) und Musterfüllungen. Bei weiteren Ebenen (Infrastruktur, Schriftfeld) erneut messen.
+- E-31 (Hinweis, aus QA-M4-03) Die Lasttests laufen gegen den Entwicklungsserver (React im Entwicklungsmodus, deutlich langsamer als der Produktions-Build). Die Werte sind damit vorsichtig; in der Desktop-App mit der Bildraten-Anzeige (Cmd/Strg+Alt+F) gegenmessen.
+- E-32 (Hinweis, aus QA-M4-03) Im macOS-Stromsparmodus drosselt WebKit `requestAnimationFrame` auf 30 Bilder/s. Lasttests (und Messungen in der Mac-App) nur mit ausgeschaltetem Stromsparmodus durchführen.
 - E-30 (Lücke, aus M4) Grundflächen-Beschriftung und Freiflächen-Beschriftung können sich bei sehr schmalen Freiflächen mit Standbeschriftungen überdecken (Text wird nicht gekürzt, §3/§4).
 - E-08 (Hinweis) Browser-Autosave nutzt localStorage (ca. 5 MB). Mit eingebetteten Hintergründen (M2) reicht das nicht; betrifft nur den Browser-Dev-Modus.
-- [x] [QA] QA-M1-01 (gering, erledigt: Abschluss M1 korrigiert) Abschluss M1 widersprüchlich/veraltet: „M1-01 bleibt `[~]`“ vs. Status `[x]`; „24 Unit-Tests“, tatsächlich 28; der erwähnte „automatisierte Klicktest im Browser über alle obigen Funktionen“ liegt nicht im Repo (nur `tests/e2e/smoke.spec.ts`). Siehe `qa/M1.md`. (QA ✓ M1 Nachprüfung)
-- [x] [QA] QA-M1-02 (gering, Risiko; erledigt: Pinch auf echter Hardware bestätigt, Wischrichtung nach Laurins Test umgedreht; echtes Mausrad bleibt auf der manuellen Checkliste) Maus/Trackpad-Erkennung ist eine Heuristik (`src/ui/canvas/wheel.ts:26-31`): In Playwright-WebKit wird ein synthetisches Mausrad (`wheelDeltaY` 300) als Trackpad gedeutet und verschiebt statt zu zoomen. Mit echter Hardware vermutlich korrekt, nur manuell prüfbar; umgekehrt kann ein Trackpad-Wischen mit glattem Delta (z. B. 120) einmal zoomen. Mausrad-E2E-Test läuft nur in Chromium. Siehe `qa/M1.md`. (QA M1-Nachprüfung: nur teilweise – Heuristik unverändert, Mausrad-Test weiter nur Chromium `tests/e2e/m1-canvas.spec.ts:53`, Restrisiko dokumentiert; die neue Wischrichtung ist klärungsbedürftig, siehe QA-M1-07 in `qa/M1-nachpruefung.md`) **Erledigt 2026-10-10:** Wischrichtung geklärt und umgesetzt (QA-M1-07). Die Maus/Trackpad-Heuristik bleibt; Prüfung mit echter Maus steht auf der manuellen Checkliste.
-- [x] [QA] QA-M1-03 (gering, erledigt: eigene Sicherung wird entfernt, sobald das Projekt wieder sauber ist) Autosave: Wird nach einer Sicherung per Undo zum gespeicherten Stand zurückgekehrt, bleibt die Sicherung liegen und wird beim nächsten Start/Öffnen angeboten. Test: `tests/e2e/m1-file.spec.ts` („Zurück-Undo …“, `test.fail`). (QA ✓ M1 Nachprüfung; Randfall „behaltene“ Sicherung siehe QA-M1-08)
-- [x] [QA] QA-M1-04 (gering, erledigt: aktive Page wird in den sichtbaren Bereich gescrollt) Tab-Leiste: Läuft sie über, wird eine neu angelegte bzw. aktive Page nicht in den sichtbaren Bereich gescrollt. Test: `tests/e2e/m1-browser.spec.ts` (`test.fail`). (QA ✓ M1 Nachprüfung; Restfälle Fenstergröße/Umbenennen siehe QA-M1-09)
-- [x] [QA] QA-M1-05 (gering, erledigt: oxlint-Override für `src/core/**`) Die Regel „`src/core/` ohne React/DOM/Tauri“ wird nicht automatisch geprüft (keine Lint-Regel, `tsconfig` gibt `DOM` für alles frei). Derzeit eingehalten. (QA ✓ M1 Nachprüfung; Lücken der Verbotsliste siehe QA-M1-10)
-- [x] [QA] QA-M1-06 (gering, erledigt: eindeutige zugängliche Namen) Start-Page-Karte „Neuer Festplatz“ überschreibt per `aria-label` ihren Inhalt und hat denselben zugänglichen Namen wie der „+“-Button (`src/ui/startpage/StartPage.tsx:25`). (QA ✓ M1 Nachprüfung)
-- [x] [QA] QA-M1-07 (mittel, Klärung nötig; M1-24) Die nach Laurins Hardwaretest umgedrehte Wischrichtung (`src/ui/canvas/wheel.ts:44`, Inhalt bewegt sich mit +delta) läuft der Scrollrichtung des Systems entgegen: Dieselbe waagerechte Wischgeste schiebt den Inhalt der Tab-Leiste (natives Scrollen) nach links, den der Zeichenfläche nach rechts. Bei der macOS-Standardeinstellung „Natürliche Scrollrichtung“ bewegt sich der Plan damit gegen die Finger. Klären, mit welcher Einstellung getestet wurde. Test: `tests/e2e/m1-recheck.spec.ts` („QA-M1-07 …“, `test.fail`). Siehe `qa/M1-nachpruefung.md`. **Erledigt 2026-10-10:** Standard wieder wie das System (Inhalt folgt der Scrollrichtung, wie Tab-Leiste und Safari); im Menü „Wischrichtung umkehren“, pro Rechner gespeichert (Entscheidung Laurin).
-- [x] [QA] QA-M1-08 (mittel; M1-19) Eine per Esc/Klick daneben „behaltene“ Sicherung geht verloren: Der nächste Autosave überschreibt sie (schon vor dem Fix so), und seit dem Fix zu QA-M1-03 wird sie nach einem Undo zum sauberen Stand ganz gelöscht. Beim nächsten Start wird nichts mehr angeboten. Test: `tests/e2e/m1-recheck.spec.ts` („QA-M1-08 …“, `test.fail`). **Erledigt 2026-10-10:** Esc im Wiederherstellen-Dialog verschiebt die Sicherung ins Fach „behalten“, das die laufende Sitzung nie überschreibt; sie wird beim nächsten Start/Öffnen wieder angeboten.
-- [x] [QA] QA-M1-09 (gering; M1-04) Tab-Leiste: Der aktive Tab wird nur beim Wechsel der aktiven Page in Sicht gescrollt (`src/ui/shell/TabBar.tsx:37-45`, Abhängigkeit `[active]`). Nach Verkleinern des Fensters liegt er ganz außerhalb, nach Umbenennen in einen langen Namen ist er teilweise verdeckt. Tests: `tests/e2e/m1-recheck.spec.ts` (2 × `test.fail`), Screenshot `qa/screenshots/recheck-tab-rename-cut.png`. **Erledigt 2026-10-10:** Tab-Leiste beobachtet Größe der Leiste und des aktiven Tabs (ResizeObserver).
-- [x] [QA] QA-M1-10 (gering, Risiko; QA-M1-05) Die Lint-Sperre für `src/core/` ist eine Verbotsliste und lässt weitere DOM-Zugriffe durch: `globalThis.document`, `DOMParser`, `Image`, `self`, `fetch`, DOM-Typen wie `HTMLDivElement`. Robuster wäre eine eigene `tsconfig` für `src/core/` ohne `lib: DOM`. Test: `tests/e2e/m1-recheck-lint.spec.ts` (`test.fail`). **Erledigt 2026-10-10:** Verbotsliste erweitert (Globals, `globalThis.*`, DOM-Typen) und zusätzlich eigene Typprüfung `tsc -p src/core` ohne DOM-Bibliothek (Teil von `npm run typecheck`).
 - [QA] QA-M1-11 (gering, Dokumentation/Prozess) Die Entwicklung hat QA-Artefakte geändert: Abschnitt „Behoben“ an `qa/M1.md` angehängt und die Erwartung des QA-Tests „M1-24: Zwei-Finger-Wischen“ umgedreht (`tests/e2e/m1-canvas.spec.ts:104-107`, begründet). Dazu Widersprüche: QA-M1-02 steht hier als „erledigt“, in `qa/M1.md` als „teilweise“; die Einträge QA-M1-03/-04 nennen noch `test.fail`, obwohl die Markierungen entfernt sind.
-- [x] [QA] QA-M1-12 (gering, Test-Infrastruktur) `tests/e2e/m1-file.spec.ts:193` schreibt bei jedem E2E-Lauf `qa/screenshots/m1-recovery-dialog.png` neu. Der Dialog enthält Datum und Uhrzeit, deshalb ist die Arbeitskopie nach jedem Lauf verändert. Screenshots nur auf Anforderung schreiben, z. B. über eine Umgebungsvariable. **Erledigt 2026-10-10:** Screenshots, die bei jedem Testlauf entstehen, gehen nach `test-artifacts/` (in .gitignore, Helfer `artifact()` in `tests/e2e/helpers.ts`). Unter `qa/` bleiben nur die in den Berichten verlinkten Belege versioniert; zwei unverlinkte Screenshots sind nach `test-artifacts/` verschoben.
-- [x] [QA] QA-M2-03 (mittel; M2-02) WebKit/macOS: Zoomen großer Rasterbilder ruckelt. PNG 8000 × 6000: 50–53 Bilder/s mit Einzelbildern bis 170 ms; JPEG 12000 × 9000: 37–40 Bilder/s, Einzelbilder bis 344 ms. Chromium und PDFs ≈ 60 Bilder/s, Pan überall flüssig. Siehe `qa/M2.md`. **Erledigt 2026-10-10:** Große Rasterbilder (> 16 MP oder > 4096 px) werden als Übersicht (≤ 2048 px) plus Kacheln in Auflösungsstufen gezeichnet; WebKit 108 MP: 60 Bilder/s, längstes Bild 26 ms.
-- [x] [QA] QA-M2-04 (gering) Dieselbe Seite eines mehrseitigen PDFs wird mehrfach eingebettet: pdf-lib schreibt beim Herauslösen ein sekundengenaues Erstelldatum, der Inhalts-Hash unterscheidet sich (`src/app/backgroundImport.ts:22-30`). Test: `tests/e2e/m2-qa.spec.ts` („QA-M2-04 …“, `test.fail`). **Erledigt 2026-10-10:** Asset-ID einer herausgelösten Seite = Hash der Originaldatei + Seitennummer; pdf-lib schreibt keine Zeitstempel mehr.
-- [x] [QA] QA-M2-05 (gering, Klärung; M2-09) „Raster ein/aus“ ist ein Undo-Schritt und markiert das Projekt als ungespeichert (`src/state/pageSettings.ts:25-31`). In Illustrator ist das eine reine Ansichtsoption. Gewollt? **Erledigt 2026-10-10:** Raster ein/aus ist eine Ansichtseinstellung (`changeView`): kein Undo-Schritt, keine Änderungsmarkierung, wird beim Speichern mitgeschrieben.
-- [x] [QA] QA-M2-06 (gering, Klärung; M2-04) Ein gesperrter Hintergrund lässt sich weiter über das Zahlenfeld drehen (und per Planmaßstab umskalieren); die Sperre wirkt nur auf das Ziehen. Soll sie auch Drehen schützen? **Erledigt 2026-10-10:** Gesperrt sind Drehung und Planmaßstab deaktiviert; Kalibrieren bleibt möglich. Der Planmaßstab sperrt nicht mehr automatisch (nur die 2-Punkt-Kalibrierung).
-- [x] [QA] QA-M2-07 (gering; M2-06) Keine Plausibilitätsprüfung der Kalibrierung (0,001 m oder 1.000.000 m werden still übernommen); „An Fenster anpassen“ zeigt Pläne über ca. 5 km wegen der Zoomgrenze 0,2 px/m nicht vollständig. Ein Hinweis bei ungewöhnlichen Planmaßen würde Faktor-1000-Fehler (vgl. QA-M2-01) auffangen. **Erledigt 2026-10-10:** Rückfrage „Maßstab prüfen“: PDF außerhalb 1:50–1:10.000, Bild/SVG mit Planbreite außerhalb 10 m–5 km, Neukalibrierung mit mehr als Faktor 2 Abweichung.
-- [x] [QA] QA-M3-L1 (gering, Test-Infrastruktur; M3-23) Der Lasttest `tests/e2e/m3-perf.spec.ts` schlägt im vollen parallelen `npm run test:e2e` in WebKit fehl (47,6 Bilder/s beim Verschieben, `qa/logs/m3-e2e-final.log`); allein gestartet besteht er (55–60). Lasttests getrennt bzw. mit einem Worker laufen lassen. Siehe `qa/M3.md`. **Erledigt 2026-10-11:** `npm run test:perf` (seriell, ein Worker); `test:e2e` ohne Lasttests; CLAUDE.md und QA-Agent ergänzt.
-- [x] [QA] QA-M3-L2 (Idee; M3-05) Waagerechtes Aufziehen mit dem Geschäfts-Werkzeug erzeugt einen Stand 10 × 0,1 m, der danach Standardmaß für Klicks wird. Mindestmaß beim Aufziehen erwägen. Siehe `qa/M3.md`. **Erledigt 2026-10-11:** unter 0,5 m in einer Richtung zählt Aufziehen als Klick; nur plausible Maße werden Standard (Spec §2/§3).
-- [x] [QA] QA-M3-L3 (gering, Doku) `tests/fixtures/README.md` Punkt 4: Einfügen von einer anderen Page erfolgt an derselben Position, nicht „1 m versetzt“. **Erledigt 2026-10-11:** Regel festgelegt (auf derselben Page 1 m versetzt, auch nach Ausschneiden; andere Page gleiche Position), Spec und README angepasst.
-- [QA] QA-M4-05 (gering, Doku; Abschluss M4) Abschluss M4 widersprüchlich/veraltet: „Formatversion bleibt 1“ (Umgesetzt) vs. `CURRENT_SCHEMA_VERSION = 2` (Antworten); „165 Unit-Tests“, tatsächlich 170; „Zwei M3-E2E-Tests … schlagen fehl“ (Bekannte Bugs), beide sind angepasst und grün. Siehe `qa/M4.md`.
+- [x] [QA] QA-M4-05 (gering, Doku; Abschluss M4) Abschluss M4 widersprüchlich/veraltet: „Formatversion bleibt 1“ (Umgesetzt) vs. `CURRENT_SCHEMA_VERSION = 2` (Antworten); „165 Unit-Tests“, tatsächlich 170; „Zwei M3-E2E-Tests … schlagen fehl“ (Bekannte Bugs), beide sind angepasst und grün. Siehe `qa/M4.md`. **Erledigt 2026-10-11:** Abschluss M4 überarbeitet (Stand nach der QA-Nacharbeit).
 
 ---
 
@@ -78,70 +57,8 @@ ungefragt umgesetzt; erst nach Freigabe wandert ein Eintrag in einen Meilenstein
 - [~] Q-08 Oberfläche komplett auf Deutsch (UI/Allgemein) – bisher eingehalten
 - [ ] Q-09 Jedes Werkzeug, jede Page und jeder wichtige Button hat einen Shortcut; neue Funktionen tragen sich in die zentrale Shortcut-Konfiguration ein (Tastaturkürzel)
 
-## M1 – Grundgerüst
-- [x] M1-01 Projekt-Setup: Tauri 2, React, TypeScript, Vite, Vitest (Tech-Stack) – Desktop-App kompiliert und startet; native Dialoge noch manuell zu prüfen (QA ✓ M1)
-- [x] M1-02 Datenmodell Projekt → Pages, Dateiformat mit Schema-Version und Migrationen (Begriffe, §10) (QA ✓ M1)
-- [x] M1-03 Start-Page: immer erste Page, nicht löschbar, vorerst leer (Begriffe, Meilenstein 1) (QA ✓ M1)
-- [x] M1-04 Tab-Leiste oben: Start-Page ganz links, danach die Festplatz-Pages, Wechsel per Klick (Layout) (QA ✓ M1)
-- [x] M1-05 „+“-Tab legt eine neue Festplatz-Page an (Layout, Begriffe) (QA ✓ M1)
-- [x] M1-06 Page umbenennen per Doppelklick (Layout, Begriffe) (QA ✓ M1)
-- [x] M1-07 Rechtsklick-Kontextmenü: Duplizieren, Löschen (Layout, Begriffe) (QA ✓ M1)
-- [x] M1-08 Pages per Drag & Drop in der Tab-Leiste umsortieren (Begriffe) (QA ✓ M1)
-- [x] M1-09 Pages per Shortcut durchschalten (Layout) (QA ✓ M1)
-- [x] M1-10 Grundlayout: Tab-Leiste, Steuerungsleiste (vorerst leer), Werkzeugleiste links, Zeichenfläche Mitte, Seitenleiste rechts (Layout) (QA ✓ M1)
-- [x] M1-11 Werkzeugleiste nur aus Icons; Tooltip mit Name, Kurzbeschreibung, Shortcut; aktive Werkzeuge und Umschalter farblich hervorgehoben (Layout) (QA ✓ M1)
-- [x] M1-12 Material Symbols lokal gebündelt (npm, SVG) (Gestaltung) (QA ✓ M1)
-- [x] M1-13 Gestaltung angelehnt an Illustrator: dunkles neutrales Grau als Standard, helles Theme optional, kompakte Panels, kleine Schrift, kein Adobe-Branding (Gestaltung) (QA ✓ M1)
-- [x] M1-14 Seitenleiste per Button und Shortcut einklappbar; Tab blendet alle Panels aus (Layout) (QA ✓ M1)
-- [x] M1-15 Zoom: Mausrad, Strg/Cmd + / −, „an Fenster anpassen“ Strg/Cmd+0 (Layout, Tastaturkürzel) (QA ✓ M1)
-- [x] M1-16 Pan: Leertaste + Ziehen (temporäre Hand), Hand-Werkzeug H (Layout, Tastaturkürzel) (QA ✓ M1)
-- [x] M1-24 Trackpad: Pinch zoomt, Zwei-Finger-Wischen verschiebt; Mausrad zoomt weiterhin (Layout, Entscheidung 2026-10-10, aus E-01) (QA ✓ M1)
-- [x] M1-17 Werkzeuge Auswahl (V) und Zoom (Z) (Layout, Tastaturkürzel) (QA ✓ M1)
-- [x] M1-18 Projekt als eine Datei speichern/laden (`.schelme` = ZIP mit `project.json` + Assets) (§10) (QA ✓ M1)
-- [x] M1-19 Autosave in Sicherungsdatei mit Wiederherstellung beim Öffnen (§10) (erste QA ✓ M1; Nachprüfung: Nacharbeit nötig, QA-M1-08 in `qa/M1-nachpruefung.md`) **Erledigt 2026-10-10:** QA-M1-08 behoben.
-- [x] M1-20 Undo/Redo projektweit, Strg/Cmd+Z / Strg/Cmd+Shift+Z (§10, Tastaturkürzel) (QA ✓ M1)
-- [x] M1-21 Shortcut-System: zentrale Konfiguration, Cmd auf macOS statt Strg, Illustrator-Konventionen (Tastaturkürzel) (QA ✓ M1)
-- [x] M1-22 Shortcut-Übersicht per `?` (Tastaturkürzel) (QA ✓ M1)
-- [x] M1-23 Tooltips mit Name und Shortcut beim Hovern über Buttons (Tastaturkürzel) (QA ✓ M1)
-
-## M2 – Hintergrund, Maßstab, Raster, Messen
-- [x] M2-01 Hintergrundplan pro Festplatz-Page importieren: PDF mit Seitenauswahl bei mehrseitigen PDFs; eingebettet wird nur die gewählte Seite (§1) (QA M2: Nacharbeit, QA-M2-02 in `qa/M2.md`) **Erledigt 2026-10-10:** QA-M2-02 behoben (deutsche Meldungen).
-- [x] M2-02 Hintergrund-Import SVG, JPEG, PNG (§1) (QA M2: Nacharbeit, QA-M2-02 in `qa/M2.md`) **Erledigt 2026-10-10:** QA-M2-02 behoben (abgeschnittene PNG/JPEG werden geprüft und abgewiesen).
-- [x] M2-03 Deckkraft des Hintergrunds einstellbar (§1) (QA ✓ M2)
-- [x] M2-04 Hintergrund sperrbar (§1) (QA ✓ M2)
-- [x] M2-05 Hintergrund austauschbar ohne Verlust der gezeichneten Objekte (§1) (QA ✓ M2)
-- [x] M2-06 Kalibrierungs-Werkzeug: zwei Punkte klicken, realen Abstand in m eingeben, Hintergrund wird skaliert; jederzeit wiederholbar; danach automatisch gesperrt (§1, Layout) (QA M2: Nacharbeit, QA-M2-01 in `qa/M2.md`) **Erledigt 2026-10-10:** QA-M2-01 behoben (Eingabe ohne Tausenderpunkt).
-- [x] M2-11 Planmaßstab 1:n direkt eingeben (nur PDF), als Alternative zur 2-Punkt-Kalibrierung (§1, Entscheidung 2026-10-10) (QA M2: Nacharbeit, QA-M2-01 in `qa/M2.md`) **Erledigt 2026-10-10:** QA-M2-01 behoben.
-- [x] M2-07 Hintergrund verschieben und drehen (§1) (QA ✓ M2)
-- [x] M2-08 Nordrichtung pro Festplatz-Page einstellbar (§1) (QA ✓ M2)
-- [x] M2-09 Raster mit einstellbarer Weite; Umschalter „Raster ein/aus“ in der Werkzeugleiste (§1, Layout) (QA M2: Nacharbeit, QA-M2-01 in `qa/M2.md`) **Erledigt 2026-10-10:** QA-M2-01 behoben; Raster ein/aus ist Ansichtseinstellung (QA-M2-05).
-- [x] M2-10 Messwerkzeug: zwei Punkte klicken, Abstand in m; bleibt bis zum nächsten Werkzeugwechsel sichtbar (Messwerkzeug, Layout) (QA ✓ M2)
-
-## M3 – Grundflächen, Geschäfte, Seitenleiste, Steuerungsleiste, Beschriftung
-Entscheidungen aus der Planung (2026-10-10) stehen in `spec.md` (Begriffe, §2, §3, Allgemein, NFA).
-- [x] M3-01 Grundfläche = Rechteck, frei rotierbar, Breite = Länge der Vorderseite, Tiefe senkrecht dazu; nur Rechtecke; Position = Mittelpunkt, Drehung um den Mittelpunkt (Begriffe) (QA ✓ M3)
-- [x] M3-02 Grundflächen-Werkzeug: Rechteck aufziehen (Klick = 20 × 8 m), drehen per Drehgriff (Shift 15°) und numerisch (§2, Layout) (QA ✓ M3)
-- [x] M3-03 Vorderseite per Klick auf eine Kante festlegen, deutlich markiert; zusätzlich Kantenwähler in der Seitenleiste. Beim Wechsel bleibt die Fläche optisch exakt an derselben Stelle, nur die Markierung wandert (mit Test abgesichert) (§2) (QA ✓ M3)
-- [x] M3-04 Automatische Grundflächen-Beschriftung mit Name und Maßen, z. B. „50 × 10 m“: horizontal, feste Schriftgröße, außerhalb der Fläche vor der Mitte der Vorderseite (§2) (QA ✓ M3)
-- [x] M3-05 Geschäfts-Werkzeug: Klick legt Stand mit Standardmaß an (3 × 3 m, danach zuletzt angelegtes Maß), Ziehen zieht ihn auf (§3, Layout) (QA ✓ M3)
-- [x] M3-06 Geschäfte frei verschieben und drehen: Drehgriff und numerisch, Shift rastet in 15°-Schritten ein; Größe nur über Zahlen (§3) (QA M3: Nacharbeit, QA-M3-03 in `qa/M3.md`) **Erledigt 2026-10-11:** QA-M3-03 behoben (3-px-Toleranz am Drehgriff).
-- [x] M3-07 Geschäfts-Attribute in der Seitenleiste: Platznummer, Geschäftsname, Eigentümer, Typ/Ware, Breite, Tiefe, Strom in kW, Anschlussart (230 V / CEE 16 A / CEE 32 A), Notiz (§3) (QA ✓ M3)
-- [x] M3-08 Kategorien (Name + Farbe, projektweit) im Seitenleisten-Bereich „Kategorien“ anlegen, umbenennen, umfärben, löschen; Löschen einer verwendeten Kategorie mit Rückfrage, Stände verlieren die Kategorie (§3) (QA M3: Nacharbeit, QA-M3-06 in `qa/M3.md`) **Erledigt 2026-10-11:** QA-M3-06 behoben (Feld zeigt nach abgewiesenem Namen wieder den gültigen).
-- [x] M3-19 Eigene Farbe pro Stand, überschreibt die Kategoriefarbe; ohne beides neutrales Grau (§3) (QA ✓ M3)
-- [x] M3-09 Standbeschriftung mittig aus konfigurierbarer Vorlage mit Platzhaltern; leere Zeilen entfallen. Vorlage und Schriftgröße projektweit in einem eigenen Seitenleisten-Bereich „Beschriftung“ (bis M6) (§3) (QA ✓ M3)
-- [x] M3-10 Standbeschriftung immer horizontal, unabhängig von der Drehung, auf oberster Ebene (§3) (QA ✓ M3)
-- [x] M3-11 Feste Schriftgröße in Planeinheiten, skaliert mit dem Zoom; Text darf über den Stand ragen, nichts wird gekürzt oder verkleinert (§3) (QA ✓ M3)
-- [x] M3-12 Steuerungsleiste: X, Y, Breite, Tiefe, Drehung des ausgewählten Objekts direkt bearbeitbar; bei Mehrfachauswahl unterschiedliche Werte als leeres Feld, Eingabe gilt für alle (Layout, Allgemein) (QA M3: Nacharbeit, QA-M3-07 in `qa/M3.md`) **Erledigt 2026-10-11:** QA-M3-07 entschieden: X/Y = Mitte der Auswahl, verschiebt als Ganzes; Spec angepasst.
-- [x] M3-13 Seitenleiste: Eigenschaften des ausgewählten Objekts; bei Mehrfachauswahl gemeinsame Felder, unterschiedliche Werte leer, Eingabe gilt für alle (Layout, Allgemein) (QA ✓ M3)
-- [x] M3-14 Ebenen-Panel: Ebenen (Hintergrund, Grundflächen, Freiflächen, Geschäfte, Infrastruktur, Beschriftung) ein-/ausblendbar und sperrbar (Ansichtseinstellung, kein Undo); jede Ebene erscheint, sobald ihre Objekte existieren; eine einzige Hintergrund-Sperre (aus E-13) (Layout, Allgemein) (QA ✓ M3)
-- [x] M3-15 Mehrfachauswahl: Shift+Klick, Auswahlrechteck (nur vollständig enthaltene Objekte); Ziehen auf nicht ausgewählter Grundfläche = Auswahlrechteck (Allgemein, §2) (QA ✓ M3)
-- [x] M3-16 Kopieren/Einfügen (interne Zwischenablage, auch zwischen Pages), Duplizieren um 1 m versetzt; Kopien mit leerer Platznummer (Allgemein) (QA ✓ M3)
-- [x] M3-17 Verschieben per Pfeiltasten (0,1 m, mit Shift 1 m), Entf/Backspace löscht (Allgemein) (QA ✓ M3)
-- [x] M3-18 Messwerkzeug fängt an Ecken und Kanten von Objekten (nur sichtbare Ebenen) (Messwerkzeug) (QA ✓ M3)
-- [x] M3-20 Größe von Grundflächen per Ziehen an 8 Griffen ändern; gegenüberliegende Kante/Ecke bleibt fest (§2) (QA M3: Nacharbeit, QA-M3-02 in `qa/M3.md`) **Erledigt 2026-10-11:** QA-M3-02 behoben (Höchstmaß 2000 m auch am Griff).
-- [!] M3-21 Undo: Ziehen, Drehen, Aufziehen, Größe ändern = genau ein Schritt; Feldänderung = ein Schritt; gedrückt gehaltene Pfeiltaste = ein Schritt; Esc bricht eine laufende Geste ab (Allgemein) (QA M3: Nacharbeit, QA-M3-01, QA-M3-05 in `qa/M3.md`) **Erledigt 2026-10-11:** QA-M3-01 behoben (Tastatur-Reihenfolge fest im Code, Interaktion vor Kurzbefehlen), QA-M3-05 behoben (jeder Pfeiltasten-Druck ein Schritt, gehaltene Taste einer). (QA M4: Nacharbeit, QA-M4-04 in `qa/M4.md`: Esc bricht das Verschieben des Hintergrunds nicht ab)
-- [x] M3-22 Rundung beim Übernehmen: Positionen und Maße 0,01 m, Drehung 0,1° (Begriffe) (QA M3: Nacharbeit, QA-M3-04 in `qa/M3.md`) **Erledigt 2026-10-11:** QA-M3-04 behoben (Drehung exakt auf 0,1°).
-- [x] M3-23 Lasttest 500 Stände auf einer Page: ≥ 50 Bilder/s beim Zoomen, Verschieben der Ansicht und Ziehen eines Stands, Chromium und WebKit (NFA, Abnahmekriterium; Teil von Q-04) (QA ✓ M3)
+## M1 bis M3 – abgeschlossen und abgenommen
+Aufgabenlisten, erledigte QA-Befunde und Abschlüsse: `docs/archiv/M1.md`, `docs/archiv/M2.md`, `docs/archiv/M3.md`.
 
 ## M4 – Freiflächen, Fang, Warnungen
 Entscheidungen aus der Planung (2026-10-11) stehen in `spec.md` (Begriffe, §3, §4, Allgemein, Tastaturkürzel, NFA).
@@ -157,7 +74,7 @@ Entscheidungen aus der Planung (2026-10-11) stehen in `spec.md` (Begriffe, §3, 
 - [x] M4-10 Warnung bei Überlappung zweier Stände (rot); global und pro Stand abschaltbar, mit Undo (§3) (QA ✓ M4)
 - [x] M4-11 Shift beim Verschieben beschränkt die Richtung auf waagerecht/senkrecht/45°; eingerastet bleibt der Stand an der Vorderseite (aus E-20, Illustrator-Konvention) (QA ✓ M4)
 - [x] M4-12 Alt+Ziehen dupliziert die Auswahl (Alt beim Loslassen entscheidet, ein Undo-Schritt) (aus E-20; Konflikt mit der Alt-Umkehr durch M4-08 aufgelöst) (QA ✓ M4)
-- [!] M4-13 Toleranz 0,01 m für Überlappung, Bündigkeit, Belegung und „außerhalb“ (Begriffe, §4) (QA M4: Nacharbeit, QA-M4-01, QA-M4-02 in `qa/M4.md`)
+- [x] M4-13 Toleranz 0,01 m für Überlappung, Bündigkeit, Belegung und „außerhalb“ (Begriffe, §4) (QA M4: Nacharbeit, QA-M4-01, QA-M4-02 in `qa/M4.md`) **Erledigt 2026-10-11:** bis einschließlich 0,01 m bündig, Rechentoleranz 1e-6 m, zentrale Vergleichsfunktionen (`src/core/geometry/tolerance.ts`), „außerhalb“ gegen die um 0,01 m aufgeweiteten Grundflächen.
 - [x] M4-14 Überlappende Grundflächen: die frühere gewinnt, spätere rechnen nur mit ihrem Rest (§4) (QA ✓ M4)
 - [x] M4-15 Fang an Nachbarständen (Anliegen, Flucht; nur parallele Nachbarn) (§3) (QA ✓ M4)
 - [x] M4-16 Fang am Raster (Rand/Mitte des Hüllrechtecks, nur bei eingeblendetem Raster) (§3) (QA ✓ M4)
@@ -166,7 +83,8 @@ Entscheidungen aus der Planung (2026-10-11) stehen in `spec.md` (Begriffe, §3, 
 - [x] M4-19 Stabiler Schlüssel je Freifläche und Auflösefunktion als Grundlage für die Sprung-Links in M6-02 (§4, §7) (QA ✓ M4)
 - [x] M4-20 Während eines Ziehens keine Kurzbefehle (außer Esc); Übersicht (?) nennt die Tasten beim Ziehen (Allgemein, Tastaturkürzel) (QA ✓ M4)
 - [x] M4-22 Versioniertes Dateiformat: Formatversion 2, Migration 1 → 2 (neue Felder mit Standardwerten), neuere Versionen mit deutscher Meldung abgewiesen; echte M3-Datei (Version 1) als Testdatei; Regel in CLAUDE.md (§10, Entscheidung 2026-10-11) (QA ✓ M4)
-- [!] M4-21 Lasttest 500 Stände mit Freiflächen, Warnungen und Fang: ≥ 50 Bilder/s beim Zoomen, Verschieben der Ansicht und Ziehen quer über mehrere Grundflächen, Chromium und WebKit (NFA, Teil von Q-04) (QA M4: Nacharbeit, QA-M4-03 in `qa/M4.md`)
+- [x] M4-21 Lasttest 500 Stände mit Freiflächen, Warnungen und Fang: ≥ 50 Bilder/s beim Zoomen, Verschieben der Ansicht und Ziehen quer über mehrere Grundflächen, Chromium und WebKit (NFA, Teil von Q-04) (QA M4: Nacharbeit, QA-M4-03 in `qa/M4.md`) **Erledigt 2026-10-11:** Kriterium präzisiert (Plan 8000 × 6000 px, Median aus 5 Läufen, kein Bild über 100 ms); Ursache der langen Einzelbilder (Autosave) behoben; zwischengespeicherte Ebenen beim Zoomen/Verschieben.
+- [x] M4-23 Einblendbare Bildraten-Anzeige (Bilder/s, längstes Bild der letzten 2 s), Cmd/Strg+Alt+F, standardmäßig aus, nicht im PDF-Export (NFA, Messen in der Desktop-App; Auftrag Laurin 2026-10-11)
 
 ## M5 – Nummerierung, Strom
 - [ ] M5-01 Nummerierung links → rechts entlang der Vorderseite, Grundflächen in festlegbarer Reihenfolge (§5)
@@ -225,250 +143,6 @@ Zuordnungen, die in der Meilensteinliste der Spec nicht ausdrücklich stehen:
 
 ---
 
-## Abschluss M1 (2026-10-10)
-
-Abgleich mit `spec.md` vor diesem Abschluss: Die Entscheidungen aus den Rückfragen (Infrastruktur
-belegt Fläche pro Typ, Freiflächen-Beschriftung horizontal, ZIP-Dateiformat, Hintergrund drehbar,
-Nordrichtung pro Page, fixierte Nummern, manueller Uhrzeigersinn-Mittelpunkt, SVG-Zeichenfläche)
-stehen jetzt in `spec.md`. Jede davon hat einen Backlog-Eintrag. Keine Anforderung fehlt.
-
-_Stand korrigiert am 2026-10-10 nach QA (QA-M1-01). Die Abschnitte „Nachtrag M1“, „Antworten auf die
-offenen Fragen“ und „QA-Nacharbeit M1“ unten beschreiben, was nach dem ersten Abschluss dazukam._
-
-### Umgesetzt
-- Projekt-Setup: React 19, TypeScript 7 (strict), Vite 8, Vitest; Tauri-2-Hülle (`src-tauri/`) mit Dialog- und Dateisystem-Plugin, App-Icons, Dateizuordnung `.schelme`. Die Desktop-App kompiliert und startet (siehe Antworten, Punkt 1).
-- Datenmodell vollständig angelegt (`src/core/model/types.ts`), mit Standardwerten, Validierung beim Laden, Formatversion und Migrationsgerüst.
-- Dateiformat `.schelme` (ZIP: `project.json` + `assets/`), Speichern, Speichern unter, Öffnen, Neu; Rückfrage bei ungespeicherten Änderungen (auch beim Schließen des Fensters).
-- Autosave alle 30 s in eine Sicherungsdatei; Wiederherstellung beim App-Start bzw. beim Öffnen einer Datei, wenn die Sicherung neuer ist. Wird das Projekt per Undo wieder sauber, wird die eigene Sicherung entfernt (QA-M1-03).
-- Undo/Redo projektweit über Immer-Patches, inklusive Transaktionen (für Ziehvorgänge ab M3).
-- Tab-Leiste: Start-Page (fest, links), Festplatz-Pages anlegen (+), umbenennen (Doppelklick, F2), Kontextmenü (Umbenennen, Duplizieren, Löschen), Umsortieren per Ziehen, Wechsel per Klick und Shortcut (Strg+Tab, Strg+Bild↑/↓, Alt+0…9). Die aktive Page bleibt in einer übervollen Leiste sichtbar, das Mausrad scrollt die Leiste seitwärts (QA-M1-04).
-- Layout: Tab-Leiste, Steuerungsleiste, Icon-Werkzeugleiste, Zeichenfläche, Seitenleiste; dunkles Theme als Standard, helles optional.
-- Werkzeugleiste mit allen Werkzeugen der Spec. Auswahl, Hand und Zoom funktionieren; die übrigen sind ausgegraut, ihr Tooltip nennt den Meilenstein.
-- Zeichenfläche: Zoom per Mausrad (um den Mauszeiger), Pinch, Strg/Cmd +/−, Strg/Cmd+0, Zoom-Werkzeug (Klick, Alt+Klick); Pan per Zwei-Finger-Wischen, Leertaste, Hand-Werkzeug, mittlere Maustaste; Statusleiste mit Koordinaten und Maßstab.
-- Shortcut-System: zentrale Konfiguration (`src/ui/shortcuts/definitions.ts`), Cmd auf macOS, QWERTZ-sicher; Übersicht per `?`; Tooltips mit Name, Taste und Beschreibung.
-- Seitenleiste einklappbar (Button, Shift+Tab); Tab blendet alle Panels aus.
-- Tests: 28 Unit-Tests (Modell, Dateiformat, Viewport, Store/Undo, Shortcuts, Rad-Deutung). E2E (Playwright, Chromium + WebKit): der Smoke-Test aus dem Nachtrag plus 69 Testfälle aus der QA (`tests/e2e/m1-*.spec.ts`). Der im ersten Abschluss erwähnte „automatisierte Klicktest“ war ein einmaliges Skript außerhalb des Repositorys; er ist durch die eingecheckten E2E-Tests ersetzt.
-
-### Nicht umgesetzt / verschoben
-- Nichts aus M1. Alle 24 Einträge sind `[x]` und von der QA bestätigt (`qa/M1.md`).
-- Nur manuell prüfbar und noch offen: native Dateidialoge, Autosave-Dateien neben dem Projekt, Schließen-Dialog der Desktop-App, echte Maus/echtes Trackpad (Checkliste in `qa/M1.md`).
-
-### Abweichungen von SPEC.md bzw. vom Plan
-- Die Zeichenfläche zeigt schon jetzt ein festes Orientierungsraster (1 m / 10 m), damit Zoom und Pan sichtbar sind. Einstellbare Weite und Ein/Aus folgen mit M2-09.
-- Die Start-Page ist nicht ganz leer: Sie zeigt Projektname, Anzahl und Karten der Festplätze (Klick wechselt), eine Karte „Neuer Festplatz“ und einen Hinweis auf M6.
-- Die Start-Page nutzt die ganze Breite, ohne Werkzeugleiste und Seitenleiste; die Spec beschreibt das Layout nur für Zeichen-Pages.
-- Das Design (hell/dunkel) ist eine App-Einstellung pro Rechner und gehört nicht zum Projekt (im Plan stand `settings.theme`).
-- Zusätzlicher Ordner `src/app/` für die Steuerung (Befehle, Datei-Aktionen, Autosave, Tastatur); `src/platform/` kapselt alle Betriebssystem-Zugriffe.
-- Icons kommen per Vite-`?raw`-Import statt über `vite-plugin-svgr`; eine Abhängigkeit weniger, gleiches Ergebnis.
-- Eine Page mit Objekten wird erst nach Rückfrage gelöscht (zusätzlich zu Undo).
-- Werkzeug-Shortcuts (von Laurin bestätigt): Grundfläche F, Geschäft G, Infrastruktur I, Messen M, Kalibrieren K, Schriftfeld T, Fang Shift+F/R/N, Raster Cmd/Strg+# bzw. '.
-- Der Tooltip zeigt die Taste als eigenes Kästchen statt im Format „Name (G) – Beschreibung“ aus dem Spec-Beispiel; der Inhalt ist gleich.
-- Linter ist oxlint statt ESLint (siehe Nachtrag).
-
-### Bekannte Bugs und Einschränkungen
-- Maus/Trackpad werden heuristisch unterschieden (`src/ui/canvas/wheel.ts`). Pinch und Wischen sind auf echter Hardware bestätigt; das Mausrad einer echten Maus in der Desktop-App ist noch zu prüfen. In Playwright-WebKit wird ein synthetisches Mausrad als Trackpad gedeutet (der E2E-Test dazu läuft nur in Chromium).
-- Die Wischrichtung folgt den Deltas des Systems; ändert man unter macOS die „Natürliche Scrollrichtung“, kehrt sie sich mit um (E-09).
-- Im Browser-Dev-Modus fangen manche Browser Shortcuts wie Cmd/Strg+N ab (E-05).
-- Ein Doppelklick auf eine `.schelme`-Datei öffnet sie noch nicht in der App (E-02).
-
-### Offene Fragen (alle beantwortet, siehe unten)
-1. Rust installieren? 2. Git-Repository? 3. Werkzeug-Shortcuts? 4. Trackpad-Verhalten?
-
-### Nachtrag M1 (2026-10-10, vor M2)
-- Der QA-Agent (`.claude/agents/qa-tester.md`) ist eingerichtet; neuer Backlog-Status `[!]`.
-- npm-Scripts vollständig: `typecheck`, `lint` (neu), `test`, `test:e2e` (neu), `build`, `check` (neu, alles zusammen).
-- Linter: **oxlint** statt ESLint. typescript-eslint unterstützt TypeScript 7 noch nicht (Peer-Abhängigkeit `<6.1`). oxlint ist ESLint-kompatibel und braucht kein TypeScript; die Typprüfung bleibt bei `tsc`. Konfiguration: `.oxlintrc.json`, Warnungen gelten als Fehler.
-- Der Linter hat einen echten Fehler gefunden und er ist behoben: In `Canvas.tsx` wurde ein Ref während des Renderns geschrieben; das geschieht jetzt in einem Layout-Effekt.
-- Playwright eingerichtet (`playwright.config.ts`, `tests/e2e/`), Projekte Chromium (≈ WebView2/Windows) und WebKit (≈ macOS-Webview). Erster Smoke-Test: App startet ohne Konsolenfehler, Tab-Leiste, Start-Tab, aktive Festplatz-Page und Werkzeugleiste sind sichtbar. Läuft in beiden Browsern.
-- Browser-Lauffähigkeit: Das Frontend lief schon vorher im Browser, aber `src/app/window.ts` rief die Tauri-Fenster-API direkt auf (abgesichert durch eine Laufzeitabfrage). Jetzt gibt es eine richtige Schnittstelle `Platform` (`src/platform/types.ts`) mit zwei Implementierungen: `tauri.ts` (native Dialoge, Dateisystem, Fenster) und `browser.ts` (Upload, Download, localStorage, `beforeunload`). Außerhalb von `tauri.ts` importiert kein Code mehr `@tauri-apps/*`.
-- CLAUDE.md enthält alle Befehle und die QA-Regeln.
-
-### Antworten auf die offenen Fragen (2026-10-10)
-1. Rust ist installiert. Die Desktop-App kompiliert (`tauri build --debug --no-bundle`) und startet ohne Fehler; M1-01 ist damit `[x]`. Native Dateidialoge, Autosave-Dateien neben dem Projekt und den Schließen-Dialog konnte ich nicht automatisch bedienen → manuell prüfen.
-2. Git-Repository: https://github.com/LaurinLudwig/Schelmenplaner (öffentlich). Commits laufen unter der GitHub-noreply-Adresse, damit keine private E-Mail-Adresse öffentlich wird.
-3. Werkzeug-Shortcuts F, G, I, M, K, T bestätigt.
-4. Trackpad: Pinch zoomt, Zwei-Finger-Wischen verschiebt, das Mausrad zoomt weiterhin → M1-24, `spec.md` angepasst. Ob ein Rad-Ereignis von Maus oder Trackpad kommt, erkennt `src/ui/canvas/wheel.ts` heuristisch (Unit-Tests vorhanden). Für Safari/macOS-Webview wird Pinch zusätzlich über Gesten-Ereignisse verarbeitet. Mit echter Maus und echtem Trackpad in der Desktop-App manuell prüfen; eine Magic Mouse verhält sich wie ein Trackpad (Wischen verschiebt).
-
-### QA-Nacharbeit M1 (2026-10-10)
-Befunde aus `qa/M1.md` abgearbeitet; Details im Abschnitt „Behoben“ des Berichts.
-- QA-M1-03 Autosave: `src/app/autosave.ts` entfernt die eigene Sicherung, sobald das Projekt wieder dem gespeicherten Stand entspricht (sofort per Store-Abo und zusätzlich im 30-s-Takt).
-- QA-M1-04 Tab-Leiste: Die aktive Page wird in den sichtbaren Bereich gescrollt; das Mausrad scrollt die Leiste seitwärts.
-- QA-M1-05: Override in `.oxlintrc.json` für `src/core/**`: verbietet React, Tauri, zustand, Importe aus `state/`, `ui/`, `app/`, `platform/` und DOM-Globals (`window`, `document`, `localStorage` …). Mit einer Probedatei gegengeprüft.
-- QA-M1-06: `tip()` kennt `ariaLabel`. Die Karte heißt für Screenreader „Neuer Festplatz – Leere Festplatz-Page anlegen“ (sichtbarer Inhalt), der „+“-Button „Festplatz-Tab hinzufügen“.
-- QA-M1-02: Pinch funktioniert laut Laurin; das Verschieben lief invertiert und ist umgedreht (`src/ui/canvas/wheel.ts`). Der E2E-Test „M1-24: Zwei-Finger-Wischen“ prüfte die alte Richtung und ist angepasst (Begründung siehe Bericht).
-- QA-M1-01: Abschluss M1 oben korrigiert.
-
----
-
-## Abschluss M2 (2026-10-10)
-
-Abgleich mit `spec.md` vor diesem Abschluss: §1 (Hintergrund & Maßstab), Messwerkzeug und die
-Werkzeugleisten-Einträge Messen, Kalibrierung und Raster ein/aus sind vollständig auf M2-01 bis
-M2-11 abgebildet. Deine Entscheidungen aus der Planung (nur gewählte PDF-Seite einbetten,
-automatische Sperre nach Kalibrierung, Planmaßstab 1:n) stehen jetzt in `spec.md` §1.
-Unverändert offen und richtig zugeordnet: Messwerkzeug-Fang an Objekten (M3-18), Nordpfeil im PDF (M8-04).
-
-### Umgesetzt
-- **Import** (Cmd/Strg+Shift+P, Seitenleiste „Hintergrund importieren …“): PDF, SVG, PNG, JPEG. Der Typ wird am Dateiinhalt erkannt, nicht an der Endung. Bei mehrseitigen PDFs gibt es eine Seitenauswahl mit Vorschaubildern; mit pdf-lib wird **nur die gewählte Seite** herausgelöst und eingebettet. Ab 50 MB fragt die App nach, über 300 MB lehnt sie ab.
-- **Einbettung:** Die Originaldatei liegt unter `assets/<Inhalts-Hash>.<Endung>` in der `.schelme`-Datei. Gleiche Dateien werden nur einmal gespeichert. Gespeichert werden nur Pläne, die noch verwendet werden; ersetzte bleiben bis zum Speichern im Speicher, damit Undo funktioniert. SVG wird im ZIP komprimiert, PDF, PNG und JPEG nicht (bereits komprimiert).
-- **PDF-Darstellung:** pdf.js im Worker, lokal mitgelieferte Schriften, CMaps und Wasm (`scripts/copy-pdfjs-assets.mjs`, läuft vor `dev`/`build`). Grundbild höchstens 8 MP. Steht die Ansicht 150 ms still und ist stark vergrößert, wird der sichtbare Ausschnitt in Bildschirmauflösung (× Retina-Faktor, höchstens 12 MP) gerendert und darübergelegt.
-- **Deckkraft** (Schieberegler, ein Undo-Schritt pro Ziehen), **Sperren**, **Verschieben** per Ziehen mit dem Auswahlwerkzeug (nur entsperrt, ein Undo-Schritt), **Drehen** numerisch um die Planmitte, **Ersetzen** mit gleicher Position, Drehung und Breite in Metern plus Hinweis „Kalibrierung prüfen“, **Entfernen** (rückgängig machbar).
-- **Kalibrieren (K):** zwei Punkte klicken (Shift = 45°), beide Punkte bis zur Bestätigung verschiebbar, realen Abstand eingeben. Ungültige Eingaben (0, negativ, Text, leer, gleiche Punkte) werden mit Meldung abgelehnt; Esc bricht ab. Danach ist der Plan gesperrt und das Auswahlwerkzeug aktiv. Nur die Hintergrund-Transformation ändert sich, Objekte nie. Ohne Hintergrund ist das Werkzeug ausgegraut; per Taste K kommt ein Hinweis.
-- **Planmaßstab 1:n** für PDFs (1 pt = 1/72 Zoll Papier); sperrt ebenfalls und wird als „Maßstab 1:n“ angezeigt.
-- **Raster:** Weite pro Festplatz in der Seitenleiste (0,1–1000 m), ein/aus über die Werkzeugleiste (Cmd/Strg+#). Über einem Plan heben sich die Linien farblich vom Untergrund ab.
-- **Nordrichtung** pro Festplatz (Zahlenfeld, normiert auf 0–360°) mit Nordpfeil oben rechts.
-- **Messen (M):** klicken–klicken oder ziehen; Abstand in m und Winkel. Die Messung bleibt bis zum Werkzeug- oder Seitenwechsel stehen, Esc löscht sie, Shift = 45°.
-- **Fang vorbereitet für M3:** `src/core/snap.ts` (Ecken vor Kanten, erweiterbar über `SnapSource`). Das Messwerkzeug nutzt ihn bereits für alle Rechtecke der Page; sobald es in M3 Objekte gibt, fängt es ohne Änderung. Werkzeuge sind als Hooks mit gemeinsamer Schnittstelle gebaut (`src/ui/canvas/tools/types.ts`).
-- „An Fenster anpassen“ (Cmd/Strg+0) bezieht den Hintergrund mit ein.
-- **Kernlogik** in `src/core/background.ts` (Transformation, Kalibrierung, Planmaßstab, Drehen, Ersetzen, sichtbarer Ausschnitt), `measure.ts`, `snap.ts`: 19 neue Unit-Tests, zusammen 47.
-- **Testdateien** `tests/fixtures/` (Erzeuger `scripts/make-fixtures.mjs`, Maße im README dort) und **44 neue E2E-Tests** (`tests/e2e/m2-background.spec.ts`, Chromium + WebKit). Dazu gehören exakte Kalibrierung (50 m kalibriert ⇒ 60 m gemessen), Planmaßstab 1:1000 (5 Kästchen = 50 m) und „nur eine Seite eingebettet“.
-- **Lasttest** (nicht eingecheckt): A0-PDF mit 15.000 Linien und 3.000 Texten importiert in ca. 0,8 s, Verschieben mit ca. 60 Bildern/s, Detailbild nach 0,25–0,3 s (Chromium und WebKit, Retina). PNG mit 8000 × 6000 px: Verschieben mit 48–58 Bildern/s.
-
-### Nicht umgesetzt / verschoben
-- Nichts aus M2.
-- Messwerkzeug-Fang an Ecken/Kanten von Objekten: wie geplant M3-18. Die Technik steht, es fehlen nur die Objekte.
-
-### Abweichungen von SPEC.md bzw. vom Plan
-- Zusatz Planmaßstab 1:n (M2-11, von dir freigegeben).
-- Browser-Modus: Die Sicherung nutzt localStorage und weicht bei großen Projekten auf IndexedDB aus (statt komplett auf IndexedDB umzustellen). So bleiben die bestehenden QA-Tests gültig, die den localStorage-Schlüssel prüfen.
-- Hintergrund drehen nur numerisch (kein Drehgriff), siehe E-14.
-- Kalibrierpunkte werden gespeichert, aber nicht angezeigt (E-12).
-- Im Entwicklungsmodus ist der Store als `window.__schelmeStore` erreichbar (Fehlersuche, Tests); im Produktions-Build nicht.
-- CSP der Desktop-App erweitert um `'wasm-unsafe-eval'` und `worker-src 'self' blob:` für pdf.js. Nichts davon erlaubt externe Quellen.
-
-### Bekannte Bugs und Einschränkungen
-- **Desktop-App nicht im Lauf getestet:** native Dateiauswahl für Pläne, pdf.js-Worker und Wasm unter der Tauri-CSP. Bitte manuell prüfen (Checkliste unten).
-- Die Genauigkeit der Kalibrierung hängt davon ab, wie genau man klickt (ein Bildschirmpixel). Für exakte Werte stark hineinzoomen; bei PDFs mit bekanntem Maßstab ist 1:n exakt.
-- Sehr große Rasterbilder (> 50 MP) können in WebKit langsam dekodieren; es gibt keine Kachelung für Rasterbilder.
-- Ein Ersetzen durch einen inhaltlich anderen Plan braucht eine neue Kalibrierung (Hinweis erscheint).
-
-### Manuell testen (Desktop-App)
-- [ ] Cmd+Shift+P öffnet den nativen Dialog mit Filter PDF/SVG/PNG/JPEG.
-- [ ] Mehrseitiges PDF: Vorschaubilder erscheinen, gewählte Seite wird angezeigt.
-- [ ] Hineinzoomen in ein PDF: Nach kurzer Pause wird der Plan scharf (pdf.js-Worker läuft unter der Tauri-CSP).
-- [ ] Speichern, schließen, öffnen: Plan, Kalibrierung, Deckkraft und Sperre sind wieder da. Die `.schelme`-Datei ist etwa so groß wie die eingebetteten Pläne.
-- [ ] Kalibrieren an einem echten Lageplan mit bekanntem Maß; danach Messen gegenprüfen.
-
-### Offene Fragen
-1. QA-Nachprüfung M1 (`qa/M1-nachpruefung.md`): sechs neue Befunde QA-M1-07 bis -12, M1-19 steht auf `[!]`. Soll ich sie abarbeiten? Für QA-M1-07 (Wischrichtung) brauche ich deine Angabe, ob unter macOS „Natürliche Scrollrichtung“ bei dir eingeschaltet ist.
-2. Soll ich M2 committen und pushen?
-
-### QA-Nacharbeit M2 und offene M1-Befunde (2026-10-10)
-Abgearbeitet nach `qa/M2.md` und `qa/M1-nachpruefung.md`; Details im Abschnitt „Behoben“ der beiden Berichte.
-- **QA-M2-01 (hoch):** Regel für alle Eingabefelder: keine Tausendertrennzeichen (`fmtInput`), Komma ist Dezimaltrenner, ein Punkt wird ebenfalls akzeptiert (`parseNum`). Reine Anzeigen behalten den Tausenderpunkt (`fmt`). Zahlenfelder übernehmen beim Verlassen nur, wenn wirklich getippt wurde. Unit-Test: parse(format(x)) === x für über 80.000 Werte; erneutes Formatieren ist stabil.
-- **QA-M1-07 bis -10:** Wischrichtung wie das System plus Menü „Wischrichtung umkehren“; behaltene Sicherung im eigenen Fach; Tab-Leiste reagiert auf Größenänderungen; `src/core` zusätzlich ohne DOM typgeprüft.
-- **QA-M2-03:** Kachelung großer Rasterbilder (Übersicht + Auflösungsstufen + Kacheln, bei Bedarf erzeugt).
-- **QA-M2-02:** `UserError` für nutzerfertige Meldungen. Alle übrigen Fehler werden durch feste deutsche Texte ersetzt, Technisches geht nur in die Konsole. Vor der Übernahme werden PNG und JPEG auf Vollständigkeit geprüft (`src/core/imageCheck.ts`).
-- **QA-M2-04 bis -07:** siehe Eingang.
-- **Dabei gefunden und behoben:** Enter in einem Zahlenfeld bestätigte eine dadurch geöffnete Rückfrage gleich mit, weil deren Knopf den Fokus bekam. Das Zahlenfeld verbraucht Enter jetzt selbst.
-- **Geänderte Tests (Begründung im Bericht):** `m1-canvas.spec.ts` „Zwei-Finger-Wischen“ ist auf die ursprüngliche QA-Erwartung (Systemrichtung) zurückgesetzt. In meinem eigenen `m2-background.spec.ts` wird nach dem Planmaßstab jetzt *keine* automatische Sperre mehr erwartet, weil sich die Anforderung durch QA-M2-06 geändert hat. Entfernte `test.fail`: 4 × QA-M2-01, 2 × QA-M2-02, QA-M2-04, QA-M1-07, QA-M1-08, 2 × QA-M1-09, QA-M1-10.
-- **QA-M1-12** ebenfalls erledigt (siehe Eingang). **Offen im Eingang (auf Wunsch):** QA-M1-11 und E-18.
-- Die Abweichung „Planmaßstab sperrt nicht automatisch, nur die 2-Punkt-Kalibrierung“ hat Laurin akzeptiert (2026-10-10).
-- `.gitignore`: `*.schelme` (außer `tests/fixtures/**/*.schelme`), `local-fixtures/`, `test-artifacts/`.
-
----
-
-## Abschluss M3 (2026-10-10)
-
-Abgleich mit `spec.md` vor diesem Abschluss: Die Entscheidungen der M3-Planung und deine Ergänzungen
-stehen in `spec.md` (Begriffe, §2, §3, Allgemein, NFA) und sind auf M3-01 bis M3-23 abgebildet:
-Grundflächen-Beschriftung außerhalb vor der Vorderseite, Vorderseitenwechsel ohne Lageänderung,
-Drehgriff für Stände, Kategorien in der Seitenleiste mit Löschregel, projektweite Beschriftung im
-eigenen Bereich, leere Felder bei Mehrfachauswahl, Lasttest als Abnahmekriterium. Zwei Präzisierungen
-aus der Umsetzung habe ich in `spec.md` nachgetragen (siehe Abweichungen). Nicht in M3 und richtig
-zugeordnet: Fang an Vorderkante/Raster/Nachbarn, Alt-Umkehr, Freiflächen, Warnungen (M4).
-
-### Umgesetzt
-- **Datenmodell:** Grundfläche `{ id, name, cx, cy, w, d, rot }`, Geschäft mit allen Attributen aus §3 und neu `color` (eigene Farbe). Die Vorderseite ist intern immer Kante 2, also ist `w` stets die Länge der Vorderseite. Gespeichert in `project.json` unter `pages[i].areas` / `.stands`, Kategorien unter `categories`. Beim Laden werden Einträge geprüft: kaputte verworfen, doppelte IDs neu vergeben, unbekannte Kategorie oder Anschlussart entfernt. Formatversion bleibt 1.
-- **Genauigkeit:** Beim Übernehmen werden Positionen und Maße auf 0,01 m gerundet, Drehungen auf 0,1° (`roundRect`). Während des Ziehens wird nicht gerundet.
-- **Werkzeuge:** Grundfläche (F) und Geschäft (G): Rechteck aufziehen oder klicken (20 × 8 m bzw. 3 × 3 m, danach das zuletzt angelegte Standmaß). Das Werkzeug bleibt aktiv, das neue Objekt ist ausgewählt.
-- **Auswahlwerkzeug (V):**
-  - Klick, Shift+Klick und Auswahlrechteck (nur vollständig enthaltene Objekte, Shift ergänzt), Cmd/Strg+A, Esc.
-  - Eine nicht ausgewählte Grundfläche wird per Klick ausgewählt; Ziehen darauf zieht ein Auswahlrechteck auf. Eine ausgewählte Grundfläche wird verschoben.
-  - Drehgriff für Stände und Grundflächen (Shift = 15°, sonst ganze Grad); eine Mehrfachauswahl dreht sich um ihre gemeinsame Mitte.
-  - 8 Größengriffe an einer einzeln ausgewählten Grundfläche.
-  - Vorderseite per Kantenklick (mit Hervorhebung und Tooltip), auch per Klick auf den Griff in der Kantenmitte, zusätzlich über den Kantenwähler in der Seitenleiste.
-  - Ein nicht gesperrter Hintergrund wird wie in M2 verschoben.
-- **Undo:**
-  - Gesten laufen über eine flüchtige Vorschau im Store (`preview`, nicht in der Historie). Beim Loslassen folgt genau ein Undo-Schritt, Esc bricht ab.
-  - Felder übernehmen bei Enter oder beim Verlassen: ein Schritt pro Feld.
-  - Pfeiltasten werden innerhalb von 1 s zu einem Schritt zusammengefasst (`mergeKey` in `history.ts`).
-- **Steuerungsleiste:** Art der Auswahl, X, Y (Mittelpunkt bzw. Mitte der Auswahl), Breite, Tiefe, Drehung, live auch während des Ziehens. Bei Mehrfachauswahl bleiben unterschiedliche Werte leer; eine Eingabe gilt für alle.
-- **Seitenleiste:**
-  - Geschäft: alle Attribute, Kategorie, eigene Farbe (Palette, Farbwähler, Zurücksetzen).
-  - Grundfläche: Bezeichnung, Maße, Drehung, Kantenwähler.
-  - Mehrfachauswahl: gemeinsame Felder, unterschiedliche Werte leer.
-  - Darunter immer die projektweiten Bereiche „Beschriftung“ (Vorlage, Schriftgröße) und „Kategorien“ (anlegen, umbenennen, umfärben, löschen) sowie „Ebenen“.
-- **Kategorien:** Löschen einer verwendeten Kategorie fragt nach („von n Geschäften verwendet“). Die Stände verlieren die Kategorie; die Farbe fällt auf die eigene Farbe bzw. Grau zurück. Ein Undo-Schritt stellt alles wieder her.
-- **Beschriftung:**
-  - Stände: mittig, immer horizontal, feste Schriftgröße in Metern, oberste Ebene, nichts gekürzt.
-  - Grundflächen: „Name · B × T m“, horizontal, außerhalb vor der Mitte der Vorderseite.
-  - Vorlage mit 9 Platzhaltern; leere Zeilen entfallen.
-- **Ebenen:** Auge und Schloss je Ebene, als Ansichtseinstellung (kein Undo). Gesperrt heißt nicht auswählbar, ausgeblendet heißt unsichtbar und ohne Fang; betroffene Objekte fallen aus der Auswahl. Das Schloss der Ebene Hintergrund ist die Hintergrund-Sperre (E-13).
-- **Kopieren/Einfügen/Duplizieren** (Cmd/Strg+C/X/V/D) über eine interne Zwischenablage, auch zwischen Pages. Kopien bekommen eine leere, nicht fixierte Platznummer. Pfeiltasten verschieben um 0,1 m bzw. mit Shift um 1 m; Entf/Backspace löscht. In Textfeldern gehören alle Bearbeiten-Kürzel dem Feld. Alle Kürzel stehen in der zentralen Konfiguration und in der Übersicht (?).
-- **Messwerkzeug:** fängt an Ecken und Kanten der sichtbaren Objekte. Die Fangquelle wird nur bei Objektänderungen neu aufgebaut.
-- **Vorbereitet für M4:** `frontFrame`/`toFrame`/`fromFrame` in `geometry/rect.ts`, `moveRects(…, snapper)` in `transform.ts` (Fang-Einhängepunkt, `altKey` wird durchgereicht), `effectivePage` in `derive.ts` (Freiflächen rechnen damit live während des Ziehens) und leere Ebenen für Freiflächen und Warnsymbole in der richtigen Zeichenreihenfolge.
-- **Tests:**
-  - 38 neue Unit-Tests (`src/core/m3.test.ts`, `src/state/objects.test.ts`), zusammen 99. Darunter: Vorderseitenwechsel lässt die Ecken unverändert (auch nach Rundung höchstens 0,01 m), Geste = 1 Undo-Schritt, Pfeiltasten-Zusammenfassung.
-  - 40 neue E2E-Tests (`tests/e2e/m3-objects.spec.ts`, Chromium + WebKit), darunter „Vorderseite per Kantenklick; die Fläche bleibt optisch exakt an derselben Stelle“ (vergleicht die gezeichneten Eckpunkte).
-  - Lasttest `tests/e2e/m3-perf.spec.ts`.
-  - `npm run check` grün, `npm run test:e2e`: 317 bestanden, 7 übersprungen (die bekannten Skips aus M1/M2).
-
-### Lasttest M3-23 (Abnahmekriterium ≥ 50 Bilder/s)
-500 Stände mit dreizeiliger Beschriftung und 10 Grundflächen auf einer Page, alle im Bild. In jedem Frame wird ein Eingabeereignis ausgelöst. Werte aus dem vollständigen E2E-Lauf, also mit beiden Browsern parallel:
-
-| Messung | Chromium | WebKit |
-|---|---|---|
-| Zoomen (Pinch) | 59 Bilder/s | 56 Bilder/s |
-| Ansicht verschieben (Wischen) | 60 | 57 |
-| Ansicht verschieben in Lesegröße (1 m = 20 px, Schrift mit hellem Rand) | 60 | 60 |
-| Stand ziehen | 59 | 60 |
-
-Einzeln gemessen erreicht WebKit 57–60 Bilder/s. Beim ersten Messen lag WebKit nur bei 33–37. Ursache war der helle Rand um jede Beschriftung (`paint-order: stroke`). Er erscheint jetzt erst ab 12 px Schrifthöhe; dann ist nur ein Ausschnitt des Plans im Bild.
-
-### Nicht umgesetzt / verschoben
-- Nichts aus M3.
-- Fang an Vorderkante, Raster und Nachbarn, die Alt-Umkehr, Freiflächen und Warnungen gehören wie geplant zu M4. Die Fang-Umschalter bleiben ausgegraut („folgt in M4“).
-
-### Abweichungen von SPEC.md bzw. vom Plan
-- **Beschriftungsvorlage (Spec präzisiert):** Auch Zeilen, deren Platzhalter alle leer sind, entfallen, z. B. „{strom} kW“ ohne Stromangabe. Sonst stünde dort „ kW“.
-- **Hintergrund-Sperre (Spec präzisiert):** Sie bleibt rückgängig machbar, auch über das Ebenen-Panel, weil die Kalibrierung sie im selben Undo-Schritt setzt. Die übrigen Ebenen-Sperren und das Ein-/Ausblenden sind Ansichtseinstellungen.
-- **Klick auf den Griff in der Kantenmitte** einer Grundfläche setzt diese Kante als Vorderseite; Ziehen ändert die Größe. Der Griff liegt genau dort, wo man zum Festlegen der Vorderseite hinklickt.
-- **Mehrfachauswahl:** Die Felder sind leer (gemäß Spec); ein Tooltip erklärt „Unterschiedliche Werte“. Platznummer erscheint bei mehreren Ständen nicht, weil eine gemeinsame Nummer immer doppelt wäre.
-- **Heller Rand um die Beschriftung** erst ab 12 px Schrifthöhe (Leistung, siehe Lasttest); darunter dunkle Schrift ohne Rand.
-- **Beschriftung in Zentimetern** (`scale(0.01)`) und mit eigenem Grundlinien-Versatz statt `dominant-baseline`, damit Chromium und WebKit gleich setzen.
-- Objekte werden geometrisch getroffen (`src/core/hit.ts`), nicht über das DOM. Überstehende Beschriftung fängt deshalb keine Klicks ab.
-
-### Bekannte Bugs und Einschränkungen
-- Undo stellt die Auswahl nicht wieder her (E-19).
-- Playwright-WebKit meldet über `boundingBox()` für SVG-Text unter `scale()` eine falsche Lage; der Test misst mit `getBoundingClientRect()`. Die Darstellung selbst ist korrekt (Screenshot geprüft).
-- Die Lastmessung läuft im Browser (Playwright). In der Desktop-App (WKWebView/WebView2) ist sie noch nicht gemessen; bitte einmal mit vielen Ständen manuell prüfen.
-
-### Manuell testen (Desktop-App)
-- [ ] Grundfläche aufziehen, drehen, Vorderseite per Kantenklick wechseln: Die Fläche bleibt stehen, nur die orange Linie wandert.
-- [ ] Stand anlegen, ziehen, mit Shift drehen, Cmd+Z: genau ein Schritt zurück.
-- [ ] Zwei Stände auswählen: Breite leer, Eingabe gilt für beide.
-- [ ] Kategorie anlegen, umfärben (Farbwähler des Systems), löschen.
-- [ ] Viele Stände (Kopieren/Einfügen, Cmd+A): Zoomen und Verschieben bleiben flüssig.
-
-### Offene Fragen (beantwortet 2026-10-10)
-1. QA-Agent für M3: startet Laurin selbst in einer eigenen Session; mit M4 wird bis zum Bericht gewartet.
-2. E-20 → M4 (M4-11, M4-12), weil M4 die Bewegungsfunktion für den Fang ohnehin erweitert. E-19 → spätere Feinschliff-Runde.
-
-### Nachtrag M3 (2026-10-10)
-- Testprojekt `tests/fixtures/last-500-staende.schelme` für die manuelle Prüfung der Bildrate in der Desktop-App: 500 Stände auf 4 Festplätzen (je 6 Grundflächen à 170 m, teils gedreht), 5 Kategorien. Erzeugt mit `node scripts/make-load-project.mjs`; `src/core/fixtures.test.ts` prüft, dass es sich mit dem echten Ladecode vollständig öffnet. Anleitung in `tests/fixtures/README.md`.
-
-### QA-Nacharbeit M3 (2026-10-11)
-Befunde aus `qa/M3.md` abgearbeitet; Details im Abschnitt „Behoben“ des Berichts.
-- **QA-M3-01 (hoch):** Ein einziger globaler Tastatur-Handler mit fester Reihenfolge: Dialoge, laufende Interaktion, Kurzbefehle. Unabhängig davon, wann sich etwas anmeldet. E2E-Test über mehrfache Seitenwechsel und alle Werkzeuge.
-- **QA-M3-07:** Spec angepasst. X/Y bei Mehrfachauswahl = Mitte der Auswahl (Illustrator); Breite, Tiefe, Drehung und Attribute gelten je Objekt, die Drehung um den eigenen Mittelpunkt.
-- **QA-M3-05:** Jeder Pfeiltasten-Druck ein Schritt, gehaltene Taste einer (über `KeyboardEvent.repeat` statt Zeitfenster).
-- **QA-M3-03, -04, -02, -06, L2, L3, L1:** 3-px-Toleranz am Drehgriff; exakt gerundete Drehungen; Höchstmaß am Griff; Kategoriename-Feld; Mindestmaß beim Aufziehen; Einfüge-Regel; `npm run test:perf`.
-- **Geänderter Entwicklertest:** `m3-objects.spec.ts` „Duplizieren, Kopieren/Einfügen …, Pfeiltasten“ erwartete 1 Undo-Schritt für 6 einzelne Pfeiltasten-Drücke; nach QA-M3-05 sind es 6. Entfernte `test.fail`: 3 × QA-M3-01, QA-M3-02, -03, -04, -05, -06.
-- Läufe: `npm run check` grün (103 Unit-Tests), `npm run test:e2e` 397 bestanden, 7 übersprungen, `npm run test:perf` 4 bestanden (WebKit 57–60, Chromium 60 Bilder/s).
-
----
-
 ## Abschluss M4 (2026-10-11)
 
 Abgleich mit `spec.md` vor diesem Abschluss: Die Entscheidungen der M4-Planung (Toleranz 0,01 m, Fälle A1–A13,
@@ -483,9 +157,10 @@ nachgetragen (Freiflächen-Beschriftung ab 6 px, siehe Abweichungen).
   - `geometry/polygon.ts`: Fläche, `clipConvex` (aus dem Prototyp), `subtractConvex`/`subtractAll` (konvex minus konvex), `penetration` (SAT), `thickness`, Zwischenspeicher der Rechteck-Ecken je Objekt, Schraffurlinien.
   - `geometry/interval.ts`: Vereinigung mit Toleranz und den IDs der begrenzenden Stände, Lücken.
   - `freeSpace.ts`: TOL = 0,01 m, Belegung (Eindringtiefe > TOL, Zuschnitt auf die Fläche, Enden an den Achsenenden), Freiflächen über die volle Tiefe, Regel für überlappende Grundflächen (L-förmige Reste mit Hüllmaßen), Schlüssel `areaId|links|rechts[#k]`, `resolveFreeSpace` für M6, Zwischenspeicher je Grundfläche.
-  - `warnings.ts`: außerhalb (um TOL verkleinert, gegen die Vereinigung aller Grundflächen), Überlappung (Sweep + SAT) mit Schnittfläche, Zähler je Page.
+  - `warnings.ts`: außerhalb (echter Abstand: Stand gegen die um TOL aufgeweiteten Grundflächen, QA-M4-02), Überlappung (Sweep + SAT) mit Schnittfläche, Zähler je Page.
+  - `geometry/tolerance.ts` (QA-Nacharbeit): fachliche Toleranz TOL = 0,01 m (bis einschließlich bündig) und Rechentoleranz EPS = 1e-6 m; alle geometrischen Entscheidungen laufen über diese Vergleichsfunktionen.
   - `moveSnap.ts`: Fang beim Ziehen (Vorderkante mit Hysterese 8/16 px, Achsenenden und Nachbarn entlang der Vorderseite, Nachbarstände anliegen/fluchten, Raster, Priorität, Mehrfachauswahl nur parallel, Hilfslinien). `transform.ts`: `constrainDelta` (Shift).
-- **Modell:** `Stand.suppressOverlapWarning`, `settings.warnOverlap` (Standard an). Ältere Dateien laden mit Standardwerten; Formatversion bleibt 1.
+- **Modell:** `Stand.suppressOverlapWarning`, `settings.warnOverlap` (Standard an). Formatversion 2 mit Migration 1 → 2 (M4-22, siehe Antworten).
 - **Zeichenfläche:** Ebene „Freiflächen“ hellgrün getönt und schraffiert (Linien in Metern, Abstand ≈ 8 px in Zweierpotenzen), Beschriftung „Frei B × T m“ in der Ebene Beschriftung. Warnkonturen orange/rot, Warndreieck an der Stand-Ecke, rote Schnittfläche bei Überlappung. Alles live aus der Vorschau, also auch während des Ziehens; nur geänderte Grundflächen werden neu berechnet.
 - **Auswahlwerkzeug:** Fang beim Ziehen mit Hilfslinien (Vorderseite mit Namen, Anliegen, Flucht, Achsenende). Shift beschränkt (eingerastet: bleibt an der Vorderseite), Alt dupliziert (Alt beim Loslassen zählt, Zeiger „Kopieren“), Cmd/Strg schaltet den Fang aus. Modifikatoren wirken sofort, auch ohne Mausbewegung. Während einer Geste werden Kurzbefehle verschluckt (außer Esc).
 - **Oberfläche:**
@@ -498,28 +173,37 @@ nachgetragen (Freiflächen-Beschriftung ab 6 px, siehe Abweichungen).
 - **Tests:**
   - `src/core/m4.test.ts`: 56 Tests, darunter die Fall-Tabelle A1–A13 mit Toleranzgrenzen, Schlüssel, Auflösung, Cache-Zähler, Warnungen, Fang, Schraffur.
   - `src/core/m4.property.test.ts`: 6 Eigenschaften mit fast-check (je 300 zufällige Szenen): Breitensumme, keine Überschneidung, Reihenfolge, Drehung/Verschiebung, überlappende Flächen, Mindestbreite.
-  - Zusammen 165 Unit-Tests.
+  - `src/core/m4.tolerance.test.ts` (QA-Nacharbeit): 0,009 / 0,010 / 0,011 m für Belegung, Überlappung und „außerhalb“, jeweils gerade, in gedrehter Szene und mit schräger Ecke; Eigenschaftstest (1000 Szenen): gemeinsame Drehung und Verschiebung ändert keine Entscheidung.
+  - `src/core/model/migrations.test.ts`: Migration 1 → 2 mit echter M3-Datei.
+  - Zusammen 201 Unit-Tests (Stand nach der QA-Nacharbeit).
   - `tests/e2e/m4-freespace.spec.ts`: 15 Tests × 2 Browser.
   - Lasttest `tests/e2e/m4-perf.spec.ts`.
   - Testprojekt `tests/fixtures/last-500-staende.schelme` neu erzeugt (neues Feld).
   - Neue devDependency: fast-check (nur Tests).
 
-### Lasttest M4-21 (≥ 50 Bilder/s, `npm run test:perf`)
-500 Stände in 10 Grundflächen, rund 500 Freiflächen, Überlappungen und Stände außerhalb, alle Fang-Optionen an.
+### Lasttest M4-21 (Abnahmekriterium, Stand nach der QA-Nacharbeit)
+Kriterium (spec.md NFA): 500 Stände, viele Freiflächen, Plan 8000 × 6000 px; Median aus 5 Läufen ≥ 50 Bilder/s;
+kein Bild über 100 ms. Gemessen am 2026-10-11 mit `npm run test:perf` (Dev-Server, ohne Stromsparmodus, auf Akku):
+ein Komplettlauf und drei WebKit-Läufe hintereinander, alle grün.
 
-| Messung | Chromium | WebKit |
+| Median Bilder/s (längstes Bild) | Chromium | WebKit (3 Läufe) |
 |---|---|---|
-| Zoomen | 57 | 53 |
-| Ansicht verschieben | 60 | 56 |
-| Ansicht verschieben in Lesegröße (20 px/m, Freiflächen-Beschriftung sichtbar) | 60 | 51–53 |
-| Stand quer über die Grundflächen ziehen | 59 | 60 |
+| Zoomen | 60 (17 ms) | 58,0–58,7 (≤ 57 ms) |
+| Ansicht verschieben | 60 (17 ms) | 57,5–58,3 (≤ 51 ms) |
+| Ansicht verschieben in Lesegröße (20 px/m) | 60 (17 ms) | 55,2–56,3 (≤ 67 ms) |
+| Stand quer über die Grundflächen ziehen | 60 (17 ms) | 58,7–59,5 (≤ 39 ms) |
 
-Der M3-Lasttest und der QA-Lasttest aus M3 bestehen weiter (WebKit 55–60).
+QA-Lasttest M4 (unverändert): WebKit 55,6–58,6, Chromium 59,6–60. QA-Lasttest M3: WebKit ≥ 53,8 in allen drei
+Läufen. Vor der Nacharbeit lag WebKit mit Plan bei 45,6–50,9 (Lesegröße), mit Einzelbildern bis 265 ms.
 
-Beim ersten Messen lag WebKit bei 14 Bilder/s (Zoomen) bzw. 11 (Verschieben). Ursachen und Maßnahmen:
-- **SVG-Musterfüllung** für die Schraffur (−25 Bilder/s): ersetzt durch Linien.
-- **Gestrichelte Kontur** (−8): entfernt.
-- **500 Freiflächen-Texte** (−8): erst ab 6 px Schrifthöhe, nur im gerundeten sichtbaren Bereich, ohne hellen Rand.
+Ursachen und Maßnahmen (Details in `qa/M4.md`, Abschnitt „Behoben“):
+- **Einzelbilder 250–650 ms:** Autosave zippte das Projekt samt Plan synchron im Hauptthread (im Browser zusätzlich
+  Base64). Jetzt asynchron in Workern und nie während einer Geste.
+- **Zoomen/Verschieben:** Plan und Objekte liegen in zwischengespeicherten Ebenen, die per CSS-Transform bewegt werden.
+  Neu gezeichnet wird nur bei Zoomänderung nach 150 ms Ruhe, an Rand- und Zoomgrenzen und bei Sprüngen.
+- **Ziehen:** Unbewegte und bewegte Objekte sind getrennt gerendert; höchstens eine Berechnung pro Bild.
+- Aus M4 (vorher): Schraffur als Linien statt Muster, Freiflächen ohne gestrichelte Kontur, Freiflächen-Beschriftung
+  ab 6 px und nur im sichtbaren Bereich.
 
 ### Nicht umgesetzt / verschoben
 - Nichts aus M4.
@@ -530,13 +214,18 @@ Beim ersten Messen lag WebKit bei 14 Bilder/s (Zoomen) bzw. 11 (Verschieben). Ur
 - **Schraffur in Metern** statt als Muster in Bildschirmgröße. Der Abstand springt beim Zoomen in Zweierpotenzen und bleibt so etwa 8 px.
 - **Häkchen sind keine Textfelder mehr:** Nach einem Klick auf ein Häkchen wirken Cmd/Strg+Z usw. global (`src/app/keyboard.ts`). Das ist nötig für „ignorieren … mit Undo“ und betrifft auch die Häkchen aus M2/M3.
 - **Etikett der Vorderkanten-Hilfslinie** am linken Ende der Vorderseite: Die Mitte trägt schon die Grundflächen-Beschriftung.
+- **Zeichenfläche in Ebenen (QA-Nacharbeit):** Plan, Klickfläche mit Raster, Objekte und Werkzeuge sind getrennte
+  SVG-Ebenen; Mausereignisse behandelt der Container. Der Hintergrund wird geometrisch getroffen. Während fortlaufenden
+  Zoomens ist das Bild bis zu 150 ms leicht unscharf, dann wieder scharf.
+- **Bildraten-Anzeige** (M4-23, Cmd/Strg+Alt+F) auf Wunsch von Laurin ergänzt.
 
 ### Bekannte Bugs und Einschränkungen
-- **Zwei M3-E2E-Tests sind durch M4 überholt und schlagen fehl** (je Chromium und WebKit). Ich habe sie nicht geändert, siehe Offene Fragen.
-- WebKit-Bildrate mit wenig Puffer (E-29). Schmale Freiflächen: Beschriftungen können sich überdecken (E-30).
+- Schmale Freiflächen: Beschriftungen können sich überdecken (E-30).
+- Nach einem großen Zoomsprung (Knopf, Kurzbefehl) dauert das erste Bild in neuer Größe in WebKit bis ca. 150–200 ms (Plan-Kacheln, alle Beschriftungen neu). Fortlaufendes Zoomen und Verschieben sind davon nicht betroffen.
 - Der Warnzähler am Tab ändert sich nach dem Loslassen, nicht während des Ziehens (wie geplant).
 
 ### Manuell testen (Desktop-App)
+- [ ] Bildraten-Anzeige (Cmd+Alt+F) einblenden, `last-500-staende.schelme` mit großem Plan: Zoomen, Verschieben, Ziehen flüssig? Ohne Stromsparmodus messen.
 - [ ] Stand an eine gedrehte Grundfläche ziehen: rastet ein, dreht sich mit, gleitet entlang, löst sich beim Wegziehen.
 - [ ] Alt+Ziehen dupliziert; Alt vor dem Loslassen lösen verschiebt nur. Cmd halten: kein Fang.
 - [ ] Unter Windows: Alt während des Ziehens aktiviert keine Menüleiste.

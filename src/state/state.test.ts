@@ -75,6 +75,19 @@ describe('Pages und Undo/Redo', () => {
     s.undo();
     expect(useStore.getState().project.name).toBe('T');
   });
+
+  it('abgebrochene Transaktion (Esc) nimmt alle Änderungen zurück, ohne Undo-Schritt (QA-M4-04)', () => {
+    const s = useStore.getState();
+    s.beginTransaction('Hintergrund verschieben');
+    s.change('a', (p) => void (p.name = 'A'));
+    s.change('b', (p) => void (p.name = 'B'));
+    s.abortTransaction();
+    const after = useStore.getState();
+    expect(after.project.name).toBe('T');
+    expect(after.history.past.length).toBe(0);
+    expect(after.history.open).toBeNull();
+    expect(selectDirty(after)).toBe(false);
+  });
 });
 
 describe('Ansichtseinstellungen (QA-M2-05)', () => {

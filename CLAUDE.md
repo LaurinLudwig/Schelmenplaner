@@ -1,6 +1,10 @@
 # Schelmeplaner – Hinweise für Claude
 
 BACKLOG.md ist die Quelle für den Projektstand. Vor jeder Arbeit lesen, nach jeder Arbeit aktualisieren.
+BACKLOG.md enthält nur den aktuellen Meilenstein, offene Befunde, den Eingang und die künftigen Meilensteine.
+Ist ein Meilenstein abgeschlossen und von der QA abgenommen, wandern seine Aufgabenliste, seine erledigten
+QA-Befunde und sein Abschluss nach `docs/archiv/Mx.md`; erledigte Eingang-Einträge nach
+`docs/archiv/eingang-erledigt.md`. In BACKLOG.md bleibt nur ein Verweis.
 Ändern sich Anforderungen, wird SPEC.md (`spec.md`) angepasst und BACKLOG.md nachgezogen.
 
 ## Arbeitsweise
@@ -24,6 +28,16 @@ BACKLOG.md ist die Quelle für den Projektstand. Vor jeder Arbeit lesen, nach je
   Vorgängerversion unter `tests/fixtures/` (nie neu erzeugen), deren Migration getestet wird. Dateien mit neuerer
   Version weist die App mit deutscher Meldung ab.
 
+## Sparsam arbeiten
+- Während der Arbeit nur die betroffenen Unit-Tests (`npx vitest run <Datei>`) und E2E-Testdateien ausführen, E2E nur
+  in Chromium (`--project=chromium`). Die komplette Suite in beiden Browsern einmal am Ende des Meilensteins bzw. der
+  Nacharbeit.
+- Testausgaben knapp halten: Reporter mit minimaler Ausgabe (z. B. `--reporter=dot`, Vitest `--reporter=dot`), bei
+  Fehlern nur die Fehlermeldungen lesen. Lange Logs in Dateien unter `test-artifacts/logs/` schreiben und gezielt
+  durchsuchen (grep) statt komplett lesen.
+- `npm run test:perf` nur am Ende und nur, wenn die Änderung Darstellung oder Geometrie betrifft.
+- Große Dateien nicht komplett lesen, sondern gezielt suchen (grep, Ausschnitte).
+
 ## QA
 - Der QA-Agent (`.claude/agents/qa-tester.md`) prüft jeden Meilenstein und schreibt `qa/Mx.md`.
   Er setzt in BACKLOG.md den Status `[!]` (Nacharbeit nötig).
@@ -44,7 +58,7 @@ BACKLOG.md ist die Quelle für den Projektstand. Vor jeder Arbeit lesen, nach je
 | `npm test` | Unit-Tests (Vitest, `src/**/*.test.ts`) |
 | `npm run test:watch` | Unit-Tests im Watch-Modus |
 | `npm run test:e2e` | E2E-Tests (Playwright, `tests/e2e/`, Chromium + WebKit; startet den Dev-Server selbst). Ohne Lasttests |
-| `npm run test:perf` | Lasttests (`tests/e2e/*perf.spec.ts`, 500 Stände, ≥ 50 Bilder/s) seriell mit einem Worker, getrennt von `test:e2e` (parallele Browser verfälschen die Bildrate) |
+| `npm run test:perf` | Lasttests (`tests/e2e/*perf.spec.ts`, Abnahmekriterium siehe spec.md NFA: 500 Stände, Plan 8000 × 6000 px, Median aus 5 Läufen ≥ 50 Bilder/s, kein Bild über 100 ms) seriell mit einem Worker, getrennt von `test:e2e` (parallele Browser verfälschen die Bildrate). Nur ohne macOS-Stromsparmodus messen (WebKit drosselt dort auf 30 Bilder/s) und ohne rechenintensive Programme im Hintergrund |
 | `npx playwright install chromium webkit` | Browser für die E2E-Tests installieren (einmalig) |
 | `npm run build` | Typecheck + Produktions-Build nach `dist/` |
 | `npm run check` | typecheck, lint, test und build nacheinander |

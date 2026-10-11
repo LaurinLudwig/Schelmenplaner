@@ -6,6 +6,7 @@ import type { AutosaveSlot, Platform } from './types';
  * Im Browser gibt es keine Dateipfade; jedes Projekt gilt für die Sicherung als „unbenannt“.
  */
 const LS_KEY = 'schelmeplaner.autosave';
+const LS_MAX_BYTES = 1_000_000;
 const withExtension = (name: string) => (name.endsWith(`.${FILE_EXTENSION}`) ? name : `${name}.${FILE_EXTENSION}`);
 
 function toBase64(bytes: Uint8Array): string {
@@ -79,6 +80,9 @@ export const browserPlatform: Platform = {
   async writeAutosave(_projectPath, bytes, slot = 'current') {
     const time = Date.now();
     try {
+      // Große Sicherungen (eingebettete Pläne) direkt nach IndexedDB: Base64 für localStorage kostet
+      // bei 20 MB eine halbe Sekunde im Hauptthread (QA-M4-03)
+      if (bytes.length > LS_MAX_BYTES) throw new Error('zu groß für localStorage');
       localStorage.setItem(lsKey(slot), JSON.stringify({ time, data: toBase64(bytes) }));
       // Ältere große Sicherung im Hintergrund entfernen; der Ablauf wartet nicht darauf
       void idbDelete(slot).catch(() => undefined);

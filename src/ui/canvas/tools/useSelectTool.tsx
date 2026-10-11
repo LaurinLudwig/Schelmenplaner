@@ -1,5 +1,5 @@
 import { useEffect, useLayoutEffect, useRef, useState } from 'react';
-import { moveBy as moveBackground, type BgTransform } from '../../../core/background';
+import { moveBy as moveBackground, worldToBg, type BgTransform } from '../../../core/background';
 import { boundsOfRects, resizeRect, type Handle } from '../../../core/geometry/rect';
 import { objectsInBounds, pickObject } from '../../../core/hit';
 import type { Area, EdgeIndex, Id, Stand, Vec } from '../../../core/model/types';
@@ -65,6 +65,13 @@ export function useSelectTool(ctx: ToolContext, active: boolean): ToolHandlers {
     const page = useStore.getState().project.pages.find((p) => p.id === pageId);
     return page ? Object.fromEntries(findObjects(page, list).map((o) => [o.obj.id, o.obj])) : {};
   };
+  /** Liegt der Weltpunkt auf dem Hintergrundplan? (geometrisch: Der Plan liegt in einer eigenen Ebene unter der Klickfläche) */
+  const onBackground = (w: Vec) => {
+    const bg = ctx.page.background;
+    if (!bg) return false;
+    const q = worldToBg(bg.transform, w);
+    return q.x >= 0 && q.y >= 0 && q.x <= bg.pxSize.w && q.y <= bg.pxSize.h;
+  };
   const setPreview = (rects: RectMap) => useStore.getState().setPreview({ pageId, rects });
 
   /**
@@ -116,7 +123,38 @@ export function useSelectTool(ctx: ToolContext, active: boolean): ToolHandlers {
     gesture.current = g;
   };
 
+  // Höchstens eine Verschiebung (Fang, Vorschau, Freiflächen) pro Bild: Mausbewegungen werden gesammelt
+  // und im nächsten Animation-Frame verarbeitet; beim Loslassen sofort (QA-M4-03).
+  const pendingMove = useRef<{ g: Extract<Gesture, { kind: 'move' }>; p: ToolPointer; raf: number } | null>(null);
+  const flushMove = () => {
+    const pm = pendingMove.current;
+    if (!pm) return;
+    cancelAnimationFrame(pm.raf);
+    pendingMove.current = null;
+    if (gesture.current === pm.g) moveStep(pm.g, pm.p);
+  };
+  const queueMove = (g: Extract<Gesture, { kind: 'move' }>, p: ToolPointer) => {
+    if (pendingMove.current) {
+      pendingMove.current.p = p;
+      return;
+    }
+    pendingMove.current = { g, p, raf: requestAnimationFrame(() => flushMove()) };
+  };
+  /** Shift/Alt/Cmd geändert: sofort mit der letzten (auch noch wartenden) Mausposition rechnen. */
+  const applyModifiers = (g: Extract<Gesture, { kind: 'move' }>, mods: Pick<ToolPointer, 'shiftKey' | 'altKey' | 'modKey'>) => {
+    if (pendingMove.current) {
+      pendingMove.current.p = { ...pendingMove.current.p, ...mods };
+      flushMove();
+    } else moveStep(g, { ...g.last, ...mods });
+  };
+  const dropMove = () => {
+    if (pendingMove.current) cancelAnimationFrame(pendingMove.current.raf);
+    pendingMove.current = null;
+  };
+
   const finish = (commit: boolean) => {
+    if (commit) flushMove();
+    else dropMove();
     const g = gesture.current;
     gesture.current = null;
     setMarquee(null);
@@ -125,7 +163,8 @@ export function useSelectTool(ctx: ToolContext, active: boolean): ToolHandlers {
     const st = useStore.getState();
     if (!g) return;
     if (g.kind === 'background') {
-      st.commitTransaction();
+      if (commit) st.commitTransaction();
+      else st.abortTransaction();
       return;
     }
     if (g.kind === 'move' || g.kind === 'rotate' || g.kind === 'resize') {
@@ -203,7 +242,7 @@ export function useSelectTool(ctx: ToolContext, active: boolean): ToolHandlers {
 
       const page = ctx.page;
       const bg = page.background;
-      if (bg && !bg.locked && page.layers.background.visible && p.target?.closest('[data-kind="background"]')) {
+      if (bg && !bg.locked && page.layers.background.visible && onBackground(p.world)) {
         st.setUi({ selection: { kind: 'background' } });
         st.beginTransaction('Hintergrund verschieben');
         startGesture({ kind: 'background', start: p.world, transform0: bg.transform });
@@ -227,7 +266,8 @@ export function useSelectTool(ctx: ToolContext, active: boolean): ToolHandlers {
       const g = gesture.current;
       if (!g) {
         const handle = hitHandle(geo, p.screen);
-        const object = !handle && !!pickObject(ctx.page, p.world);
+        const bg = ctx.page.background;
+        const object = !handle && (!!pickObject(ctx.page, p.world) || (!!bg && !bg.locked && ctx.page.layers.background.visible && onBackground(p.world)));
         if (hover?.object !== object || hover.alt !== p.altKey || JSON.stringify(hover?.handle ?? null) !== JSON.stringify(handle)) setHover({ handle, object, alt: p.altKey });
         return;
       }
@@ -250,7 +290,7 @@ export function useSelectTool(ctx: ToolContext, active: boolean): ToolHandlers {
           return;
         }
         case 'move':
-          moveStep(g, p);
+          queueMove(g, p);
           return;
         case 'rotate': {
           // Unter 3 px ist es ein Klick: keine Änderung, kein Undo-Schritt (QA-M3-03)
@@ -306,12 +346,12 @@ export function useSelectTool(ctx: ToolContext, active: boolean): ToolHandlers {
       const g = gesture.current;
       if (!active || !g) return false;
       if (e.key === 'Escape') {
-        if (g.kind === 'background') return false;
+        // bricht jede Geste ab, auch das Verschieben des Hintergrunds (QA-M4-04)
         finish(false);
         return true;
       }
       // Shift/Alt/Cmd/Strg wirken sofort, auch ohne Mausbewegung
-      if (g.kind === 'move' && MODIFIER_KEYS.has(e.key)) moveStep(g, { ...g.last, ...modifiersOf(e) });
+      if (g.kind === 'move' && MODIFIER_KEYS.has(e.key)) applyModifiers(g, modifiersOf(e));
       // Während einer Geste keine Kurzbefehle (sonst z. B. Cmd+Z mitten im Ziehen, M4-20)
       return true;
     },
@@ -322,19 +362,19 @@ export function useSelectTool(ctx: ToolContext, active: boolean): ToolHandlers {
   // Loslassen von Shift/Alt/Cmd/Strg während des Ziehens wirkt sofort. Einmal anmelden und die aktuelle
   // Funktion über einen Ref lesen: Ein Neuanmelden bei jedem Rendern ginge verloren, wenn ein anderer
   // keyup-Listener (Canvas: Alt) mitten im Ereignis synchron neu rendern lässt.
-  const moveStepRef = useRef(moveStep);
+  const modifiersRef = useRef(applyModifiers);
   useLayoutEffect(() => {
-    moveStepRef.current = moveStep;
+    modifiersRef.current = applyModifiers;
   });
   useEffect(() => {
     if (!active) return;
     const up = (e: KeyboardEvent) => {
       const g = gesture.current;
-      if (g?.kind === 'move' && MODIFIER_KEYS.has(e.key)) moveStepRef.current(g, { ...g.last, ...modifiersOf(e) });
+      if (g?.kind === 'move' && MODIFIER_KEYS.has(e.key)) modifiersRef.current(g, modifiersOf(e));
     };
     window.addEventListener('keyup', up);
     return () => window.removeEventListener('keyup', up);
-  }, [active, gesture, moveStepRef]);
+  }, [active, gesture, modifiersRef]);
 
   if (active) {
     const h = hover?.handle;

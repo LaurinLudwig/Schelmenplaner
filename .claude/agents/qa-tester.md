@@ -14,9 +14,15 @@ Gegenteil gesehen hast. „Steht als erledigt im Backlog“ ist kein Beweis.
   BACKLOG.md (nur Status und Eingang, siehe unten).
 - Jede Feststellung braucht einen Beleg: Testausgabe, Screenshot, Datei und Zeile, oder
   konkrete Reproduktionsschritte.
+- Sparsam arbeiten: Screenshots nur als Beleg für Befunde machen und ansehen.
+  Testausgaben knapp halten, lange Logs in qa/logs/ schreiben und gezielt durchsuchen.
+- Abgeschlossene Meilensteine stehen in docs/archiv/. Lies sie nur, wenn ein Befund sie betrifft.
+- Bei einem Nachtest prüfst du nur die gemeldeten Befunde und lässt die automatisierte Suite
+  einmal laufen. Keine erneute Erkundung des ganzen Meilensteins.
 
 ## Ablauf
-1. Lies SPEC.md, BACKLOG.md und den Abschnitt „Abschluss Mx“ des zu prüfenden Meilensteins.
+1. Lies SPEC.md, BACKLOG.md und den Abschnitt „Abschluss Mx“ des zu prüfenden Meilensteins (abgenommene
+   Meilensteine stehen samt Abschluss in `docs/archiv/Mx.md`).
 2. Führe aus und protokolliere: Typecheck, Lint, Unit-Tests, Build, vorhandene E2E-Tests
    (`npm run test:e2e`) und getrennt davon die Lasttests (`npm run test:perf`, seriell mit einem
    Worker). Lasttests nie parallel zu anderen Tests laufen lassen, sonst ist die Bildrate verfälscht.

@@ -6,8 +6,9 @@
  */
 import type { Rect, Vec } from '../model/types';
 import type { Bounds } from '../viewport';
-import { rectCorners } from './rect';
-import { add, cross, dot, mul, normalize, sub, vec } from './vec';
+import { rectCorners, toLocal } from './rect';
+import { EPS, greaterThan, isZero, KERNEL_EPS } from './tolerance';
+import { add, cross, dot, mul, normalize, rotate, sub, vec } from './vec';
 
 export type Polygon = Vec[];
 
@@ -23,7 +24,7 @@ function lineIntersect(p1: Vec, p2: Vec, a: Vec, b: Vec): Vec {
   const r = sub(p2, p1);
   const s = sub(b, a);
   const den = cross(r, s);
-  if (Math.abs(den) < 1e-12) return p1;
+  if (Math.abs(den) < KERNEL_EPS) return p1;
   return add(p1, mul(r, cross(sub(a, p1), s) / den));
 }
 
@@ -32,7 +33,7 @@ function clipHalfPlane(poly: readonly Vec[], a: Vec, b: Vec, orient: number, kee
   const e = sub(b, a);
   const inside = (p: Vec) => {
     const c = orient * cross(e, sub(p, a));
-    return keepInside ? c >= -1e-12 : c <= 1e-12;
+    return keepInside ? c >= -KERNEL_EPS : c <= KERNEL_EPS;
   };
   const out: Polygon = [];
   for (let j = 0; j < poly.length; j++) {
@@ -63,9 +64,9 @@ export function clipConvex(subject: readonly Vec[], clip: readonly Vec[]): Polyg
 /**
  * Konvexes `p` minus konvexes `c`: höchstens so viele konvexe, sich nicht überschneidende Stücke wie
  * `c` Kanten hat. Stück i = Rest von p, der innerhalb der Kanten 0…i-1 und außerhalb von Kante i liegt.
- * Stücke dünner als `minThickness` (Rechenrauschen an gemeinsamen Kanten) entfallen.
+ * Stücke, die praktisch keine Dicke haben (Rechenrauschen an gemeinsamen Kanten, ≤ EPS), entfallen.
  */
-export function subtractConvex(p: readonly Vec[], c: readonly Vec[], minThickness = 1e-6): Polygon[] {
+export function subtractConvex(p: readonly Vec[], c: readonly Vec[]): Polygon[] {
   const orient = orientation(c);
   const pieces: Polygon[] = [];
   let rest: Polygon = p.slice();
@@ -73,18 +74,18 @@ export function subtractConvex(p: readonly Vec[], c: readonly Vec[], minThicknes
     const a = c[i]!;
     const b = c[(i + 1) % c.length]!;
     const outside = clipHalfPlane(rest, a, b, orient, false);
-    if (outside.length >= 3 && thickness(outside) > minThickness) pieces.push(outside);
+    if (outside.length >= 3 && greaterThan(thickness(outside), 0)) pieces.push(outside);
     rest = clipHalfPlane(rest, a, b, orient, true);
   }
   return pieces;
 }
 
 /** Zieht alle konvexen Polygone `cutters` von den Stücken ab. */
-export function subtractAll(pieces: readonly Polygon[], cutters: readonly (readonly Vec[])[], minThickness = 1e-6): Polygon[] {
+export function subtractAll(pieces: readonly Polygon[], cutters: readonly (readonly Vec[])[]): Polygon[] {
   let out = pieces.slice();
   for (const c of cutters) {
     if (!out.length) break;
-    out = out.flatMap((piece) => subtractConvex(piece, c, minThickness));
+    out = out.flatMap((piece) => subtractConvex(piece, c));
   }
   return out;
 }
@@ -127,7 +128,7 @@ export function thickness(poly: readonly Vec[]): number {
   let best = Infinity;
   for (let i = 0; i < poly.length; i++) {
     const e = sub(poly[(i + 1) % poly.length]!, poly[i]!);
-    if (Math.hypot(e.x, e.y) < 1e-12) continue;
+    if (isZero(Math.hypot(e.x, e.y))) continue;
     const n = normalize(vec(-e.y, e.x));
     const [min, max] = projectOn(poly, vec(0, 0), n);
     best = Math.min(best, max - min);
@@ -156,7 +157,7 @@ export const boundsTouch = (a: Bounds, b: Bounds, pad = 0) => a.minX <= b.maxX +
 /** Schwerpunkt eines Polygons (bei Fläche 0 der Mittelwert der Punkte). */
 export function centroid(poly: readonly Vec[]): Vec {
   const a = polygonArea(poly);
-  if (Math.abs(a) < 1e-12) {
+  if (Math.abs(a) < KERNEL_EPS) {
     const s = poly.reduce((m, p) => add(m, p), vec(0, 0));
     return mul(s, 1 / (poly.length || 1));
   }
@@ -216,9 +217,48 @@ export function hatchPath(poly: readonly Vec[], spacing: number): string {
     if (hits.length >= 2) {
       const [p, q] = hits as [Vec, Vec];
       // Ecken, die die Linie nur berühren, ergeben keine Strecke
-      if (Math.abs(p.x - q.x) + Math.abs(p.y - q.y) < 1e-9) continue;
+      if (isZero(Math.abs(p.x - q.x) + Math.abs(p.y - q.y))) continue;
       d += `M${p.x.toFixed(3)} ${p.y.toFixed(3)}L${q.x.toFixed(3)} ${q.y.toFixed(3)}`;
     }
   }
   return d;
+}
+
+/** Abstand eines Punkts von einem gedrehten Rechteck (0 innerhalb). */
+export function distToRect(r: Rect, p: Vec): number {
+  const l = toLocal(r, p);
+  return Math.hypot(Math.max(Math.abs(l.x) - r.w / 2, 0), Math.max(Math.abs(l.y) - r.d / 2, 0));
+}
+
+/** Kreisbogen-Stützpunkte je Viertelkreis: Das Polygon umschreibt den Bogen höchstens EPS zu weit. */
+const ARC_STEPS = Math.ceil(Math.PI / 4 / Math.acos(1 / (1 + EPS / 0.02)));
+
+/**
+ * Rechteck um `by` Meter aufgeweitet (Minkowski-Summe mit einem Kreis): gerade Kanten um `by` nach
+ * außen, Ecken gerundet. Die Rundung ist ein umschriebenes Polygon, also nie kleiner als die exakte
+ * Aufweitung und höchstens EPS größer. Konvex.
+ */
+export function dilateRect(r: Rect, by: number): Polygon {
+  const half = { x: r.w / 2, y: r.d / 2 };
+  const out: Polygon = [];
+  const step = Math.PI / 2 / ARC_STEPS;
+  const R = by / Math.cos(step / 2);
+  // Ecken lokal im Uhrzeigersinn (y nach unten): oben links, oben rechts, unten rechts, unten links
+  const corners: [number, number, number][] = [
+    [-1, -1, Math.PI],
+    [1, -1, -Math.PI / 2],
+    [1, 1, 0],
+    [-1, 1, Math.PI / 2],
+  ];
+  for (const [sx, sy, a0] of corners) {
+    const c = vec(sx * half.x, sy * half.y);
+    out.push(add(c, vec(Math.cos(a0) * by, Math.sin(a0) * by)));
+    for (let j = 0; j < ARC_STEPS; j++) {
+      const a = a0 + (j + 0.5) * step;
+      out.push(add(c, vec(Math.cos(a) * R, Math.sin(a) * R)));
+    }
+    const a1 = a0 + Math.PI / 2;
+    out.push(add(c, vec(Math.cos(a1) * by, Math.sin(a1) * by)));
+  }
+  return out.map((p) => add(vec(r.cx, r.cy), rotate(p, r.rot)));
 }

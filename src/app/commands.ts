@@ -118,6 +118,7 @@ export const COMMANDS: Record<string, Command> = {
       s().setUi(ui.panelsHidden ? { panelsHidden: false, sidebarOpen: true } : { sidebarOpen: !ui.sidebarOpen });
     },
   },
+  'ui.fps': { run: () => s().setUi({ fpsVisible: !s().ui.fpsVisible }) },
   'ui.theme': {
     run: () => {
       const theme = s().ui.theme === 'dark' ? 'light' : 'dark';

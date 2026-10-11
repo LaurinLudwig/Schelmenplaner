@@ -5,8 +5,8 @@
  * Die Rohdaten hängen nur von der Geometrie ab; ob eine Warnung angezeigt wird, entscheiden die
  * Projekteinstellungen und die Häkchen am Stand (`activeWarnings`).
  */
-import { boundsTouch, clipConvex, insetRect, penetration, rectGeo, subtractAll, type Polygon } from './geometry/polygon';
-import { TOL } from './freeSpace';
+import { boundsTouch, clipConvex, dilateRect, distToRect, penetration, rectGeo, subtractAll, type Polygon } from './geometry/polygon';
+import { exceedsTol, greaterThan, TOL, withinTol } from './geometry/tolerance';
 import type { Area, Id, ProjectSettings, Stand } from './model/types';
 
 export interface StandWarning {
@@ -26,13 +26,20 @@ export interface PageWarnings {
   regions: OverlapRegion[];
 }
 
-/** Liegt der Stand (um TOL verkleinert) ganz in der Vereinigung der Grundflächen? */
+/**
+ * Liegt ein Teil des Stands mehr als TOL außerhalb der Vereinigung der Grundflächen (QA-M4-02)?
+ * Gemessen wird der echte Abstand, auch für schräg herausragende Ecken gedrehter Stände.
+ * 1. Alle Ecken höchstens TOL von derselben Grundfläche entfernt → innerhalb (Rechteck aufgeweitet ist konvex).
+ * 2. Eine Ecke mehr als TOL von allen Grundflächen entfernt → außerhalb.
+ * 3. Sonst genau: Stand minus alle um TOL aufgeweiteten Grundflächen; bleibt etwas übrig → außerhalb.
+ */
 export function isOutside(stand: Stand, areas: readonly Area[]): boolean {
-  const inner = rectGeo(insetRect(stand, TOL)).poly;
-  const b = rectGeo(stand).bounds;
-  const cutters = areas.filter((a) => boundsTouch(b, rectGeo(a).bounds)).map((a) => rectGeo(a).poly);
-  if (!cutters.length) return true;
-  return subtractAll([inner], cutters).length > 0;
+  const { poly, bounds } = rectGeo(stand);
+  const near = areas.filter((a) => boundsTouch(bounds, rectGeo(a).bounds, TOL));
+  if (!near.length) return true;
+  if (near.some((a) => poly.every((p) => withinTol(distToRect(a, p))))) return false;
+  if (poly.some((p) => near.every((a) => exceedsTol(distToRect(a, p))))) return true;
+  return subtractAll([poly], near.map((a) => dilateRect(a, TOL))).length > 0;
 }
 
 /** Paare sich überschneidender Stände (Sweep über die Hüllrechtecke, genau per SAT). */
@@ -43,9 +50,9 @@ export function overlappingPairs(stands: readonly Stand[]): OverlapRegion[] {
     const p = items[i]!;
     for (let j = i + 1; j < items.length; j++) {
       const q = items[j]!;
-      if (q.g.bounds.minX > p.g.bounds.maxX) break;
-      if (q.g.bounds.minY > p.g.bounds.maxY || p.g.bounds.minY > q.g.bounds.maxY) continue;
-      if (penetration(p.g.poly, q.g.poly) > TOL) {
+      if (greaterThan(q.g.bounds.minX, p.g.bounds.maxX)) break;
+      if (!boundsTouch(p.g.bounds, q.g.bounds)) continue;
+      if (exceedsTol(penetration(p.g.poly, q.g.poly))) {
         const [a, b] = p.s.id < q.s.id ? [p.s.id, q.s.id] : [q.s.id, p.s.id];
         out.push({ a, b, polygon: clipConvex(p.g.poly, q.g.poly) });
       }

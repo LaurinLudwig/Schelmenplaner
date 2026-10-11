@@ -13,6 +13,7 @@ import { IS_MAC } from '../shortcuts/keys';
 import { Icon } from '../icons/Icon';
 import { tip } from '../shortcuts/tip';
 import { BackgroundLayer } from './background/BackgroundLayer';
+import { FpsMeter } from './FpsMeter';
 import { ObjectsLayer } from './objects/ObjectsLayer';
 import { SNAP_PX, type ToolContext, type ToolPointer } from './tools/types';
 import { useCalibrateTool } from './tools/useCalibrateTool';
@@ -47,6 +48,67 @@ function labelWindow(view: View, w: number, h: number): Bounds {
 }
 const NO_SELECTION: ReadonlySet<string> = new Set();
 
+/**
+ * Zwischengespeicherte Ebenen (QA-M4-03): Plan und Objekte werden für eine „gerenderte Ansicht“
+ * gezeichnet. Ändert sich die Ansicht (Zoomen, Verschieben), verschiebt bzw. skaliert nur ein
+ * CSS-Transform das fertige Bild (GPU, kein Neuzeichnen von Plan, 500 Ständen, Schraffur und Text).
+ * Neu gezeichnet wird nur, wenn nötig: nach SETTLE_MS Ruhe, falls sich der Zoom geändert hat (Schärfe) oder
+ * der Rand zu mehr als der Hälfte verbraucht ist; sofort, wenn Rand oder Zoomfaktor ausgereizt sind. Reines
+ * Verschieben bleibt ohne Neuzeichnen scharf.
+ */
+const SETTLE_MS = 150;
+/** Rand der zwischengespeicherten Ebenen je Seite, in Bildschirmbreiten (Platz für Verschieben ohne Neuzeichnen). */
+const LAYER_MARGIN = 0.5;
+/**
+ * Spätestens bei diesem Vergrößerungsfaktor gegenüber der gerenderten Ansicht wird sofort neu gezeichnet
+ * (sonst zu unscharf); darunter erst nach der Ruhepause. Beim Verkleinern begrenzt der Rand (Faktor ≥ 0,5).
+ */
+const MAX_LAYER_ZOOM = 4;
+
+/**
+ * Muss die gerenderte Ansicht nachgezogen werden? `share` = Anteil des Rands, der verbraucht sein darf
+ * (1 = sofort, wenn der Rand nicht mehr reicht; 0,5 = nach Ruhe schon ab dem halben Rand).
+ */
+function layerExhausted(rv: View, v: View, w: number, h: number, share = 1): boolean {
+  const k = v.scale / rv.scale;
+  if (k > MAX_LAYER_ZOOM) return true;
+  // Wohin wandert der Rand der Ebene? Die Ebene deckt in gerenderten Bildschirmkoordinaten
+  // [−m·w, (1+m)·w] ab; nach dem Transform muss sie den sichtbaren Bereich [0, w] weiter abdecken.
+  const ox = v.tx - rv.tx * k;
+  const oy = v.ty - rv.ty * k;
+  const mx = LAYER_MARGIN * share * w;
+  const my = LAYER_MARGIN * share * h;
+  return ox + -mx * k > 0 || ox + (w + mx) * k < w || oy + -my * k > 0 || oy + (h + my) * k < h;
+}
+
+/** CSS-Transform, der die für `rv` gezeichnete Ebene an die Ansicht `v` anpasst. */
+function layerTransform(rv: View, v: View): string | undefined {
+  if (rv.scale === v.scale && rv.tx === v.tx && rv.ty === v.ty) return undefined;
+  const k = v.scale / rv.scale;
+  return `translate(${v.tx - rv.tx * k}px, ${v.ty - rv.ty * k}px) scale(${k})`;
+}
+
+/** Zwischengespeicherte Weltebene: SVG mit Rand, Inhalt für die gerenderte Ansicht `rv`. */
+function WorldLayer({ className, rv, view, size, children }: { className: string; rv: View; view: View; size: { w: number; h: number }; children: React.ReactNode }) {
+  // Ganze Pixel: Sonst rastet WebKit die Ebene auf Gerätepixel ein und der Inhalt sitzt leicht versetzt
+  const mx = Math.round(LAYER_MARGIN * size.w);
+  const my = Math.round(LAYER_MARGIN * size.h);
+  return (
+    <svg
+      className={`canvas-layer ${className}`}
+      style={{ left: -mx, top: -my, width: size.w + 2 * mx, height: size.h + 2 * my, transformOrigin: `${mx}px ${my}px`, transform: layerTransform(rv, view) }}
+      aria-hidden="true"
+    >
+      <g transform={`translate(${rv.tx + mx} ${rv.ty + my}) scale(${rv.scale})`} className="world">
+        {children}
+      </g>
+    </svg>
+  );
+}
+
+/** Ereignis aus einer der SVG-Ebenen der Zeichenfläche (nicht aus Statusleiste, Panels usw.)? */
+const onCanvas = (e: { target: EventTarget | null }) => e.target instanceof SVGElement && !!e.target.closest('svg.canvas, svg.canvas-layer');
+
 const isTextField = (t: EventTarget | null) =>
   t instanceof HTMLElement && (t.isContentEditable || /^(INPUT|TEXTAREA|SELECT)$/.test(t.tagName));
 
@@ -78,13 +140,31 @@ export function Canvas({ page: storedPage }: { page: FestplatzPage }) {
   const [freeCache] = useState(createFreeSpaceCache);
   const free = useMemo(() => pageFreeSpaces(page.areas, page.stands, minFreeWidth, freeCache), [page.areas, page.stands, minFreeWidth, freeCache]);
   const warnings = useMemo(() => cachedPageWarnings(page.areas, page.stands), [page.areas, page.stands]);
+  // Von der laufenden Geste bewegte Objekte (gleiche Menge über die ganze Geste, siehe ObjectsLayer)
+  const movingKey = preview?.pageId === storedPage.id ? [...Object.keys(preview.rects), ...(preview.added?.stands.map((s) => s.id) ?? []), ...(preview.added?.areas.map((a) => a.id) ?? [])].join('|') : '';
+  const movingIds = useMemo(() => (movingKey ? new Set(movingKey.split('|')) : NO_SELECTION), [movingKey]);
   const svgRef = useRef<SVGSVGElement>(null);
+  const stageRef = useRef<HTMLElement>(null);
   const size = useStore((s) => s.ui.viewport);
   const storedView = useStore((s) => s.views[page.id]);
   const tool = useStore((s) => s.ui.tool);
+  const fpsVisible = useStore((s) => s.ui.fpsVisible);
   const setView = useStore((s) => s.setView);
   const setUi = useStore((s) => s.setUi);
   const view = storedView ?? defaultView(size.w, size.h);
+  // Gerenderte Ansicht der zwischengespeicherten Ebenen (siehe WorldLayer); beim Seitenwechsel sofort
+  const viewLive = useStore((s) => s.viewLive);
+  const [rendered, setRendered] = useState({ pageId: page.id, view, w: size.w, h: size.h });
+  const jumped = !viewLive && (rendered.view.scale !== view.scale || rendered.view.tx !== view.tx || rendered.view.ty !== view.ty);
+  if (jumped || rendered.pageId !== page.id || rendered.w !== size.w || rendered.h !== size.h || layerExhausted(rendered.view, view, size.w, size.h)) {
+    setRendered({ pageId: page.id, view, w: size.w, h: size.h });
+  }
+  const rv = rendered.view;
+  useEffect(() => {
+    if (rv.scale === view.scale && !layerExhausted(rv, view, size.w, size.h, 0.5)) return;
+    const t = setTimeout(() => setRendered((r) => ({ ...r, view })), SETTLE_MS);
+    return () => clearTimeout(t);
+  }, [rv, view, size.w, size.h]);
   // Aktuelle Ansicht für Ereignis-Handler (Rad, Ziehen), ohne sie bei jeder Änderung neu zu registrieren
   const viewRef = useRef(view);
   useLayoutEffect(() => {
@@ -173,10 +253,11 @@ export function Canvas({ page: storedPage }: { page: FestplatzPage }) {
 
   // Mausrad und Pinch zoomen um den Mauszeiger, Zwei-Finger-Wischen verschiebt (siehe wheel.ts)
   useEffect(() => {
-    const el = svgRef.current;
-    if (!el) return;
+    const el = stageRef.current;
+    const svg = svgRef.current;
+    if (!el || !svg) return;
     const at = (e: { clientX: number; clientY: number }) => {
-      const r = el.getBoundingClientRect();
+      const r = svg.getBoundingClientRect();
       return { x: e.clientX - r.left, y: e.clientY - r.top };
     };
     // Direkt aus dem Store lesen: Trackpads feuern mehrere Ereignisse pro Bild, der Ref wäre dann veraltet.
@@ -184,6 +265,7 @@ export function Canvas({ page: storedPage }: { page: FestplatzPage }) {
     // Safari/WKWebView: Pinch kommt als Geste mit fortlaufendem Gesamtfaktor `scale`
     let gestureScale: number | null = null;
     const onWheel = (e: WheelEvent) => {
+      if (!onCanvas(e)) return;
       e.preventDefault();
       if (gestureScale !== null) return;
       const legacy = (e as WheelEvent & { wheelDeltaY?: number }).wheelDeltaY;
@@ -198,7 +280,7 @@ export function Canvas({ page: storedPage }: { page: FestplatzPage }) {
         useStore.getState().ui.invertPan,
       );
       const v = current();
-      setView(page.id, action.kind === 'zoom' ? zoomAt(v, action.factor, at(e)) : { ...v, tx: v.tx + action.dx, ty: v.ty + action.dy });
+      setView(page.id, action.kind === 'zoom' ? zoomAt(v, action.factor, at(e)) : { ...v, tx: v.tx + action.dx, ty: v.ty + action.dy }, true);
     };
     type GestureLike = Event & { scale: number; clientX: number; clientY: number };
     const onGestureStart = (e: Event) => {
@@ -211,7 +293,7 @@ export function Canvas({ page: storedPage }: { page: FestplatzPage }) {
       if (gestureScale === null || !(g.scale > 0)) return;
       const factor = g.scale / gestureScale;
       gestureScale = g.scale;
-      setView(page.id, zoomAt(current(), factor, at(g)));
+      setView(page.id, zoomAt(current(), factor, at(g)), true);
     };
     const onGestureEnd = (e: Event) => {
       e.preventDefault();
@@ -246,7 +328,8 @@ export function Canvas({ page: storedPage }: { page: FestplatzPage }) {
     };
   };
 
-  const onPointerDown = (e: React.PointerEvent<SVGSVGElement>) => {
+  const onPointerDown = (e: React.PointerEvent<HTMLElement>) => {
+    if (!onCanvas(e)) return;
     (document.activeElement as HTMLElement | null)?.blur?.();
     const wantsPan = e.button === 1 || (e.button === 0 && (spaceDown || tool === 'hand'));
     if (wantsPan) {
@@ -264,16 +347,17 @@ export function Canvas({ page: storedPage }: { page: FestplatzPage }) {
     if (tool === 'zoom') setView(page.id, zoomAt(viewRef.current, e.altKey ? 0.5 : 2, localPoint(e)));
   };
 
-  const onPointerMove = (e: React.PointerEvent<SVGSVGElement>) => {
+  const onPointerMove = (e: React.PointerEvent<HTMLElement>) => {
+    if (!drag.current && !e.currentTarget.hasPointerCapture(e.pointerId) && !onCanvas(e)) return;
     const p = toolPointer(e);
     setCursor(p.world);
     activeTool?.onPointerMove(p);
     const d = drag.current;
     if (!d || d.pointerId !== e.pointerId) return;
-    setView(page.id, { ...d.view0, tx: d.view0.tx + e.clientX - d.x0, ty: d.view0.ty + e.clientY - d.y0 });
+    setView(page.id, { ...d.view0, tx: d.view0.tx + e.clientX - d.x0, ty: d.view0.ty + e.clientY - d.y0 }, true);
   };
 
-  const endDrag = (e: React.PointerEvent<SVGSVGElement>) => {
+  const endDrag = (e: React.PointerEvent<HTMLElement>) => {
     if (drag.current) {
       drag.current = null;
       setPanning(false);
@@ -282,13 +366,12 @@ export function Canvas({ page: storedPage }: { page: FestplatzPage }) {
     activeTool?.onPointerUp(toolPointer(e));
   };
 
-  const { minX: wx0, minY: wy0, maxX: wx1, maxY: wy1 } = labelWindow(view, size.w, size.h);
+  const { minX: wx0, minY: wy0, maxX: wx1, maxY: wy1 } = labelWindow(rv, size.w, size.h);
   const freeLabelWindow = useMemo(() => ({ minX: wx0, minY: wy0, maxX: wx1, maxY: wy1 }), [wx0, wy0, wx1, wy1]);
   const grid = useMemo(
     () => (page.grid.visible ? buildGrid(view, size.w, size.h, page.grid.size) : { minor: '', major: '' }),
     [view, size.w, size.h, page.grid.size, page.grid.visible],
   );
-  const worldTransform = `translate(${view.tx} ${view.ty}) scale(${view.scale})`;
   const bg = page.background;
   const origin = { x: view.tx, y: view.ty };
 
@@ -299,54 +382,53 @@ export function Canvas({ page: storedPage }: { page: FestplatzPage }) {
   if (activeTool?.cursor && !spaceDown && !panning) classes.push(activeTool.cursor);
 
   return (
-    <main className={classes.join(' ')}>
-      <svg
-        ref={svgRef}
-        className={`canvas${bg && page.layers.background.visible ? ' has-bg' : ''}`}
-        aria-label={`Zeichenfläche ${page.name}`}
-        onPointerDown={onPointerDown}
-        onPointerMove={onPointerMove}
-        onPointerUp={endDrag}
-        onPointerCancel={endDrag}
-        onPointerLeave={() => !drag.current && setCursor(null)}
-        onContextMenu={(e) => e.preventDefault()}
-      >
-        {bg && page.layers.background.visible && (
-          <g transform={worldTransform}>
-            <BackgroundLayer
-              background={bg}
-              bytes={assets[bg.assetId]}
-              view={view}
-              viewport={size}
-              selected={selection?.kind === 'background'}
-              interactive={tool === 'select' && !bg.locked && !spaceDown}
-            />
-          </g>
-        )}
+    <main
+      ref={stageRef}
+      className={classes.join(' ')}
+      onPointerDown={onPointerDown}
+      onPointerMove={onPointerMove}
+      onPointerUp={endDrag}
+      onPointerCancel={endDrag}
+      onPointerLeave={() => !drag.current && setCursor(null)}
+      onContextMenu={(e) => onCanvas(e) && e.preventDefault()}
+    >
+      {/* Ebenen von unten nach oben: Plan (zwischengespeichert), Raster und Klickfläche, Objekte
+          (zwischengespeichert), Werkzeuge. Ereignisse behandelt <main> für alle SVG-Ebenen. */}
+      {bg && page.layers.background.visible && (
+        <WorldLayer className="layer-plan" rv={rv} view={view} size={size}>
+          <BackgroundLayer background={bg} bytes={assets[bg.assetId]} view={rv} viewport={size} selected={selection?.kind === 'background'} interactive={false} />
+        </WorldLayer>
+      )}
+      <svg ref={svgRef} className={`canvas${bg && page.layers.background.visible ? ' has-bg' : ''}`} aria-label={`Zeichenfläche ${page.name}`}>
         <path className="grid-minor" d={grid.minor} />
         <path className="grid-major" d={grid.major} />
         <path className="origin" d={`M${origin.x - 8} ${origin.y}H${origin.x + 8}M${origin.x} ${origin.y - 8}V${origin.y + 8}`} />
-        <g transform={worldTransform} className="world">
+      </svg>
+      <WorldLayer className="layer-objects" rv={rv} view={view} size={size}>
           <ObjectsLayer
             page={page}
             categories={categories}
             template={labelTemplate}
             fontSize={labelFontSize}
             selected={selectedIds}
-            labelsTiny={labelFontSize * view.scale < MIN_LABEL_PX}
-            labelHalo={labelFontSize * view.scale >= HALO_LABEL_PX}
+            labelsTiny={labelFontSize * rv.scale < MIN_LABEL_PX}
+            labelHalo={labelFontSize * rv.scale >= HALO_LABEL_PX}
             free={free}
-            hatchSpacing={hatchSpacing(view.scale)}
-            freeLabelsTiny={labelFontSize * view.scale < MIN_FREE_LABEL_PX}
+            hatchSpacing={hatchSpacing(rv.scale)}
+            freeLabelsTiny={labelFontSize * rv.scale < MIN_FREE_LABEL_PX}
             freeLabelWindow={freeLabelWindow}
             warnings={warnings}
             warnSettings={warnSettings}
+            baseStands={storedPage.stands}
+            movingIds={movingIds}
           />
-        </g>
+      </WorldLayer>
+      <svg className="canvas-layer canvas-overlay" aria-hidden="true">
         {activeTool?.overlay}
       </svg>
       {activeTool?.panel && <div className="tool-panel-host">{activeTool.panel}</div>}
       <NorthArrow angle={page.northAngle} />
+      {fpsVisible && <FpsMeter />}
       <div className="statusbar">
         <span>
           x <b>{cursor ? fmt(cursor.x) : '–'}</b> y <b>{cursor ? fmt(cursor.y) : '–'}</b> m

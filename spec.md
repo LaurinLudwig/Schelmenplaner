@@ -288,10 +288,12 @@ Freiflächen-Logik wurde bereits erfolgreich getestet (prototype/freiflaechen.ht
 ## Nicht-funktionale Anforderungen
 - Läuft auf Windows und macOS, komplett offline, kein Server, kein Account.
 - Personenbezogene Händlerdaten bleiben lokal (DSGVO).
-- Flüssig mit mind. 500 Ständen über alle Festplätze. Abnahmekriterium (ab M3): mit 500 Ständen
-  auf einer Page mindestens 50 Bilder/s beim Zoomen, beim Verschieben der Ansicht und beim Ziehen
-  eines Stands, in Chromium und WebKit. Ab M4 mit Freiflächen, Warnungen und Fang, auch beim Ziehen
-  eines Stands quer über mehrere Grundflächen.
+- Flüssig mit mind. 500 Ständen über alle Festplätze. Abnahmekriterium (präzisiert 2026-10-11, QA-M4-03):
+  500 Stände auf einer Page, viele Freiflächen und ein Hintergrundplan mit 8000 × 6000 px; Median aus
+  5 Messläufen mindestens 50 Bilder/s beim Zoomen, beim Verschieben der Ansicht und beim Ziehen eines
+  Stands (quer über mehrere Grundflächen, mit Freiflächen, Warnungen und Fang), in Chromium und WebKit;
+  kein einzelnes Bild über 100 ms. Geprüft mit `npm run test:perf`. Zum Messen in der Desktop-App gibt es
+  eine einblendbare Bildraten-Anzeige (Cmd/Strg+Alt+F, standardmäßig aus, nicht im PDF-Export).
 - TypeScript strict, Unit-Tests für die Geometrie- und Nummerierungslogik.
 
 ## Tech-Stack (Vorschlag)

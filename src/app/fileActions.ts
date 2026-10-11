@@ -1,6 +1,6 @@
 import { referencedAssets } from '../core/assets';
 import { UserError, userMessage } from '../core/errors';
-import { decodeProjectFile, encodeProjectFile } from '../core/fileFormat';
+import { decodeProjectFile, encodeProjectFile, encodeProjectFileAsync } from '../core/fileFormat';
 import { createProject } from '../core/model/defaults';
 import { platform } from '../platform';
 import { projectForSave, selectDirty, useStore } from '../state/store';
@@ -19,6 +19,13 @@ export function currentBytes(): Uint8Array {
   const s = useStore.getState();
   const project = projectForSave(s);
   return encodeProjectFile({ project, assets: referencedAssets(project, s.assets) });
+}
+
+/** Wie `currentBytes`, ohne den Hauptthread zu blockieren (Autosave). */
+export function currentBytesAsync(): Promise<Uint8Array> {
+  const s = useStore.getState();
+  const project = projectForSave(s);
+  return encodeProjectFileAsync({ project, assets: referencedAssets(project, s.assets) });
 }
 
 /**

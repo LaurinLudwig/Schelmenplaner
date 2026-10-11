@@ -1,7 +1,7 @@
 import { memo, useMemo } from 'react';
 import { hatchPath } from '../../../core/geometry/polygon';
 import { fromLocal, rectCorners } from '../../../core/geometry/rect';
-import type { AreaFreeSpaces } from '../../../core/freeSpace';
+import type { AreaFreeSpaces, FreeSpace } from '../../../core/freeSpace';
 import { approxTextWidth, areaLabel, formatLabel, freeSpaceLabel } from '../../../core/label';
 import type { Area, Category, FestplatzPage, Id, ProjectSettings, Stand, Vec } from '../../../core/model/types';
 import { DEFAULT_STAND_COLOR } from '../../../core/objects';
@@ -46,6 +46,10 @@ interface Props {
   /** Nur Freiflächen-Beschriftungen in diesem Bereich zeichnen (siehe Canvas.tsx `labelWindow`). */
   freeLabelWindow: Bounds;
   warnings: PageWarnings;
+  /** Stände ohne Vorschau (gespeichert); bleibt während einer Geste dieselbe Liste. */
+  baseStands: Stand[];
+  /** Objekte, die die laufende Geste bewegt (bzw. Kopien bei Alt+Ziehen). */
+  movingIds: ReadonlySet<Id>;
   warnSettings: Pick<ProjectSettings, 'warnOutside' | 'warnOverlap'>;
 }
 
@@ -68,62 +72,102 @@ const pts = (r: Area | Stand) =>
 
 export const standColor = (s: Stand, cat: Category | undefined) => s.color ?? cat?.color ?? DEFAULT_STAND_COLOR;
 
-export const ObjectsLayer = memo(function ObjectsLayer({ page, categories, template, fontSize, selected, labelsTiny, labelHalo, free, hatchSpacing, freeLabelsTiny, freeLabelWindow, warnings, warnSettings }: Props) {
+export const ObjectsLayer = memo(function ObjectsLayer({ page, categories, template, fontSize, selected, labelsTiny, labelHalo, free, hatchSpacing, freeLabelsTiny, freeLabelWindow, warnings, baseStands, movingIds, warnSettings }: Props) {
   const catById = useMemo(() => new Map(categories.map((c) => [c.id, c])), [categories]);
   const L = page.layers;
-  const warnOf = (s: Stand): WarnKind => {
+  // Leistung beim Ziehen (QA-M4-03): Unbewegte Stände kommen aus der gespeicherten Liste, die während der
+  // Geste gleich bleibt; ihre Listen rendern dann nicht neu. Nur die bewegten Stände werden pro Bild gezeichnet.
+  const unmoved = useMemo(() => baseStands.filter((s) => !movingIds.has(s.id)), [movingIds, baseStands]);
+  const staticStands = movingIds.size ? unmoved : page.stands;
+  const movingStands = movingIds.size ? page.stands.filter((s) => movingIds.has(s.id)) : NO_STANDS;
+  const kindOf = (s: Stand): WarnKind => {
     const a = activeWarnings(warnings.byStand.get(s.id), s, warnSettings);
     return a.overlap ? 'overlap' : a.outside ? 'outside' : null;
   };
-  const shownWarnings = L.stands.visible ? page.stands.map((s) => ({ s, kind: warnOf(s) })).filter((x) => x.kind) : [];
-  const overlapShown = new Set(shownWarnings.filter((x) => x.kind === 'overlap').map((x) => x.s.id));
+  // Warnungen der unbewegten Stände: nur eine neue Map, wenn sich eine Warnung wirklich ändert
+  const kindsKey = staticStands.map((s) => kindOf(s) ?? '').join(',');
+  const staticKinds = useMemo(() => {
+    const k = kindsKey.split(',');
+    return new Map(staticStands.map((s, i) => [s.id, (k[i] || null) as WarnKind]));
+  }, [staticStands, kindsKey]);
+  const movingKinds = new Map(movingStands.map((s) => [s.id, kindOf(s)]));
+  const warnKinds = movingStands.length ? new Map([...staticKinds, ...movingKinds]) : staticKinds;
   const freeVisible = L.free.visible && L.areas.visible;
+  // Leistung (QA-M4-03): Die Listen sind eigene memo-Komponenten. Ändert sich beim Zoomen nur eine
+  // Schwelle (Schriftgröße, Schraffurabstand, Beschriftungsbereich), rendert nur die betroffene Liste
+  // neu, nicht 500 Stände.
   return (
     <>
       {L.areas.visible && (
         <g className={`layer-areas${L.areas.locked ? ' locked' : ''}`}>
-          {page.areas.map((a) => (
-            <AreaShape key={a.id} area={a} selected={selected.has(a.id)} />
-          ))}
+          <AreaList areas={page.areas} selected={selected} />
         </g>
       )}
       {freeVisible && (
         <g className="layer-free">
-          {free.map((r) => (
-            <FreeArea key={r.areaId} result={r} spacing={hatchSpacing} />
-          ))}
+          <FreeList free={free} spacing={hatchSpacing} />
         </g>
       )}
       {L.stands.visible && (
         <g className={`layer-stands${L.stands.locked ? ' locked' : ''}`}>
-          {page.stands.map((s) => {
-            const cat = s.categoryId ? catById.get(s.categoryId) : undefined;
-            return <StandShape key={s.id} stand={s} color={standColor(s, cat)} selected={selected.has(s.id)} warn={warnOf(s)} />;
-          })}
+          <StandList stands={staticStands} catById={catById} selected={selected} warnKinds={staticKinds} />
+          {movingStands.length > 0 && <StandList stands={movingStands} catById={catById} selected={selected} warnKinds={movingKinds} />}
         </g>
       )}
       <g className={`layer-warnings${labelsTiny ? ' tiny' : ''}`}>
-        {warnings.regions
-          .filter((r) => overlapShown.has(r.a) || overlapShown.has(r.b))
-          .map((r) => (
-            <polygon key={`${r.a}|${r.b}`} className="overlap-region" points={polyPts(r.polygon)} />
-          ))}
-        {shownWarnings.map(({ s, kind }) => (
-          <WarnIcon key={s.id} stand={s} kind={kind!} size={fontSize * 1.3} />
-        ))}
+        {L.stands.visible && <OverlapRegions regions={warnings.regions} warnKinds={warnKinds} />}
+        {L.stands.visible && <WarnIcons stands={staticStands} warnKinds={staticKinds} size={fontSize * 1.3} />}
+        {L.stands.visible && movingStands.length > 0 && <WarnIcons stands={movingStands} warnKinds={movingKinds} size={fontSize * 1.3} />}
       </g>
       {L.labels.visible && (
         <g className={`layer-labels${labelsTiny ? ' tiny' : ''}${labelHalo ? ' halo' : ''}`} transform={`scale(${1 / CM})`} fontSize={fontSize * CM} strokeWidth={fontSize * CM * 0.22}>
-          {L.areas.visible && page.areas.map((a) => <AreaLabel key={a.id} area={a} fontSize={fontSize} />)}
-          {freeVisible && !freeLabelsTiny && free.map((r) => <FreeLabels key={r.areaId} result={r} fontSize={fontSize} window={freeLabelWindow} />)}
-          {L.stands.visible &&
-            page.stands.map((s) => (
-              <StandLabel key={s.id} stand={s} template={template} fontSize={fontSize} categoryName={(s.categoryId && catById.get(s.categoryId)?.name) || ''} />
-            ))}
+          {L.areas.visible && <AreaLabelList areas={page.areas} fontSize={fontSize} />}
+          {freeVisible && !freeLabelsTiny && <FreeLabelList free={free} fontSize={fontSize} window={freeLabelWindow} />}
+          {L.stands.visible && <StandLabelList stands={staticStands} template={template} fontSize={fontSize} catById={catById} />}
+          {L.stands.visible && movingStands.length > 0 && <StandLabelList stands={movingStands} template={template} fontSize={fontSize} catById={catById} />}
         </g>
       )}
     </>
   );
+});
+
+const NO_STANDS: Stand[] = [];
+
+const AreaList = memo(function AreaList({ areas, selected }: { areas: Area[]; selected: ReadonlySet<Id> }) {
+  return areas.map((a) => <AreaShape key={a.id} area={a} selected={selected.has(a.id)} />);
+});
+
+const FreeList = memo(function FreeList({ free, spacing }: { free: readonly AreaFreeSpaces[]; spacing: number }) {
+  return free.map((r) => <FreeArea key={r.areaId} result={r} spacing={spacing} />);
+});
+
+const StandList = memo(function StandList({ stands, catById, selected, warnKinds }: { stands: Stand[]; catById: Map<Id, Category>; selected: ReadonlySet<Id>; warnKinds: Map<Id, WarnKind> }) {
+  return stands.map((s) => {
+    const cat = s.categoryId ? catById.get(s.categoryId) : undefined;
+    return <StandShape key={s.id} stand={s} color={standColor(s, cat)} selected={selected.has(s.id)} warn={warnKinds.get(s.id) ?? null} />;
+  });
+});
+
+const OverlapRegions = memo(function OverlapRegions({ regions, warnKinds }: { regions: PageWarnings['regions']; warnKinds: Map<Id, WarnKind> }) {
+  return regions
+    .filter((r) => warnKinds.get(r.a) === 'overlap' || warnKinds.get(r.b) === 'overlap')
+    .map((r) => <polygon key={`${r.a}|${r.b}`} className="overlap-region" points={polyPts(r.polygon)} />);
+});
+
+const WarnIcons = memo(function WarnIcons({ stands, warnKinds, size }: { stands: Stand[]; warnKinds: Map<Id, WarnKind>; size: number }) {
+  return stands.filter((s) => warnKinds.get(s.id)).map((s) => <WarnIcon key={s.id} stand={s} kind={warnKinds.get(s.id)!} size={size} />);
+});
+
+const AreaLabelList = memo(function AreaLabelList({ areas, fontSize }: { areas: Area[]; fontSize: number }) {
+  return areas.map((a) => <AreaLabel key={a.id} area={a} fontSize={fontSize} />);
+});
+
+const FreeLabelList = memo(function FreeLabelList({ free, fontSize, window: win }: { free: readonly AreaFreeSpaces[]; fontSize: number; window: Bounds }) {
+  return free.map((r) => <FreeLabels key={r.areaId} result={r} fontSize={fontSize} window={win} />);
+});
+
+const StandLabelList = memo(function StandLabelList({ stands, template, fontSize, catById }: { stands: Stand[]; template: string; fontSize: number; catById: Map<Id, Category> }) {
+  return stands.map((s) => <StandLabel key={s.id} stand={s} template={template} fontSize={fontSize} categoryName={(s.categoryId && catById.get(s.categoryId)?.name) || ''} />);
 });
 
 const AreaShape = memo(function AreaShape({ area, selected }: { area: Area; selected: boolean }) {
@@ -172,14 +216,22 @@ const FreeArea = memo(function FreeArea({ result, spacing }: { result: AreaFreeS
 /** „Frei 20 × 10 m“: horizontal, mittig, feste Schriftgröße wie die Standbeschriftung. */
 const FreeLabels = memo(function FreeLabels({ result, fontSize, window: win }: { result: AreaFreeSpaces; fontSize: number; window: Bounds }) {
   const inside = (p: Vec) => p.x >= win.minX && p.x <= win.maxX && p.y >= win.minY && p.y <= win.maxY;
+  return result.free.filter((f) => inside(f.center)).map((f) => <FreeLabel key={f.key} space={f} fontSize={fontSize} />);
+});
+
+/** Beschriftungstext je Freifläche nur einmal formatieren (`fmt` ist teuer, QA-M4-03). */
+const labelText = new WeakMap<FreeSpace, string>();
+const textOf = (f: FreeSpace) => {
+  let t = labelText.get(f);
+  if (t === undefined) labelText.set(f, (t = freeSpaceLabel(f.width, f.depth)));
+  return t;
+};
+
+const FreeLabel = memo(function FreeLabel({ space: f, fontSize }: { space: FreeSpace; fontSize: number }) {
   return (
-    <>
-      {result.free.filter((f) => inside(f.center)).map((f) => (
-        <text key={f.key} className="free-label" data-key={f.key} textAnchor="middle" x={f.center.x * CM} y={(f.center.y + BASELINE * fontSize) * CM}>
-          {freeSpaceLabel(f.width, f.depth)}
-        </text>
-      ))}
-    </>
+    <text className="free-label" data-key={f.key} textAnchor="middle" x={f.center.x * CM} y={(f.center.y + BASELINE * fontSize) * CM}>
+      {textOf(f)}
+    </text>
   );
 });
 

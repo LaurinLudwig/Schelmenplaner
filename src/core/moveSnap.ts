@@ -15,6 +15,7 @@
 import { occupiedInterval } from './freeSpace';
 import { boundsTouch, polyBounds, projectOn, rectGeo } from './geometry/polygon';
 import { frameAngle, fromFrame, frontFrame, normAngle, rectCorners, toFrame } from './geometry/rect';
+import { atLeast, atMost, greaterThan, lessThan, sameAngle } from './geometry/tolerance';
 import { add, mul, rotate, vec } from './geometry/vec';
 import type { Area, Id, Rect, Vec } from './model/types';
 import { constrainDelta, moveRects, type RectMap } from './transform';
@@ -60,13 +61,6 @@ export interface MoveSnapResult {
 }
 
 const NO_SNAP: SnapState = { frontAreaId: null };
-const ANGLE_EPS = 0.1;
-
-/** Abweichung zweier Winkel modulo `period` (0 … period/2). */
-const angleDiff = (a: number, b: number, period: number) => {
-  const d = (((a - b) % period) + period) % period;
-  return Math.min(d, period - d);
-};
 
 const translate = (rects: RectMap, off: Vec): RectMap => (off.x || off.y ? moveRects(rects, off) : rects);
 
@@ -99,13 +93,13 @@ export function computeMoveSnap(input: MoveSnapInput): MoveSnapResult {
     if (ns) {
       off = ns.offset;
       guides.push(...ns.guides);
-      const aligned = angleDiff(g.rot, 0, 90) < ANGLE_EPS;
+      const aligned = sameAngle(g.rot, 0, 90);
       // Bei schräg stehenden Ständen legen ihre Achsen beide Weltrichtungen fest
       fixedX = aligned ? ns.fixedX : true;
       fixedY = aligned ? ns.fixedY : true;
     }
   }
-  if (options.grid && options.grid > 0 && (!fixedX || !fixedY)) {
+  if (options.grid && greaterThan(options.grid, 0) && (!fixedX || !fixedY)) {
     const all = Object.values(translate(moved, off)).flatMap((r) => rectCorners(r));
     const b = polyBounds(all);
     const step = options.grid;
@@ -113,7 +107,7 @@ export function computeMoveSnap(input: MoveSnapInput): MoveSnapResult {
       let out: number | null = null;
       for (const v of vals) {
         const d = Math.round(v / step) * step - v;
-        if (Math.abs(d) <= input.tol && (out === null || Math.abs(d) < Math.abs(out))) out = d;
+        if (atMost(Math.abs(d), input.tol) && (out === null || lessThan(Math.abs(d), Math.abs(out)))) out = d;
       }
       return out;
     };
@@ -131,18 +125,18 @@ function frontSnap(input: MoveSnapInput, g: Rect, multi: boolean, keepFront: boo
   for (const area of areas) {
     const f = frontFrame(area);
     // Eine Gruppe wird nicht gedreht: nur einrasten, wenn der Stand schon parallel steht
-    if (multi && angleDiff(g.rot, frameAngle(f), 360) > ANGLE_EPS) continue;
+    if (multi && !sameAngle(g.rot, frameAngle(f), 360)) continue;
     const { s, t } = toFrame(f, center);
     const dist = Math.abs(t - g.d / 2);
     const current = state.frontAreaId === area.id;
     const forced = keepFront && current;
     if (!forced) {
-      if (dist > (current ? release : tol)) continue;
-      if (s + g.w / 2 <= 0 || s - g.w / 2 >= f.length) continue;
+      if (greaterThan(dist, current ? release : tol)) continue;
+      if (atMost(s + g.w / 2, 0) || atLeast(s - g.w / 2, f.length)) continue;
     }
     // Die bisherige Grundfläche behalten, solange sie greift (sonst springt der Stand an Ecken hin und her)
     const score = current ? -1 : dist;
-    if (!best || score < best.score) best = { area, s, score };
+    if (!best || lessThan(score, best.score)) best = { area, s, score };
   }
   if (!best) return null;
   const { area } = best;
@@ -167,7 +161,7 @@ function frontSnap(input: MoveSnapInput, g: Rect, multi: boolean, keepFront: boo
   for (const { e, kind } of edges) {
     for (const side of [-1, 1]) {
       const ds = e - (s + (side * g.w) / 2);
-      if (Math.abs(ds) <= tol && (!shift || Math.abs(ds) < Math.abs(shift.ds))) shift = { ds, e, kind };
+      if (atMost(Math.abs(ds), tol) && (!shift || lessThan(Math.abs(ds), Math.abs(shift.ds)))) shift = { ds, e, kind };
     }
   }
   if (shift) {
@@ -198,11 +192,12 @@ function neighborSnap(input: MoveSnapInput, g: Rect): { offset: Vec; guides: Gui
   const [gb0, gb1] = projectOn(gp, O, B);
   let hitA: AxisHit | null = null;
   let hitB: AxisHit | null = null;
-  const better = (h: AxisHit | null, c: AxisHit) => !h || Math.abs(c.off) < Math.abs(h.off) - 1e-9 || (Math.abs(c.off) <= Math.abs(h.off) + 1e-9 && c.kind === 'contact' && h.kind === 'align');
+  const better = (h: AxisHit | null, c: AxisHit) =>
+    !h || lessThan(Math.abs(c.off), Math.abs(h.off)) || (atMost(Math.abs(c.off), Math.abs(h.off)) && c.kind === 'contact' && h.kind === 'align');
   for (const n of input.stands) {
     const ng = rectGeo(n);
     if (!boundsTouch(gb, ng.bounds, tol * 6)) continue;
-    if (angleDiff(g.rot, n.rot, 90) > ANGLE_EPS) continue;
+    if (!sameAngle(g.rot, n.rot, 90)) continue;
     const [na0, na1] = projectOn(ng.poly, O, A);
     const [nb0, nb1] = projectOn(ng.poly, O, B);
     const overlapA = Math.min(ga1, na1) - Math.max(ga0, na0);
@@ -210,10 +205,10 @@ function neighborSnap(input: MoveSnapInput, g: Rect): { offset: Vec; guides: Gui
     const axis = (g0: number, g1: number, n0: number, n1: number, crossOverlap: number, cross: [number, number], ncross: [number, number]): AxisHit[] => {
       const out: AxisHit[] = [];
       const push = (off: number, kind: 'contact' | 'align', at: number) => {
-        if (Math.abs(off) <= tol) out.push({ off, kind, at, span: cross, other: ncross });
+        if (atMost(Math.abs(off), tol)) out.push({ off, kind, at, span: cross, other: ncross });
       };
       // Anliegen nur, wenn sich die beiden quer dazu überdecken (sonst wäre es keine gemeinsame Kante)
-      if (crossOverlap > -tol) {
+      if (greaterThan(crossOverlap, -tol)) {
         push(n1 - g0, 'contact', n1);
         push(n0 - g1, 'contact', n0);
       }

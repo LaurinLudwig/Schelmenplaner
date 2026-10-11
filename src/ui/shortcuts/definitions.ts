@@ -80,6 +80,7 @@ export const SHORTCUTS: ShortcutDef[] = [
   { id: 'ui.panels', label: 'Alle Panels ein-/ausblenden', group: 'Fenster', keys: ['Tab'] },
   { id: 'ui.sidebar', label: 'Seitenleiste ein-/ausblenden', group: 'Fenster', keys: ['Shift+Tab'] },
   { id: 'ui.theme', label: 'Helles/dunkles Design', group: 'Fenster', keys: ['Mod+Alt+T'] },
+  { id: 'ui.fps', label: 'Bildrate anzeigen (Bilder/s, längstes Bild)', group: 'Fenster', keys: ['Mod+Alt+F'] },
   { id: 'ui.shortcuts', label: 'Tastaturkürzel anzeigen', group: 'Fenster', keys: ['?'] },
 ];
 
