@@ -3,13 +3,14 @@ import { useStore } from '../../state/store';
 import { Icon } from '../icons/Icon';
 import { ObjectPanel } from '../panels/ObjectPanel';
 import { PagePanel } from '../panels/PagePanel';
-import { CategoryPanel, LabelPanel, LayersPanel } from '../panels/ProjectPanels';
+import { CategoryPanel, FreeSpacePanel, LabelPanel, LayersPanel } from '../panels/ProjectPanels';
 import { useSelectedObjects } from '../panels/selection';
 import { tip } from '../shortcuts/tip';
 
 /**
  * Rechte Seitenleiste: Eigenschaften der Auswahl (sonst die Einstellungen der Festplatz-Page),
- * darunter die projektweiten Bereiche Beschriftung und Kategorien (bis M6) und die Ebenen.
+ * darunter die projektweiten Bereiche Beschriftung, Freiflächen & Warnungen und Kategorien (bis M6)
+ * und die Ebenen.
  */
 export function Sidebar() {
   const page = useStore((s) => s.project.pages.find((p) => p.id === s.ui.activePage) ?? null);
@@ -26,6 +27,7 @@ export function Sidebar() {
       <div className="sidebar-scroll">
         {sel ? <ObjectPanel key={sel.objects.map((o) => o.obj.id).join(',')} sel={sel} /> : page && <PagePanel page={page} />}
         <LabelPanel />
+        <FreeSpacePanel />
         <CategoryPanel />
         {page && <LayersPanel page={page} />}
       </div>

@@ -39,7 +39,8 @@ test.describe('M1 Datei: Speichern, Laden, Autosave', () => {
     expect(Object.keys(files)).toContain('project.json');
     const json = JSON.parse(strFromU8(files['project.json']!));
     expect(json.format).toBe('schelmeplaner');
-    expect(json.schemaVersion).toBe(1);
+    // Seit M4 Formatversion 2 (Migration 1 → 2), angepasst vom Entwickler, siehe qa/M1.md
+    expect(json.schemaVersion).toBe(2);
     expect(json.project.pages.map((p: { name: string }) => p.name)).toEqual(['Obermarkt', 'Festplatz 2']);
     // Nach dem Speichern ist der Änderungspunkt weg, Dateiname wird angezeigt
     await expect(page.locator('.file-state .dot')).toHaveCount(0);

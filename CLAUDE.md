@@ -18,6 +18,11 @@ BACKLOG.md ist die Quelle für den Projektstand. Vor jeder Arbeit lesen, nach je
 
 - Screenshots und Logs aus Testläufen gehören nach `test-artifacts/` (ignoriert; Helfer `artifact()` in `tests/e2e/helpers.ts`). Unter `qa/` nur Belege, die in QA-Berichten verlinkt sind.
 - Im Entwicklungsmodus ist der Store als `window.__schelmeStore` erreichbar (Fehlersuche, Tests).
+- Dateiformat: Jede Änderung am Format von `project.json` (neue, umbenannte oder anders gedeutete Felder)
+  erhöht `CURRENT_SCHEMA_VERSION` und bringt eine Migration „von n auf n+1“ in
+  `src/core/model/migrations.ts` mit Test in `src/core/model/migrations.test.ts` mit. Dazu eine echte Datei der
+  Vorgängerversion unter `tests/fixtures/` (nie neu erzeugen), deren Migration getestet wird. Dateien mit neuerer
+  Version weist die App mit deutscher Meldung ab.
 
 ## QA
 - Der QA-Agent (`.claude/agents/qa-tester.md`) prüft jeden Meilenstein und schreibt `qa/Mx.md`.

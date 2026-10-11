@@ -2,6 +2,9 @@ import type { ReactNode } from 'react';
 import type { FestplatzPage, Vec, View } from '../../../core/model/types';
 import type { SnapResult } from '../../../core/snap';
 
+/** Fangradius in Bildschirmpixeln (Messen, Kalibrieren und Fang beim Ziehen, M4). */
+export const SNAP_PX = 8;
+
 /** Was ein Werkzeug von der Zeichenfläche bekommt. */
 export interface ToolContext {
   page: FestplatzPage;
@@ -19,6 +22,8 @@ export interface ToolPointer {
   screen: Vec;
   shiftKey: boolean;
   altKey: boolean;
+  /** Cmd (macOS) bzw. Strg (Windows): schaltet beim Ziehen den Fang aus (M4-08). */
+  modKey: boolean;
   /** Getroffenes DOM-Element (z. B. Hintergrund); Objekte werden geometrisch getroffen (core/hit.ts). */
   target: Element | null;
 }

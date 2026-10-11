@@ -2,7 +2,7 @@
  * Zentrale Shortcut-Konfiguration. Werkzeugleiste, Tooltips, Menüs und die Übersicht (?)
  * lesen ihre Tasten ausschließlich von hier. Neue Funktionen tragen sich hier ein.
  */
-export type ShortcutGroup = 'Datei' | 'Bearbeiten' | 'Werkzeuge' | 'Ansicht' | 'Pages' | 'Fenster';
+export type ShortcutGroup = 'Datei' | 'Bearbeiten' | 'Beim Ziehen' | 'Werkzeuge' | 'Ansicht' | 'Pages' | 'Fenster';
 
 export interface ShortcutDef {
   id: string;
@@ -43,6 +43,11 @@ export const SHORTCUTS: ShortcutDef[] = [
   { id: 'edit.nudgeRightBig', label: 'Nach rechts verschieben (1 m)', group: 'Bearbeiten', keys: ['Shift+ArrowRight'] },
   { id: 'edit.nudgeUpBig', label: 'Nach oben verschieben (1 m)', group: 'Bearbeiten', keys: ['Shift+ArrowUp'] },
   { id: 'edit.nudgeDownBig', label: 'Nach unten verschieben (1 m)', group: 'Bearbeiten', keys: ['Shift+ArrowDown'] },
+
+  // Nur Anzeige in der Übersicht (kein Befehl): Tasten, die während des Ziehens wirken (M4)
+  { id: 'drag.constrain', label: 'Richtung beschränken (waagerecht, senkrecht, 45°; an der Vorderseite halten)', group: 'Beim Ziehen', keys: ['Shift+Ziehen'] },
+  { id: 'drag.duplicate', label: 'Duplizieren (Alt beim Loslassen)', group: 'Beim Ziehen', keys: ['Alt+Ziehen'] },
+  { id: 'drag.noSnap', label: 'Fang vorübergehend aus', group: 'Beim Ziehen', keys: ['Mod+Ziehen'] },
 
   { id: 'tool.select', label: 'Auswahl', group: 'Werkzeuge', keys: ['V'] },
   { id: 'tool.hand', label: 'Hand', group: 'Werkzeuge', keys: ['H'] },

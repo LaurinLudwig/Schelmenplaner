@@ -8,6 +8,7 @@ import { TOOL_GROUPS } from '../tools';
 export function Toolbar() {
   const tool = useStore((s) => s.ui.tool);
   const gridVisible = useStore((s) => s.project.pages.find((p) => p.id === s.ui.activePage)?.grid.visible ?? false);
+  const snap = useStore((s) => s.project.settings.snap);
   // Neu rendern, wenn sich die Verfügbarkeit ändern kann (z. B. Hintergrund importiert)
   useStore((s) => s.project.pages.find((p) => p.id === s.ui.activePage)?.background?.assetId);
   return (
@@ -18,7 +19,7 @@ export function Toolbar() {
           {group.map((item) => {
             const pending = !!item.milestone;
             const unavailable = !pending && COMMANDS[item.shortcut]?.enabled?.() === false;
-            const pressed = item.kind === 'tool' ? item.tool === tool : item.shortcut === 'view.grid' && gridVisible;
+            const pressed = item.kind === 'tool' ? item.tool === tool : item.snap ? snap[item.snap] : item.shortcut === 'view.grid' && gridVisible;
             return (
               <button
                 key={item.shortcut}

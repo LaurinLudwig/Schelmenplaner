@@ -9,6 +9,8 @@ export interface ToolbarItem {
   kind: 'tool' | 'toggle';
   tool?: ToolId;
   milestone?: string;
+  /** Fang-Umschalter (M4): welcher Fang. */
+  snap?: 'front' | 'grid' | 'neighbors';
   /** Tooltip-Zusatz, wenn das Werkzeug gerade nicht verfügbar ist. */
   disabledHint?: string;
 }
@@ -30,9 +32,9 @@ export const TOOL_GROUPS: ToolbarItem[][] = [
     { shortcut: 'tool.titleBlock', icon: 'titleBlock', kind: 'tool', milestone: 'M7', description: 'Schriftfeld platzieren und verschieben' },
   ],
   [
-    { shortcut: 'snap.front', icon: 'snapFront', kind: 'toggle', milestone: 'M4', description: 'Stände rasten an der Vorderseite einer Grundfläche ein' },
-    { shortcut: 'snap.grid', icon: 'snapGrid', kind: 'toggle', milestone: 'M4', description: 'Objekte rasten am Raster ein' },
-    { shortcut: 'snap.neighbors', icon: 'snapNeighbors', kind: 'toggle', milestone: 'M4', description: 'Stände rasten an benachbarten Ständen ein' },
+    { shortcut: 'snap.front', icon: 'snapFront', kind: 'toggle', snap: 'front', description: 'Stände rasten an der Vorderseite einer Grundfläche ein. Cmd/Strg beim Ziehen: Fang aus' },
+    { shortcut: 'snap.grid', icon: 'snapGrid', kind: 'toggle', snap: 'grid', description: 'Objekte rasten am eingeblendeten Raster ein. Cmd/Strg beim Ziehen: Fang aus' },
+    { shortcut: 'snap.neighbors', icon: 'snapNeighbors', kind: 'toggle', snap: 'neighbors', description: 'Stände rasten bündig an benachbarten Ständen ein. Cmd/Strg beim Ziehen: Fang aus' },
     { shortcut: 'view.grid', icon: 'grid', kind: 'toggle', description: 'Raster ein- oder ausblenden; Weite in der Seitenleiste' },
   ],
 ];

@@ -39,6 +39,15 @@ export function setGridVisible(pageId: Id, visible: boolean) {
   });
 }
 
+export type SnapKind = 'front' | 'grid' | 'neighbors';
+
+/** Fang-Umschalter: Ansichtseinstellung ohne Undo-Schritt und ohne Änderungsmarkierung (M4-07). */
+export function setSnap(kind: SnapKind, on: boolean) {
+  useStore.getState().changeView((p) => {
+    p.settings.snap[kind] = on;
+  });
+}
+
 export function setNorthAngle(pageId: Id, angle: number) {
   const a = ((angle % 360) + 360) % 360;
   updatePage(pageId, 'Nordrichtung ändern', (page) => {

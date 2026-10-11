@@ -584,3 +584,45 @@ kbd {
 .seg { display: grid; grid-template-columns: 1fr 1fr; gap: 3px; flex: 1; }
 .seg button { height: 22px; border: 1px solid var(--border-soft); border-radius: 3px; background: var(--panel-sunken); }
 .seg button[aria-pressed='true'] { background: var(--accent-soft); border-color: var(--front); color: var(--text-strong); }
+
+/* ---------- Freiflächen, Warnungen, Fang (M4) ---------- */
+:root {
+  --free: #5cc07f;
+  --free-fill: rgba(92, 192, 127, 0.16);
+  --free-hatch: rgba(92, 192, 127, 0.45);
+  --free-label-ink: #8fe0aa;
+  --warn: #ff9f2e;
+  --err: #ff5252;
+  --snap-guide: #ff3df0;
+}
+:root[data-theme='light'] {
+  --free: #2b8549;
+  --free-fill: rgba(43, 133, 73, 0.12);
+  --free-hatch: rgba(43, 133, 73, 0.38);
+  --free-label-ink: #1f6b39;
+  --warn: #d4761a;
+  --err: #d23c3c;
+  --snap-guide: #d100c4;
+}
+.world .free-space { fill: var(--free-fill); stroke: none; }
+.world .free-hatch { fill: none; stroke: var(--free-hatch); stroke-width: 1; vector-effect: non-scaling-stroke; }
+.world .free-label { fill: var(--free-label-ink); }
+/* Kein heller Rand um die Freiflächen-Beschriftung: Sie steht auf der hellen Schraffur, und der Rand kostet in WebKit Bildrate (M4-21). */
+.world .layer-labels.halo .free-label { stroke: none; paint-order: normal; }
+.world .stand.warn-outside { stroke: var(--warn); stroke-width: 2.5; }
+.world .stand.warn-overlap { stroke: var(--err); stroke-width: 2.5; }
+.world .stand.selected.warn-outside, .world .stand.selected.warn-overlap { stroke-dasharray: 6 3; }
+.world .overlap-region { fill: color-mix(in srgb, var(--err) 45%, transparent); stroke: var(--err); stroke-width: 1; vector-effect: non-scaling-stroke; }
+.world .warn-icon.outside { fill: var(--warn); }
+.world .warn-icon.overlap { fill: var(--err); }
+.world .warn-icon-mark { fill: #fff; }
+.world .layer-warnings.tiny .warn-icon-group { display: none; }
+.snap-guides line { stroke: var(--snap-guide); stroke-width: 1; pointer-events: none; }
+.snap-guides line.front { stroke-width: 3; }
+.snap-guides line.align { stroke-dasharray: 4 3; }
+.snap-guides text { fill: var(--snap-guide); font: 600 11px var(--f-ui); paint-order: stroke; stroke: var(--canvas); stroke-width: 3px; pointer-events: none; }
+.stage.cursor-copy { cursor: copy; }
+.tab .warn-badge { margin-left: 6px; min-width: 16px; padding: 0 4px; border-radius: 8px; font: 600 10px/16px var(--f-num); text-align: center; color: #fff; background: var(--warn); }
+.tab .warn-badge.overlap { background: var(--err); }
+.warn-chip { display: flex; align-items: center; gap: 6px; padding: 3px 6px; border-radius: 4px; font-size: 11px; border: 1px solid var(--warn); color: var(--warn); }
+.warn-chip.overlap { border-color: var(--err); color: var(--err); }

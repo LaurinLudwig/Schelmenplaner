@@ -411,7 +411,8 @@ test.describe('M3: Ebenen, Messen, Speichern', () => {
     const layers = page.getByRole('region', { name: 'Ebenen' });
     await expect(layers).toContainText('Ebenen erscheinen, sobald es Objekte gibt.');
     await seed(page, { areas: [{ id: 'a1', cx: 0, cy: 0, w: 30, d: 10 }], stands: [{ id: 's1', cx: 0, cy: 0, w: 4, d: 3 }] });
-    await expect(layers.locator('.layer-name')).toHaveText(['Grundflächen', 'Geschäfte', 'Beschriftung']);
+    // Seit M4 erscheint mit den Grundflächen auch die Ebene Freiflächen (M4-02)
+    await expect(layers.locator('.layer-name')).toHaveText(['Grundflächen', 'Freiflächen', 'Geschäfte', 'Beschriftung']);
     const n0 = await pastLen(page);
     await page.getByRole('button', { name: 'Geschäfte sperren' }).click();
     await page.mouse.click(...(Object.values(await w2s(page, { x: 0, y: 0 })) as [number, number]));

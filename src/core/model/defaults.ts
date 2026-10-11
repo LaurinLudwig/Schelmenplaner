@@ -15,6 +15,7 @@ export const DEFAULT_SETTINGS: ProjectSettings = {
   labelTemplate: '{nr}\n{name}\n{breite}×{tiefe} m',
   numbering: { scope: 'perPage', start: 1 },
   warnOutside: true,
+  warnOverlap: true,
   snap: { front: true, grid: false, neighbors: true },
 };
 

@@ -66,6 +66,7 @@ function normalizeProject(p: Obj): Project {
         start: num(numbering.start, DEFAULT_SETTINGS.numbering.start),
       },
       warnOutside: bool(s.warnOutside, DEFAULT_SETTINGS.warnOutside),
+      warnOverlap: bool(s.warnOverlap, DEFAULT_SETTINGS.warnOverlap),
       snap: {
         front: bool(snap.front, DEFAULT_SETTINGS.snap.front),
         grid: bool(snap.grid, DEFAULT_SETTINGS.snap.grid),
@@ -212,6 +213,7 @@ function normalizeStand(raw: unknown, ids: Set<string>, categoryIds: Set<string>
     categoryId: cat,
     color: isColor(raw.color) ? raw.color : null,
     suppressOutsideWarning: bool(raw.suppressOutsideWarning, false),
+    suppressOverlapWarning: bool(raw.suppressOverlapWarning, false),
     ...r,
   };
 }

@@ -30,7 +30,9 @@ Freiflächen-Logik wurde bereits erfolgreich getestet (prototype/freiflaechen.ht
   des Ziehens). Intern ist die Vorderseite immer die lokale Unterkante; so ist die Breite immer die
   Länge der Vorderseite (Entscheidung 2026-10-10).
 - **Kategorie**: Name und Farbe, projektweit. Ein Geschäft hat höchstens eine Kategorie.
-- **Freifläche**: wird immer automatisch berechnet, nie manuell gezeichnet.
+- **Freifläche**: wird immer automatisch berechnet, nie manuell gezeichnet und nie gespeichert.
+- **Toleranz** für geometrische Vergleiche: 0,01 m (= Speichergenauigkeit). Überlappung erst bei
+  mehr als 0,01 m Eindringtiefe; ein Abstand bis 0,01 m gilt als bündig (Entscheidung 2026-10-11).
 - **Infrastruktur-Objekte**: mobile Sperre, feste Sperre, Sanitätsdienst, RTW-Platz, Toilette,
   Müllcontainer, enge Durchfahrt (mit Maß der lichten Breite), freier Marker mit Text.
   Jeder Typ hat eine eigene Farbe/Symbol und erscheint in der Legende. Pro Typ ist einstellbar,
@@ -78,12 +80,33 @@ Freiflächen-Logik wurde bereits erfolgreich getestet (prototype/freiflaechen.ht
   einer Richtung zählt es als Klick), frei verschieben und drehen (Drehgriff und numerisch,
   Einrasten in 15°-Schritten mit gedrückter Shift-Taste). Die Größe eines Stands ändert sich nur über
   Zahlenfelder, nicht per Griff.
-- Fang an der Vorderseite: Beim Ziehen in eine Grundfläche rastet der Stand an der Vorderseite ein
-  und übernimmt deren Ausrichtung. Ein-/ausschaltbar über die Werkzeugleiste (siehe UI),
-  temporär umkehrbar mit gedrückter Alt-Taste.
-- Geschäfte dürfen AUCH außerhalb von Grundflächen stehen. Dann Warnung (global und pro Stand
-  deaktivierbar), aber keine Blockade.
-- Warnung bei Überlappung zweier Stände.
+- Fang beim Ziehen (Entscheidung 2026-10-11). Fangabstand 8 Bildschirm-Pixel (zoomunabhängig).
+  Drei Umschalter in der Werkzeugleiste (Vorderkante Shift+F, Raster Shift+R, Nachbarstände Shift+N);
+  sie sind Ansichtseinstellungen (kein Undo-Schritt, keine Änderungsmarkierung, werden mitgespeichert).
+  Standard: Vorderkante und Nachbarstände an, Raster aus.
+  - Vorderkante (nur Stände): Liegt die Vorderseite des Stands bei gleicher Drehung wie die Grundfläche
+    höchstens 8 px von deren Vorderseite entfernt, legt sie sich an die Vorderseite der Grundfläche und
+    der Stand übernimmt deren Drehung. Danach gleitet er entlang der Vorderseite; gelöst wird er erst
+    bei mehr als 16 px Abstand, dann bekommt er seine ursprüngliche Drehung zurück. Eingerastet fängt er
+    entlang der Vorderseite an deren Enden und (mit Nachbar-Fang) an den Kanten benachbarter Stände.
+  - Nachbarstände: Ein Stand rastet bündig an einer Kante eines parallel stehenden Nachbarn ein
+    (Anliegen) oder fluchtet mit dessen Kanten.
+  - Raster (Stände und Grundflächen, nur bei eingeblendetem Raster): Rand oder Mitte des Hüllrechtecks
+    der Auswahl rastet je Achse an der nächsten Rasterlinie ein.
+  - Priorität: Vorderkante vor Nachbarstand vor Raster; bei gleicher Priorität der nähere Kandidat.
+  - Mehrfachauswahl: Der Fang gilt für das gegriffene Objekt und verschiebt die Gruppe nur parallel.
+  - Beim Einrasten erscheinen Hilfslinien (wie die intelligenten Hilfslinien in Illustrator).
+  - Cmd (macOS) bzw. Strg (Windows) beim Ziehen gedrückt halten schaltet jeden Fang vorübergehend aus.
+- Geschäfte dürfen AUCH außerhalb von Grundflächen stehen. Dann Warnung, aber keine Blockade.
+  Warnungen (Entscheidung 2026-10-11):
+  - Außerhalb (orange): Ein Teil des Stands liegt mehr als 0,01 m außerhalb der Vereinigung aller
+    Grundflächen, auch wenn er nur hinten herausragt. Ein Stand über zwei aneinanderliegenden
+    Grundflächen ist nicht außerhalb.
+  - Überlappung (rot, Vorrang vor orange): zwei Stände dringen mehr als 0,01 m ineinander ein.
+  - Jede Art ist projektweit abschaltbar und pro Stand ignorierbar („außerhalb ignorieren“,
+    „Überlappung ignorieren“, wirkt nur auf den eigenen Stand); alles rückgängig machbar.
+  - Der Page-Tab zeigt die Zahl der Stände mit aktiver Warnung (rot, sobald eine Überlappung dabei ist),
+    damit Probleme auf anderen Pages sichtbar sind.
 - Attribute (Seitenleiste rechts): Platznummer, Geschäftsname, Eigentümer, Typ/Ware,
   Breite, Tiefe, Stromverbrauch in kW [ANPASSEN], Anschlussart (230 V / CEE 16 A / CEE 32 A),
   Notiz, Farbe/Kategorie.
@@ -113,9 +136,25 @@ Freiflächen-Logik wurde bereits erfolgreich getestet (prototype/freiflaechen.ht
   Stand weniger tief ist.
 - Beispiel: Grundfläche 50 × 10 m, Stand 8 m breit bei x = 20 m → Freiflächen 20 × 10 m (links)
   und 22 × 10 m (rechts).
-- Freiflächen unter einer Mindestbreite (Standard 0,5 m, einstellbar) werden nicht angezeigt.
-- Beschriftung der Freiflächen wie bei Ständen: immer horizontal, feste Schriftgröße.
-- Neuberechnung live beim Verschieben, Drehen, Ändern der Maße, Löschen.
+- Ein Stand belegt eine Grundfläche nur, wenn er mehr als 0,01 m in sie hineinragt; eine bloße
+  Berührung von außen belegt nichts. Gedrehte Stände belegen ihre volle Projektion. Ragt ein Stand
+  seitlich heraus, zählt nur der Teil innerhalb. Intervalle mit einer Lücke bis 0,01 m werden
+  zusammengefasst; Intervallenden näher als 0,01 m an 0 bzw. an der Breite werden dorthin gezogen.
+- Überlappende Grundflächen: Die frühere Grundfläche (Reihenfolge der Grundflächen auf der Page)
+  gewinnt. Eine spätere rechnet nur mit ihrem Teil außerhalb der früheren: Stände werden darauf
+  zugeschnitten, ihre Freiflächen verlieren den Teil in der früheren Fläche (kann L-förmig werden;
+  Beschriftung dann mit den Hüllmaßen Breite entlang der Vorderseite × größte Tiefe). Frühere
+  Grundflächen ändern sich durch spätere nie (Entscheidung 2026-10-11).
+- Freiflächen unter einer Mindestbreite (Standard 0,5 m, einstellbar 0,05–100 m im Seitenleisten-
+  Bereich „Freiflächen & Warnungen“, bis M6) werden nicht angezeigt.
+- Beschriftung der Freiflächen wie bei Ständen: „Frei 20 × 10 m“, immer horizontal, mittig, feste
+  Schriftgröße; sie erscheint ab 6 px Schrifthöhe auf dem Bildschirm (darunter unlesbar). Darstellung
+  hellgrün getönt und schraffiert.
+- Neuberechnung live beim Verschieben (auch während des Ziehens), Drehen, Ändern der Maße, Löschen;
+  dabei werden nur die betroffenen Grundflächen neu berechnet.
+- Jede Freifläche hat einen stabilen Schlüssel aus Grundfläche und den beiden begrenzenden Ständen
+  (bzw. Anfang/Ende der Achse). Er bleibt gleich, solange dieselben Stände die Lücke begrenzen, und
+  dient den Sprung-Links der Start-Page (§7).
 
 ### 5. Standnummern
 - Modi: links → rechts entlang der Vorderseite (Grundflächen in festgelegter Reihenfolge),
@@ -158,6 +197,10 @@ Freiflächen-Logik wurde bereits erfolgreich getestet (prototype/freiflaechen.ht
   Format: ZIP-Container `.schelme` mit `project.json` und den eingebetteten Hintergrunddateien.
   Autosave schreibt in eine Sicherungsdatei, die beim Öffnen zur Wiederherstellung angeboten wird.
   Undo/Redo gilt projektweit.
+- Das Dateiformat ist versioniert (`schemaVersion` in `project.json`). Jede Formatänderung erhöht die
+  Version und bringt eine Migration mit, die ältere Dateien beim Öffnen umwandelt und fehlende Felder mit
+  Standardwerten ergänzt. Dateien einer neueren Version, als die App kennt, werden mit einer
+  verständlichen Meldung abgewiesen (Entscheidung 2026-10-11; Version 2 seit M4).
 - Projekt als Vorlage fürs nächste Jahr duplizieren.
 - Import einer Händlerliste aus CSV/XLSX (Spalten zuordnen). Importierte Händler landen in einer
   Liste „noch nicht platziert“ und können per Drag & Drop platziert werden. [Phase 2]
@@ -204,7 +247,8 @@ Freiflächen-Logik wurde bereits erfolgreich getestet (prototype/freiflaechen.ht
 - Wo sinnvoll Illustrator-Konventionen übernehmen (V Auswahl, H Hand, Z Zoom, Leertaste
   temporär Hand, Strg/Cmd+Z Rückgängig, Strg/Cmd+Shift+Z Wiederholen, Strg/Cmd+0 an Fenster
   anpassen). Auf macOS Cmd statt Strg.
-- Alle Shortcuts zentral in einer Konfiguration definiert; eine Übersicht ist per `?` abrufbar.
+- Alle Shortcuts zentral in einer Konfiguration definiert; eine Übersicht ist per `?` abrufbar. Sie
+  nennt auch die Tasten beim Ziehen (Shift, Alt, Cmd/Strg).
 
 ### Allgemein
 - Ebenen (Hintergrund, Grundflächen, Freiflächen, Geschäfte, Infrastruktur, Beschriftung)
@@ -227,8 +271,11 @@ Freiflächen-Logik wurde bereits erfolgreich getestet (prototype/freiflaechen.ht
     anderen Page landet sie an derselben Position (liegt diese außerhalb des sichtbaren Bereichs, mittig
     in der Ansicht). Kopien erhalten eine leere, nicht fixierte Platznummer. Duplizieren (Cmd/Strg+D)
     setzt die Kopie um 1 m nach rechts unten versetzt.
-  - Beim Verschieben beschränkt Shift die Richtung auf waagerecht/senkrecht/45°; Alt+Ziehen dupliziert
-    die Auswahl (Illustrator-Konventionen, ab M4; Entscheidung 2026-10-10).
+  - Beim Verschieben beschränkt Shift die Richtung auf waagerecht/senkrecht/45°; ein an der Vorderseite
+    eingerasteter Stand bleibt mit Shift an ihr. Alt+Ziehen dupliziert die Auswahl (entscheidend ist Alt
+    beim Loslassen; Kopien mit leerer Platznummer, ein Undo-Schritt). Cmd/Strg beim Ziehen schaltet den
+    Fang aus (Illustrator-Konventionen; Entscheidungen 2026-10-10 und 2026-10-11).
+  - Während eines Ziehens werden Kurzbefehle nicht ausgeführt (außer Esc zum Abbrechen).
   - Ein Ziehen, Drehen oder Aufziehen ist genau ein Undo-Schritt; ebenso eine Feldänderung in der
     Seiten- oder Steuerungsleiste. Jeder einzelne Pfeiltasten-Druck ist ein eigener Undo-Schritt; nur
     eine gedrückt gehaltene Taste (Tastenwiederholung) ergibt zusammen einen Schritt (QA-M3-05).
@@ -243,7 +290,8 @@ Freiflächen-Logik wurde bereits erfolgreich getestet (prototype/freiflaechen.ht
 - Personenbezogene Händlerdaten bleiben lokal (DSGVO).
 - Flüssig mit mind. 500 Ständen über alle Festplätze. Abnahmekriterium (ab M3): mit 500 Ständen
   auf einer Page mindestens 50 Bilder/s beim Zoomen, beim Verschieben der Ansicht und beim Ziehen
-  eines Stands, in Chromium und WebKit.
+  eines Stands, in Chromium und WebKit. Ab M4 mit Freiflächen, Warnungen und Fang, auch beim Ziehen
+  eines Stands quer über mehrere Grundflächen.
 - TypeScript strict, Unit-Tests für die Geometrie- und Nummerierungslogik.
 
 ## Tech-Stack (Vorschlag)

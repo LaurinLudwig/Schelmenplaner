@@ -37,6 +37,11 @@ ungefragt umgesetzt; erst nach Freigabe wandert ein Eintrag in einen Meilenstein
 - E-23 (Hinweis, M8) Der helle Rand um die Beschriftung erscheint erst ab 12 px Schrifthöhe (Leistung WebKit, siehe Abschluss M3). Für den PDF-Export (weißes Papier) separat entscheiden.
 - E-24 (Idee) Kopieren/Einfügen zwischen zwei geöffneten Projekten (System-Zwischenablage). Bisher nur innerhalb des Projekts.
 - E-25 (Hinweis, M5) „Festplatz duplizieren“ übernimmt die Platznummern der Stände; die Kopie hat dann doppelte Nummern. Beim Kopieren/Duplizieren einzelner Stände wird die Nummer geleert.
+- E-26 (Idee, aus M4-Planung) Klick mit dem Geschäfts-Werkzeug in eine Grundfläche setzt den Stand gleich an deren Vorderseite.
+- E-27 (Idee, aus M4-Planung) Fang für Grundflächen untereinander (Kanten bündig, Flucht).
+- E-28 (Idee, aus M4-Planung) Drehgriff eines Stands rastet an der Drehung der Grundfläche ein, in der er steht.
+- E-29 (Hinweis, aus M4) Lasttest M4-21 in WebKit mit wenig Puffer: Verschieben in Lesegröße (20 px/m) 51–53 Bilder/s, Zoomen 52–53. Teuer sind Texte (je Zeichen) und Musterfüllungen. Bei weiteren Ebenen (Infrastruktur, Schriftfeld) erneut messen.
+- E-30 (Lücke, aus M4) Grundflächen-Beschriftung und Freiflächen-Beschriftung können sich bei sehr schmalen Freiflächen mit Standbeschriftungen überdecken (Text wird nicht gekürzt, §3/§4).
 - E-08 (Hinweis) Browser-Autosave nutzt localStorage (ca. 5 MB). Mit eingebetteten Hintergründen (M2) reicht das nicht; betrifft nur den Browser-Dev-Modus.
 - [x] [QA] QA-M1-01 (gering, erledigt: Abschluss M1 korrigiert) Abschluss M1 widersprüchlich/veraltet: „M1-01 bleibt `[~]`“ vs. Status `[x]`; „24 Unit-Tests“, tatsächlich 28; der erwähnte „automatisierte Klicktest im Browser über alle obigen Funktionen“ liegt nicht im Repo (nur `tests/e2e/smoke.spec.ts`). Siehe `qa/M1.md`. (QA ✓ M1 Nachprüfung)
 - [x] [QA] QA-M1-02 (gering, Risiko; erledigt: Pinch auf echter Hardware bestätigt, Wischrichtung nach Laurins Test umgedreht; echtes Mausrad bleibt auf der manuellen Checkliste) Maus/Trackpad-Erkennung ist eine Heuristik (`src/ui/canvas/wheel.ts:26-31`): In Playwright-WebKit wird ein synthetisches Mausrad (`wheelDeltaY` 300) als Trackpad gedeutet und verschiebt statt zu zoomen. Mit echter Hardware vermutlich korrekt, nur manuell prüfbar; umgekehrt kann ein Trackpad-Wischen mit glattem Delta (z. B. 120) einmal zoomen. Mausrad-E2E-Test läuft nur in Chromium. Siehe `qa/M1.md`. (QA M1-Nachprüfung: nur teilweise – Heuristik unverändert, Mausrad-Test weiter nur Chromium `tests/e2e/m1-canvas.spec.ts:53`, Restrisiko dokumentiert; die neue Wischrichtung ist klärungsbedürftig, siehe QA-M1-07 in `qa/M1-nachpruefung.md`) **Erledigt 2026-10-10:** Wischrichtung geklärt und umgesetzt (QA-M1-07). Die Maus/Trackpad-Heuristik bleibt; Prüfung mit echter Maus steht auf der manuellen Checkliste.
@@ -65,9 +70,9 @@ ungefragt umgesetzt; erst nach Freigabe wandert ein Eintrag in einen Meilenstein
 - [ ] Q-01 Läuft auf Windows und macOS (NFA)
 - [ ] Q-02 Komplett offline, kein Server, kein Account (NFA)
 - [~] Q-03 Personenbezogene Händlerdaten bleiben lokal; nichts wird von fremden Servern nachgeladen, auch keine Schriften oder Icons (NFA, DSGVO, Gestaltung) – bisher eingehalten: Schriften über @fontsource, Icons über npm, CSP erlaubt nur `self`
-- [~] Q-04 Flüssig mit mindestens 500 Ständen über alle Festplätze (NFA) – M3: Lasttest 500 Stände auf einer Page ≥ 55 Bilder/s in Chromium und WebKit (M3-23)
+- [~] Q-04 Flüssig mit mindestens 500 Ständen über alle Festplätze (NFA) – M3: Lasttest 500 Stände auf einer Page ≥ 55 Bilder/s in Chromium und WebKit (M3-23); M4: mit Freiflächen, Warnungen und Fang ≥ 51 Bilder/s (M4-21)
 - [~] Q-05 TypeScript strict (NFA) – aktiv seit M1 (`strict`, `noUncheckedIndexedAccess`)
-- [~] Q-06 Geometrie-, Freiflächen- und Nummerierungslogik als reine, UI-unabhängige Module mit Unit-Tests (Vorgehen 4, NFA) – M3: Rechteck-Geometrie, Treffer, Gruppen-Transformation, Beschriftung in `src/core/` mit Tests
+- [~] Q-06 Geometrie-, Freiflächen- und Nummerierungslogik als reine, UI-unabhängige Module mit Unit-Tests (Vorgehen 4, NFA) – M3: Rechteck-Geometrie, Treffer, Gruppen-Transformation, Beschriftung in `src/core/` mit Tests; M4: Freiflächen, Warnungen, Fang mit Fall-Tabelle und Eigenschaftstests
 - [ ] Q-07 Builds für Windows und macOS über GitHub Actions (Tech-Stack)
 - [~] Q-08 Oberfläche komplett auf Deutsch (UI/Allgemein) – bisher eingehalten
 - [ ] Q-09 Jedes Werkzeug, jede Page und jeder wichtige Button hat einen Shortcut; neue Funktionen tragen sich in die zentrale Shortcut-Konfiguration ein (Tastaturkürzel)
@@ -138,18 +143,29 @@ Entscheidungen aus der Planung (2026-10-10) stehen in `spec.md` (Begriffe, §2, 
 - [x] M3-23 Lasttest 500 Stände auf einer Page: ≥ 50 Bilder/s beim Zoomen, Verschieben der Ansicht und Ziehen eines Stands, Chromium und WebKit (NFA, Abnahmekriterium; Teil von Q-04) (QA ✓ M3)
 
 ## M4 – Freiflächen, Fang, Warnungen
-- [ ] M4-01 Freiflächen-Kernlogik aus dem Prototyp mit Unit-Tests: Achse entlang der Vorderseite [0, Breite], belegtes Intervall = Projektion der Schnittmenge, Freiflächen = [0, Breite] minus Vereinigung, volle Tiefe, nie hinter einem Stand (§4)
-- [ ] M4-02 Freiflächen werden nie manuell gezeichnet, nur berechnet und angezeigt (Begriffe, §4)
-- [ ] M4-03 Mindestbreite für Freiflächen (Standard 0,5 m, einstellbar) (§4)
-- [ ] M4-04 Live-Neuberechnung beim Verschieben, Drehen, Ändern der Maße, Löschen (§4)
-- [ ] M4-05 Freiflächen-Beschriftung horizontal mit fester Schriftgröße, wie bei Ständen (§4)
-- [ ] M4-06 Fang an der Vorderseite: Stand rastet beim Ziehen in eine Grundfläche an der Vorderseite ein und übernimmt deren Ausrichtung (§3)
-- [ ] M4-07 Fang-Umschalter in der Werkzeugleiste, einzeln schaltbar: Vorderkante, Raster, Nachbarstände (§3, Layout)
-- [ ] M4-08 Alt kehrt den Fang beim Ziehen temporär um (§3)
-- [ ] M4-09 Warnung, wenn ein Geschäft außerhalb von Grundflächen steht; keine Blockade; global und pro Stand deaktivierbar (§3)
-- [ ] M4-10 Warnung bei Überlappung zweier Stände (§3)
-- [ ] M4-11 Shift beim Verschieben beschränkt die Richtung auf waagerecht/senkrecht/45° (aus E-20, Illustrator-Konvention)
-- [ ] M4-12 Alt+Ziehen dupliziert die Auswahl; Zusammenspiel mit der Alt-Fang-Umkehr (M4-08) klären (aus E-20)
+Entscheidungen aus der Planung (2026-10-11) stehen in `spec.md` (Begriffe, §3, §4, Allgemein, Tastaturkürzel, NFA).
+- [x] M4-01 Freiflächen-Kernlogik aus dem Prototyp mit Unit-Tests: Achse entlang der Vorderseite [0, Breite], belegtes Intervall = Projektion der Schnittmenge, Freiflächen = [0, Breite] minus Vereinigung, volle Tiefe, nie hinter einem Stand; Fall-Tabelle A1–A13 und Eigenschaftstests (fast-check) (§4)
+- [x] M4-02 Freiflächen werden nie manuell gezeichnet und nie gespeichert, nur berechnet und angezeigt (hellgrün schraffiert, Ebene „Freiflächen“) (Begriffe, §4)
+- [x] M4-03 Mindestbreite für Freiflächen (Standard 0,5 m, 0,05–100 m) im Seitenleisten-Bereich „Freiflächen & Warnungen“ (§4)
+- [x] M4-04 Live-Neuberechnung beim Verschieben (auch während des Ziehens), Drehen, Ändern der Maße, Löschen; nur betroffene Grundflächen werden neu berechnet (§4)
+- [x] M4-05 Freiflächen-Beschriftung „Frei B × T m“ horizontal mit fester Schriftgröße, wie bei Ständen (§4)
+- [x] M4-06 Fang an der Vorderseite: Vorderseite des Stands legt sich an die der Grundfläche, übernimmt deren Drehung, gleitet entlang (Hysterese 8/16 px), fängt an Achsenenden und Nachbarn (§3)
+- [x] M4-07 Fang-Umschalter in der Werkzeugleiste, einzeln schaltbar: Vorderkante, Raster, Nachbarstände; Ansichtseinstellungen ohne Undo-Schritt (§3, Layout)
+- [x] M4-08 Cmd/Strg beim Ziehen schaltet den Fang vorübergehend aus (ersetzt die Alt-Umkehr; Entscheidung 2026-10-11) (§3, Allgemein)
+- [x] M4-09 Warnung „außerhalb“ (orange), wenn ein Teil des Stands außerhalb der Vereinigung aller Grundflächen liegt (auch hinten herausragend); keine Blockade; global und pro Stand abschaltbar, mit Undo (§3)
+- [x] M4-10 Warnung bei Überlappung zweier Stände (rot); global und pro Stand abschaltbar, mit Undo (§3)
+- [x] M4-11 Shift beim Verschieben beschränkt die Richtung auf waagerecht/senkrecht/45°; eingerastet bleibt der Stand an der Vorderseite (aus E-20, Illustrator-Konvention)
+- [x] M4-12 Alt+Ziehen dupliziert die Auswahl (Alt beim Loslassen entscheidet, ein Undo-Schritt) (aus E-20; Konflikt mit der Alt-Umkehr durch M4-08 aufgelöst)
+- [x] M4-13 Toleranz 0,01 m für Überlappung, Bündigkeit, Belegung und „außerhalb“ (Begriffe, §4)
+- [x] M4-14 Überlappende Grundflächen: die frühere gewinnt, spätere rechnen nur mit ihrem Rest (§4)
+- [x] M4-15 Fang an Nachbarständen (Anliegen, Flucht; nur parallele Nachbarn) (§3)
+- [x] M4-16 Fang am Raster (Rand/Mitte des Hüllrechtecks, nur bei eingeblendetem Raster) (§3)
+- [x] M4-17 Fang-Priorität (Vorderkante > Nachbar > Raster), Mehrfachauswahl nur parallel verschoben, Hilfslinien beim Einrasten (§3)
+- [x] M4-18 Warnzähler am Page-Tab (§3)
+- [x] M4-19 Stabiler Schlüssel je Freifläche und Auflösefunktion als Grundlage für die Sprung-Links in M6-02 (§4, §7)
+- [x] M4-20 Während eines Ziehens keine Kurzbefehle (außer Esc); Übersicht (?) nennt die Tasten beim Ziehen (Allgemein, Tastaturkürzel)
+- [x] M4-22 Versioniertes Dateiformat: Formatversion 2, Migration 1 → 2 (neue Felder mit Standardwerten), neuere Versionen mit deutscher Meldung abgewiesen; echte M3-Datei (Version 1) als Testdatei; Regel in CLAUDE.md (§10, Entscheidung 2026-10-11)
+- [x] M4-21 Lasttest 500 Stände mit Freiflächen, Warnungen und Fang: ≥ 50 Bilder/s beim Zoomen, Verschieben der Ansicht und Ziehen quer über mehrere Grundflächen, Chromium und WebKit (NFA, Teil von Q-04)
 
 ## M5 – Nummerierung, Strom
 - [ ] M5-01 Nummerierung links → rechts entlang der Vorderseite, Grundflächen in festlegbarer Reihenfolge (§5)
@@ -164,7 +180,7 @@ Entscheidungen aus der Planung (2026-10-10) stehen in `spec.md` (Begriffe, §2, 
 
 ## M6 – Start-Page: Statistik, Listen, Tabelle, Einstellungen
 - [ ] M6-01 Kennzahlen global und pro Festplatz: Anzahl Geschäfte, Summe Frontmeter, belegte Fläche, Stromsumme vs. Limit inkl. Strombalken (§6, §7)
-- [ ] M6-02 Liste aller Freiflächen (Festplatz, Grundfläche, Maße); Klick wechselt die Page, zoomt hin und hebt die Fläche kurz hervor (§7)
+- [ ] M6-02 Liste aller Freiflächen (Festplatz, Grundfläche, Maße); Klick wechselt die Page, zoomt hin und hebt die Fläche kurz hervor (§7). Verweis über `FreeSpaceRef` und `resolveFreeSpace` aus M4-19 (`src/core/freeSpace.ts`)
 - [ ] M6-03 Tabelle aller Geschäfte über alle Festplätze: sortier- und filterbar (§7)
 - [ ] M6-04 Tabelle direkt editierbar, Änderungen wirken sofort im Plan; Klick springt zum Stand (§7)
 - [ ] M6-05 Projekteinstellungen: Projektname, Nummerierungsschema, Mindestbreite Freiflächen, Schriftgröße der Standbeschriftung (§7)
@@ -449,3 +465,98 @@ Befunde aus `qa/M3.md` abgearbeitet; Details im Abschnitt „Behoben“ des Beri
 - **QA-M3-03, -04, -02, -06, L2, L3, L1:** 3-px-Toleranz am Drehgriff; exakt gerundete Drehungen; Höchstmaß am Griff; Kategoriename-Feld; Mindestmaß beim Aufziehen; Einfüge-Regel; `npm run test:perf`.
 - **Geänderter Entwicklertest:** `m3-objects.spec.ts` „Duplizieren, Kopieren/Einfügen …, Pfeiltasten“ erwartete 1 Undo-Schritt für 6 einzelne Pfeiltasten-Drücke; nach QA-M3-05 sind es 6. Entfernte `test.fail`: 3 × QA-M3-01, QA-M3-02, -03, -04, -05, -06.
 - Läufe: `npm run check` grün (103 Unit-Tests), `npm run test:e2e` 397 bestanden, 7 übersprungen, `npm run test:perf` 4 bestanden (WebKit 57–60, Chromium 60 Bilder/s).
+
+---
+
+## Abschluss M4 (2026-10-11)
+
+Abgleich mit `spec.md` vor diesem Abschluss: Die Entscheidungen der M4-Planung (Toleranz 0,01 m, Fälle A1–A13,
+„frühere Grundfläche gewinnt“, Warnung auch bei hinten herausragenden Ständen, Abschalten je Art, Fang mit
+Priorität und Hysterese, Cmd/Strg statt Alt-Umkehr, Alt+Ziehen dupliziert, keine Kurzbefehle während des
+Ziehens, Warnzähler am Tab, stabiler Freiflächen-Schlüssel) stehen in `spec.md` (Begriffe, §3, §4, Allgemein,
+Tastaturkürzel, NFA) und sind auf M4-01 bis M4-21 abgebildet. Eine Präzisierung aus der Umsetzung ist
+nachgetragen (Freiflächen-Beschriftung ab 6 px, siehe Abweichungen).
+
+### Umgesetzt
+- **Kern (`src/core/`, ohne DOM/React):**
+  - `geometry/polygon.ts`: Fläche, `clipConvex` (aus dem Prototyp), `subtractConvex`/`subtractAll` (konvex minus konvex), `penetration` (SAT), `thickness`, Zwischenspeicher der Rechteck-Ecken je Objekt, Schraffurlinien.
+  - `geometry/interval.ts`: Vereinigung mit Toleranz und den IDs der begrenzenden Stände, Lücken.
+  - `freeSpace.ts`: TOL = 0,01 m, Belegung (Eindringtiefe > TOL, Zuschnitt auf die Fläche, Enden an den Achsenenden), Freiflächen über die volle Tiefe, Regel für überlappende Grundflächen (L-förmige Reste mit Hüllmaßen), Schlüssel `areaId|links|rechts[#k]`, `resolveFreeSpace` für M6, Zwischenspeicher je Grundfläche.
+  - `warnings.ts`: außerhalb (um TOL verkleinert, gegen die Vereinigung aller Grundflächen), Überlappung (Sweep + SAT) mit Schnittfläche, Zähler je Page.
+  - `moveSnap.ts`: Fang beim Ziehen (Vorderkante mit Hysterese 8/16 px, Achsenenden und Nachbarn entlang der Vorderseite, Nachbarstände anliegen/fluchten, Raster, Priorität, Mehrfachauswahl nur parallel, Hilfslinien). `transform.ts`: `constrainDelta` (Shift).
+- **Modell:** `Stand.suppressOverlapWarning`, `settings.warnOverlap` (Standard an). Ältere Dateien laden mit Standardwerten; Formatversion bleibt 1.
+- **Zeichenfläche:** Ebene „Freiflächen“ hellgrün getönt und schraffiert (Linien in Metern, Abstand ≈ 8 px in Zweierpotenzen), Beschriftung „Frei B × T m“ in der Ebene Beschriftung. Warnkonturen orange/rot, Warndreieck an der Stand-Ecke, rote Schnittfläche bei Überlappung. Alles live aus der Vorschau, also auch während des Ziehens; nur geänderte Grundflächen werden neu berechnet.
+- **Auswahlwerkzeug:** Fang beim Ziehen mit Hilfslinien (Vorderseite mit Namen, Anliegen, Flucht, Achsenende). Shift beschränkt (eingerastet: bleibt an der Vorderseite), Alt dupliziert (Alt beim Loslassen zählt, Zeiger „Kopieren“), Cmd/Strg schaltet den Fang aus. Modifikatoren wirken sofort, auch ohne Mausbewegung. Während einer Geste werden Kurzbefehle verschluckt (außer Esc).
+- **Oberfläche:**
+  - Fang-Umschalter in der Werkzeugleiste aktiv (Shift+F/R/N, Ansichtseinstellung).
+  - Seitenleisten-Bereich „Freiflächen & Warnungen“ (Mindestbreite, zwei Warnschalter, mit Undo).
+  - Warnungen am Stand mit Häkchen „Überlappung ignorieren“ / „„außerhalb“ ignorieren“ (mit Undo, auch bei Mehrfachauswahl).
+  - Ebene „Freiflächen“ im Ebenen-Panel (ohne Schloss).
+  - Warnzähler am Page-Tab (rot bei Überlappung, Tooltip mit Aufschlüsselung).
+  - Übersicht (?) mit Gruppe „Beim Ziehen“.
+- **Tests:**
+  - `src/core/m4.test.ts`: 56 Tests, darunter die Fall-Tabelle A1–A13 mit Toleranzgrenzen, Schlüssel, Auflösung, Cache-Zähler, Warnungen, Fang, Schraffur.
+  - `src/core/m4.property.test.ts`: 6 Eigenschaften mit fast-check (je 300 zufällige Szenen): Breitensumme, keine Überschneidung, Reihenfolge, Drehung/Verschiebung, überlappende Flächen, Mindestbreite.
+  - Zusammen 165 Unit-Tests.
+  - `tests/e2e/m4-freespace.spec.ts`: 15 Tests × 2 Browser.
+  - Lasttest `tests/e2e/m4-perf.spec.ts`.
+  - Testprojekt `tests/fixtures/last-500-staende.schelme` neu erzeugt (neues Feld).
+  - Neue devDependency: fast-check (nur Tests).
+
+### Lasttest M4-21 (≥ 50 Bilder/s, `npm run test:perf`)
+500 Stände in 10 Grundflächen, rund 500 Freiflächen, Überlappungen und Stände außerhalb, alle Fang-Optionen an.
+
+| Messung | Chromium | WebKit |
+|---|---|---|
+| Zoomen | 57 | 53 |
+| Ansicht verschieben | 60 | 56 |
+| Ansicht verschieben in Lesegröße (20 px/m, Freiflächen-Beschriftung sichtbar) | 60 | 51–53 |
+| Stand quer über die Grundflächen ziehen | 59 | 60 |
+
+Der M3-Lasttest und der QA-Lasttest aus M3 bestehen weiter (WebKit 55–60).
+
+Beim ersten Messen lag WebKit bei 14 Bilder/s (Zoomen) bzw. 11 (Verschieben). Ursachen und Maßnahmen:
+- **SVG-Musterfüllung** für die Schraffur (−25 Bilder/s): ersetzt durch Linien.
+- **Gestrichelte Kontur** (−8): entfernt.
+- **500 Freiflächen-Texte** (−8): erst ab 6 px Schrifthöhe, nur im gerundeten sichtbaren Bereich, ohne hellen Rand.
+
+### Nicht umgesetzt / verschoben
+- Nichts aus M4.
+
+### Abweichungen von SPEC.md bzw. vom Plan
+- **Freiflächen-Beschriftung erst ab 6 px Schrifthöhe** (Standbeschriftung ab 3 px) und ohne hellen Rand. Grund ist die Bildrate in WebKit. Die Spec ist angepasst.
+- **Freiflächen ohne eigene Kontur:** Tönung und Schraffur grenzen sie ab. Im Prototyp war die Kontur gestrichelt; sie kostete in WebKit 8 Bilder/s.
+- **Schraffur in Metern** statt als Muster in Bildschirmgröße. Der Abstand springt beim Zoomen in Zweierpotenzen und bleibt so etwa 8 px.
+- **Häkchen sind keine Textfelder mehr:** Nach einem Klick auf ein Häkchen wirken Cmd/Strg+Z usw. global (`src/app/keyboard.ts`). Das ist nötig für „ignorieren … mit Undo“ und betrifft auch die Häkchen aus M2/M3.
+- **Etikett der Vorderkanten-Hilfslinie** am linken Ende der Vorderseite: Die Mitte trägt schon die Grundflächen-Beschriftung.
+
+### Bekannte Bugs und Einschränkungen
+- **Zwei M3-E2E-Tests sind durch M4 überholt und schlagen fehl** (je Chromium und WebKit). Ich habe sie nicht geändert, siehe Offene Fragen.
+- WebKit-Bildrate mit wenig Puffer (E-29). Schmale Freiflächen: Beschriftungen können sich überdecken (E-30).
+- Der Warnzähler am Tab ändert sich nach dem Loslassen, nicht während des Ziehens (wie geplant).
+
+### Manuell testen (Desktop-App)
+- [ ] Stand an eine gedrehte Grundfläche ziehen: rastet ein, dreht sich mit, gleitet entlang, löst sich beim Wegziehen.
+- [ ] Alt+Ziehen dupliziert; Alt vor dem Loslassen lösen verschiebt nur. Cmd halten: kein Fang.
+- [ ] Unter Windows: Alt während des Ziehens aktiviert keine Menüleiste.
+- [ ] Testprojekt `last-500-staende.schelme`: Freiflächen sichtbar, Ziehen über die Grundflächen bleibt flüssig.
+
+### Antworten (2026-10-11)
+- Beide Tests angepasst wie vorgeschlagen, dazu `tests/e2e/m1-file.spec.ts:42` (Formatversion 2). Vermerkt in `qa/M3.md` und `qa/M1.md`.
+- **Versioniertes Dateiformat (M4-22):**
+  - `CURRENT_SCHEMA_VERSION = 2`.
+  - `MIGRATIONS[1]` ergänzt `suppressOverlapWarning: false` und `warnOverlap: true`, ohne vorhandene Werte zu überschreiben.
+  - Fehlt eine Migration, kommt eine deutsche Meldung.
+  - Neuere Dateien werden wie bisher mit „neueren Version“ abgewiesen.
+  - Echte Datei aus M3: `tests/fixtures/format-v1-m3.schelme` (das Testprojekt aus Commit f548eb5, Version 1, 500 Stände, 5 Kategorien), geprüft in `src/core/model/migrations.test.ts`.
+  - Das Lasttest-Projekt `last-500-staende.schelme` ist jetzt Version 2.
+  - Regel in CLAUDE.md.
+  - Der Schlüssel in der Datei heißt weiterhin `schemaVersion`: Ein Umbenennen wäre selbst eine Formatänderung.
+- Committen und pushen: ja.
+
+### Offene Fragen (beantwortet, siehe oben)
+1. **Zwei überholte Tests ändern?** Beide prüfen M3-Verhalten, das sich durch M4 bewusst geändert hat:
+   - `tests/e2e/m3-objects.spec.ts:414` (mein Entwicklertest M3-14) erwartet die Ebenenliste `Grundflächen, Geschäfte, Beschriftung`. Seit M4 erscheint dazwischen „Freiflächen“, sobald es Grundflächen gibt. Vorschlag: Erwartung um „Freiflächen“ ergänzen.
+   - `tests/e2e/m3-qa.spec.ts:45` (QA-Test M3-01/M3-18, Speichern und Öffnen) legt Stände ohne das neue Feld `suppressOverlapWarning` an. Nach dem Laden ergänzt der Ladecode es mit `false`, deshalb ist das Projekt nicht mehr gleich. Vorschlag: `suppressOverlapWarning: false` in `BASE` ergänzen.
+2. Soll ich M4 committen?
+

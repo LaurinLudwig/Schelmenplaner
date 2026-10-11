@@ -1,7 +1,8 @@
 import { confirm } from '../../app/dialogs';
 import { LABEL_PLACEHOLDERS } from '../../core/label';
+import { MIN_FREE_WIDTH } from '../../core/freeSpace';
 import type { Category, FestplatzPage, LayerId } from '../../core/model/types';
-import { addCategory, categoryUsage, deleteCategory, setLabelFontSize, setLabelTemplate, updateCategory } from '../../state/objects';
+import { addCategory, categoryUsage, deleteCategory, setLabelFontSize, setLabelTemplate, setMinFreeWidth, setWarningsEnabled, updateCategory } from '../../state/objects';
 import { setLayer } from '../../state/pageSettings';
 import { useStore } from '../../state/store';
 import { Icon } from '../icons/Icon';
@@ -27,6 +28,35 @@ export function LabelPanel() {
           <NumberField id="label-size" label="Schriftgröße" unit="m" value={fontSize} min={0.05} max={20} step={0.1} onCommit={setLabelFontSize} />
           <p className="hint align-end">in Planeinheiten, gilt auch für Grundflächen</p>
         </div>
+      </div>
+    </section>
+  );
+}
+
+/** Freiflächen und Warnungen (projektweit, bis M6 hier; M4-03, M4-09, M4-10). */
+export function FreeSpacePanel() {
+  const minWidth = useStore((s) => s.project.settings.minFreeWidth);
+  const warnOutside = useStore((s) => s.project.settings.warnOutside);
+  const warnOverlap = useStore((s) => s.project.settings.warnOverlap);
+  return (
+    <section className="panel" aria-label="Freiflächen und Warnungen">
+      <div className="panel-head">
+        <span>Freiflächen &amp; Warnungen</span>
+        <span className="panel-badge muted">projektweit</span>
+      </div>
+      <div className="panel-body form">
+        <div className="fields-2">
+          <NumberField id="free-min-width" label="Mindestbreite" unit="m" value={minWidth} min={MIN_FREE_WIDTH.min} max={MIN_FREE_WIDTH.max} step={0.1} onCommit={setMinFreeWidth} />
+          <p className="hint align-end">schmalere Lücken werden nicht als Freifläche angezeigt</p>
+        </div>
+        <label className="check">
+          <input type="checkbox" checked={warnOutside} onChange={(e) => setWarningsEnabled('outside', e.target.checked)} />
+          Warnung, wenn ein Geschäft außerhalb der Grundflächen steht
+        </label>
+        <label className="check">
+          <input type="checkbox" checked={warnOverlap} onChange={(e) => setWarningsEnabled('overlap', e.target.checked)} />
+          Warnung, wenn sich Geschäfte überlappen
+        </label>
       </div>
     </section>
   );
@@ -95,7 +125,7 @@ export function LayersPanel({ page }: { page: FestplatzPage }) {
   const present: LayerId[] = [];
   if (page.background) present.push('background');
   if (page.areas.length) present.push('areas');
-  // Freiflächen ab M4
+  if (page.areas.length) present.push('free');
   if (page.stands.length) present.push('stands');
   if (page.infra.length) present.push('infra');
   if (page.areas.length || page.stands.length) present.push('labels');
@@ -119,7 +149,7 @@ export function LayersPanel({ page }: { page: FestplatzPage }) {
                 >
                   <Icon name={l.visible ? 'visible' : 'hidden'} size={16} />
                 </button>
-                {id === 'labels' ? (
+                {id === 'labels' || id === 'free' ? (
                   <span className="icon-btn-placeholder" />
                 ) : (
                   <button

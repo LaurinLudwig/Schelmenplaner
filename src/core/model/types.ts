@@ -87,7 +87,10 @@ export interface Stand extends Rect {
   categoryId: Id | null;
   /** Eigene Farbe; überschreibt die Kategoriefarbe. null = Farbe der Kategorie bzw. Grau. */
   color: string | null;
+  /** Warnung „außerhalb“ für diesen Stand ignorieren. */
   suppressOutsideWarning: boolean;
+  /** Warnung „Überlappung“ für diesen Stand ignorieren (die Warnung am anderen Stand bleibt). */
+  suppressOverlapWarning: boolean;
 }
 
 export interface InfraObject extends Rect {
@@ -158,6 +161,8 @@ export interface ProjectSettings {
   labelTemplate: string;
   numbering: { scope: 'global' | 'perPage'; start: number };
   warnOutside: boolean;
+  warnOverlap: boolean;
+  /** Fang-Umschalter: Ansichtseinstellung (kein Undo-Schritt), wird aber mitgespeichert. */
   snap: { front: boolean; grid: boolean; neighbors: boolean };
 }
 

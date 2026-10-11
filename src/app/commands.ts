@@ -1,6 +1,6 @@
 import { addPage, cyclePage, deletePage, duplicatePage, gotoPage } from '../state/pages';
 import { saveInvertPan, saveTheme, selectCanRedo, selectCanUndo, START_PAGE, useStore, type ToolId } from '../state/store';
-import { setGridVisible } from '../state/pageSettings';
+import { setGridVisible, setSnap, type SnapKind } from '../state/pageSettings';
 import { copySelection, cutSelection, deleteSelection, duplicateSelection, hasClipboard, nudge, paste, selectAll, selectedIds } from '../state/objects';
 import { importBackground } from './backgroundImport';
 import { confirm } from './dialogs';
@@ -26,6 +26,7 @@ const activePage = () => s().project.pages.find((p) => p.id === s().ui.activePag
 const hasBackground = () => !!activePage()?.background;
 const setTool = (tool: ToolId) => () => s().setUi({ tool });
 const hasObjects = () => onDrawingPage() && selectedIds().length > 0;
+const snapCmd = (kind: SnapKind): Command => ({ run: () => setSnap(kind, !s().project.settings.snap[kind]), enabled: onDrawingPage });
 const nudgeCmd = (dx: number, dy: number): Command => ({ run: (e) => nudge(dx, dy, !!e?.repeat), enabled: hasObjects });
 
 export async function confirmDeletePage(id: string) {
@@ -91,6 +92,10 @@ export const COMMANDS: Record<string, Command> = {
     },
     enabled: onDrawingPage,
   },
+
+  'snap.front': snapCmd('front'),
+  'snap.grid': snapCmd('grid'),
+  'snap.neighbors': snapCmd('neighbors'),
 
   'view.zoomIn': { run: () => zoomBy(1.25), enabled: onDrawingPage },
   'view.zoomOut': { run: () => zoomBy(1 / 1.25), enabled: onDrawingPage },

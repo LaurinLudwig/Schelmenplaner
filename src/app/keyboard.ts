@@ -6,8 +6,10 @@ import { COMMANDS, runCommand } from './commands';
 
 const compiled = SHORTCUTS.flatMap((def) => def.keys.map((k) => ({ id: def.id, combo: parseCombo(k) })));
 
+/** Häkchen und Optionsfelder sind keine Textfelder: Cmd/Strg+Z usw. wirken dort global (M4: „ignorieren“ mit Undo). */
 const isTextField = (t: EventTarget | null) =>
-  t instanceof HTMLElement && (t.isContentEditable || /^(INPUT|TEXTAREA|SELECT)$/.test(t.tagName));
+  t instanceof HTMLElement &&
+  (t.isContentEditable || /^(TEXTAREA|SELECT)$/.test(t.tagName) || (t instanceof HTMLInputElement && t.type !== 'checkbox' && t.type !== 'radio'));
 
 /** Liefert true, wenn die Taste verarbeitet wurde (z. B. Esc bricht eine Geste ab). */
 export type InteractionKeyHandler = (e: KeyboardEvent) => boolean;

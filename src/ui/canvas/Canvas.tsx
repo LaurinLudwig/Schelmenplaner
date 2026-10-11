@@ -2,28 +2,49 @@ import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { runCommand } from '../../app/commands';
 import { setInteractionKeyHandler } from '../../app/keyboard';
 import { effectivePage } from '../../core/derive';
+import { createFreeSpaceCache, pageFreeSpaces } from '../../core/freeSpace';
 import { fmt } from '../../core/format';
 import type { FestplatzPage, Rect, Vec, View } from '../../core/model/types';
 import { findSnap, rectSnapSource } from '../../core/snap';
-import { defaultView, screenToWorld, worldToScreen, zoomAt } from '../../core/viewport';
+import { defaultView, screenToWorld, worldToScreen, zoomAt, type Bounds } from '../../core/viewport';
+import { cachedPageWarnings } from '../../core/warnings';
 import { useStore } from '../../state/store';
+import { IS_MAC } from '../shortcuts/keys';
 import { Icon } from '../icons/Icon';
 import { tip } from '../shortcuts/tip';
 import { BackgroundLayer } from './background/BackgroundLayer';
 import { ObjectsLayer } from './objects/ObjectsLayer';
-import type { ToolContext, ToolPointer } from './tools/types';
+import { SNAP_PX, type ToolContext, type ToolPointer } from './tools/types';
 import { useCalibrateTool } from './tools/useCalibrateTool';
 import { useCreateTool } from './tools/useCreateTool';
 import { useMeasureTool } from './tools/useMeasureTool';
 import { useSelectTool } from './tools/useSelectTool';
 import { interpretWheel } from './wheel';
 
-/** Fangradius in Bildschirmpixeln. */
-const SNAP_PX = 8;
 /** Unter dieser Schrifthöhe (px) wird die Beschriftung ausgeblendet. */
 const MIN_LABEL_PX = 3;
 /** Ab dieser Schrifthöhe (px) bekommt die Beschriftung einen hellen Rand (siehe ObjectsLayer). */
 const HALO_LABEL_PX = 12;
+/**
+ * Freiflächen-Beschriftung erst ab dieser Schrifthöhe (px). Darunter ist sie nicht lesbar, und Hunderte
+ * zusätzlicher Texte kosten in WebKit spürbar Bildrate (Lasttest M4-21).
+ */
+const MIN_FREE_LABEL_PX = 6;
+/** Linienabstand der Schraffur: etwa 8 px auf dem Bildschirm, in Zweierpotenzen von Metern (ändert sich beim Zoomen selten). */
+const hatchSpacing = (scale: number) => 2 ** Math.round(Math.log2(8 / scale));
+
+/**
+ * Bereich, in dem Freiflächen-Beschriftungen gezeichnet werden: der sichtbare Ausschnitt, auf ganze
+ * Bildschirmfelder gerundet und um ein Feld erweitert. Ändert sich beim Verschieben und Zoomen nur
+ * beim Überschreiten eines Feldes; so bleiben Hunderte Texte außerhalb aus dem DOM (WebKit, M4-21).
+ */
+function labelWindow(view: View, w: number, h: number): Bounds {
+  const k = 2 ** (Math.floor(Math.log2(view.scale) * 2) / 2);
+  const cell = Math.max(w, h, 1) / k;
+  const qx = Math.floor(-view.tx / view.scale / cell);
+  const qy = Math.floor(-view.ty / view.scale / cell);
+  return { minX: (qx - 1) * cell, minY: (qy - 1) * cell, maxX: (qx + 2) * cell, maxY: (qy + 2) * cell };
+}
 const NO_SELECTION: ReadonlySet<string> = new Set();
 
 const isTextField = (t: EventTarget | null) =>
@@ -48,6 +69,15 @@ export function Canvas({ page: storedPage }: { page: FestplatzPage }) {
   const categories = useStore((s) => s.project.categories);
   const labelTemplate = useStore((s) => s.project.settings.labelTemplate);
   const labelFontSize = useStore((s) => s.project.settings.labelFontSize);
+  const minFreeWidth = useStore((s) => s.project.settings.minFreeWidth);
+  const warnOutside = useStore((s) => s.project.settings.warnOutside);
+  const warnOverlap = useStore((s) => s.project.settings.warnOverlap);
+  const warnSettings = useMemo(() => ({ warnOutside, warnOverlap }), [warnOutside, warnOverlap]);
+  // Freiflächen und Warnungen live aus der Page mit Vorschau; der Zwischenspeicher rechnet nur
+  // Grundflächen neu, deren Eingaben sich geändert haben (M4-04)
+  const [freeCache] = useState(createFreeSpaceCache);
+  const free = useMemo(() => pageFreeSpaces(page.areas, page.stands, minFreeWidth, freeCache), [page.areas, page.stands, minFreeWidth, freeCache]);
+  const warnings = useMemo(() => cachedPageWarnings(page.areas, page.stands), [page.areas, page.stands]);
   const svgRef = useRef<SVGSVGElement>(null);
   const size = useStore((s) => s.ui.viewport);
   const storedView = useStore((s) => s.views[page.id]);
@@ -206,7 +236,14 @@ export function Canvas({ page: storedPage }: { page: FestplatzPage }) {
 
   const toolPointer = (e: React.PointerEvent): ToolPointer => {
     const screen = localPoint(e);
-    return { screen, world: screenToWorld(viewRef.current, screen), shiftKey: e.shiftKey, altKey: e.altKey, target: e.target as Element | null };
+    return {
+      screen,
+      world: screenToWorld(viewRef.current, screen),
+      shiftKey: e.shiftKey,
+      altKey: e.altKey,
+      modKey: IS_MAC ? e.metaKey : e.ctrlKey,
+      target: e.target as Element | null,
+    };
   };
 
   const onPointerDown = (e: React.PointerEvent<SVGSVGElement>) => {
@@ -245,6 +282,8 @@ export function Canvas({ page: storedPage }: { page: FestplatzPage }) {
     activeTool?.onPointerUp(toolPointer(e));
   };
 
+  const { minX: wx0, minY: wy0, maxX: wx1, maxY: wy1 } = labelWindow(view, size.w, size.h);
+  const freeLabelWindow = useMemo(() => ({ minX: wx0, minY: wy0, maxX: wx1, maxY: wy1 }), [wx0, wy0, wx1, wy1]);
   const grid = useMemo(
     () => (page.grid.visible ? buildGrid(view, size.w, size.h, page.grid.size) : { minor: '', major: '' }),
     [view, size.w, size.h, page.grid.size, page.grid.visible],
@@ -296,6 +335,12 @@ export function Canvas({ page: storedPage }: { page: FestplatzPage }) {
             selected={selectedIds}
             labelsTiny={labelFontSize * view.scale < MIN_LABEL_PX}
             labelHalo={labelFontSize * view.scale >= HALO_LABEL_PX}
+            free={free}
+            hatchSpacing={hatchSpacing(view.scale)}
+            freeLabelsTiny={labelFontSize * view.scale < MIN_FREE_LABEL_PX}
+            freeLabelWindow={freeLabelWindow}
+            warnings={warnings}
+            warnSettings={warnSettings}
           />
         </g>
         {activeTool?.overlay}

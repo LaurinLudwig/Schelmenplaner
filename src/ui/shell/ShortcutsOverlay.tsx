@@ -4,7 +4,7 @@ import { Icon } from '../icons/Icon';
 import { SHORTCUTS, type ShortcutGroup } from '../shortcuts/definitions';
 import { formatCombo, IS_MAC } from '../shortcuts/keys';
 
-const GROUPS: ShortcutGroup[] = ['Datei', 'Bearbeiten', 'Werkzeuge', 'Ansicht', 'Pages', 'Fenster'];
+const GROUPS: ShortcutGroup[] = ['Datei', 'Bearbeiten', 'Beim Ziehen', 'Werkzeuge', 'Ansicht', 'Pages', 'Fenster'];
 
 /** Übersicht aller Tastaturkürzel (Taste ?). Liest direkt aus der zentralen Konfiguration. */
 export function ShortcutsOverlay() {

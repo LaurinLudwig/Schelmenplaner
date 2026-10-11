@@ -1,8 +1,12 @@
 import { memo, useMemo } from 'react';
+import { hatchPath } from '../../../core/geometry/polygon';
 import { fromLocal, rectCorners } from '../../../core/geometry/rect';
-import { approxTextWidth, areaLabel, formatLabel } from '../../../core/label';
-import type { Area, Category, FestplatzPage, Id, Stand } from '../../../core/model/types';
+import type { AreaFreeSpaces } from '../../../core/freeSpace';
+import { approxTextWidth, areaLabel, formatLabel, freeSpaceLabel } from '../../../core/label';
+import type { Area, Category, FestplatzPage, Id, ProjectSettings, Stand, Vec } from '../../../core/model/types';
 import { DEFAULT_STAND_COLOR } from '../../../core/objects';
+import type { Bounds } from '../../../core/viewport';
+import { activeWarnings, type PageWarnings } from '../../../core/warnings';
 
 /**
  * Grundflächen, Geschäfte und Beschriftung in Weltkoordinaten (Meter).
@@ -12,8 +16,12 @@ import { DEFAULT_STAND_COLOR } from '../../../core/objects';
  * gerendert. Jedes Objekt ist memo; Immer teilt unveränderte Objekte, also rendern beim Ziehen nur
  * die bewegten neu.
  *
- * Reihenfolge der Ebenen: Grundflächen → Freiflächen (M4) → Geschäfte → Infrastruktur (M7) →
- * Warnsymbole (M4) → Beschriftung (oberste Ebene).
+ * Reihenfolge der Ebenen: Grundflächen → Freiflächen → Geschäfte → Infrastruktur (M7) →
+ * Warnsymbole → Beschriftung (oberste Ebene).
+ *
+ * Freiflächen (M4) kommen aus einem Zwischenspeicher (core/freeSpace.ts): Das Ergebnis einer
+ * Grundfläche behält seine Identität, solange sie nicht neu berechnet wurde; die memo-Komponenten
+ * je Grundfläche zeichnen dann nicht neu.
  */
 interface Props {
   page: FestplatzPage;
@@ -30,7 +38,18 @@ interface Props {
    * nur ein Ausschnitt des Plans im Bild ist.
    */
   labelHalo: boolean;
+  free: readonly AreaFreeSpaces[];
+  /** Linienabstand der Schraffur in Metern. */
+  hatchSpacing: number;
+  /** Freiflächen-Beschriftung zu klein zum Lesen: ausblenden (siehe Canvas.tsx). */
+  freeLabelsTiny: boolean;
+  /** Nur Freiflächen-Beschriftungen in diesem Bereich zeichnen (siehe Canvas.tsx `labelWindow`). */
+  freeLabelWindow: Bounds;
+  warnings: PageWarnings;
+  warnSettings: Pick<ProjectSettings, 'warnOutside' | 'warnOverlap'>;
 }
+
+type WarnKind = 'outside' | 'overlap' | null;
 
 /**
  * Die Beschriftung rechnet in Zentimetern (Gruppe scale(0.01)). So bleiben die Schriftgrößen im
@@ -49,9 +68,16 @@ const pts = (r: Area | Stand) =>
 
 export const standColor = (s: Stand, cat: Category | undefined) => s.color ?? cat?.color ?? DEFAULT_STAND_COLOR;
 
-export const ObjectsLayer = memo(function ObjectsLayer({ page, categories, template, fontSize, selected, labelsTiny, labelHalo }: Props) {
+export const ObjectsLayer = memo(function ObjectsLayer({ page, categories, template, fontSize, selected, labelsTiny, labelHalo, free, hatchSpacing, freeLabelsTiny, freeLabelWindow, warnings, warnSettings }: Props) {
   const catById = useMemo(() => new Map(categories.map((c) => [c.id, c])), [categories]);
   const L = page.layers;
+  const warnOf = (s: Stand): WarnKind => {
+    const a = activeWarnings(warnings.byStand.get(s.id), s, warnSettings);
+    return a.overlap ? 'overlap' : a.outside ? 'outside' : null;
+  };
+  const shownWarnings = L.stands.visible ? page.stands.map((s) => ({ s, kind: warnOf(s) })).filter((x) => x.kind) : [];
+  const overlapShown = new Set(shownWarnings.filter((x) => x.kind === 'overlap').map((x) => x.s.id));
+  const freeVisible = L.free.visible && L.areas.visible;
   return (
     <>
       {L.areas.visible && (
@@ -61,19 +87,35 @@ export const ObjectsLayer = memo(function ObjectsLayer({ page, categories, templ
           ))}
         </g>
       )}
-      <g className="layer-free" />
+      {freeVisible && (
+        <g className="layer-free">
+          {free.map((r) => (
+            <FreeArea key={r.areaId} result={r} spacing={hatchSpacing} />
+          ))}
+        </g>
+      )}
       {L.stands.visible && (
         <g className={`layer-stands${L.stands.locked ? ' locked' : ''}`}>
           {page.stands.map((s) => {
             const cat = s.categoryId ? catById.get(s.categoryId) : undefined;
-            return <StandShape key={s.id} stand={s} color={standColor(s, cat)} selected={selected.has(s.id)} />;
+            return <StandShape key={s.id} stand={s} color={standColor(s, cat)} selected={selected.has(s.id)} warn={warnOf(s)} />;
           })}
         </g>
       )}
-      <g className="layer-warnings" />
+      <g className={`layer-warnings${labelsTiny ? ' tiny' : ''}`}>
+        {warnings.regions
+          .filter((r) => overlapShown.has(r.a) || overlapShown.has(r.b))
+          .map((r) => (
+            <polygon key={`${r.a}|${r.b}`} className="overlap-region" points={polyPts(r.polygon)} />
+          ))}
+        {shownWarnings.map(({ s, kind }) => (
+          <WarnIcon key={s.id} stand={s} kind={kind!} size={fontSize * 1.3} />
+        ))}
+      </g>
       {L.labels.visible && (
         <g className={`layer-labels${labelsTiny ? ' tiny' : ''}${labelHalo ? ' halo' : ''}`} transform={`scale(${1 / CM})`} fontSize={fontSize * CM} strokeWidth={fontSize * CM * 0.22}>
           {L.areas.visible && page.areas.map((a) => <AreaLabel key={a.id} area={a} fontSize={fontSize} />)}
+          {freeVisible && !freeLabelsTiny && free.map((r) => <FreeLabels key={r.areaId} result={r} fontSize={fontSize} window={freeLabelWindow} />)}
           {L.stands.visible &&
             page.stands.map((s) => (
               <StandLabel key={s.id} stand={s} template={template} fontSize={fontSize} categoryName={(s.categoryId && catById.get(s.categoryId)?.name) || ''} />
@@ -95,8 +137,63 @@ const AreaShape = memo(function AreaShape({ area, selected }: { area: Area; sele
   );
 });
 
-const StandShape = memo(function StandShape({ stand, color, selected }: { stand: Stand; color: string; selected: boolean }) {
-  return <polygon className={`stand${selected ? ' selected' : ''}`} data-id={stand.id} points={pts(stand)} fill={color} />;
+const StandShape = memo(function StandShape({ stand, color, selected, warn }: { stand: Stand; color: string; selected: boolean; warn: WarnKind }) {
+  return (
+    <polygon
+      className={`stand${selected ? ' selected' : ''}${warn ? ` warn-${warn}` : ''}`}
+      data-id={stand.id}
+      data-warning={warn ?? undefined}
+      points={pts(stand)}
+      fill={color}
+    />
+  );
+});
+
+const polyPts = (poly: readonly Vec[]) => poly.map((p) => `${p.x.toFixed(3)},${p.y.toFixed(3)}`).join(' ');
+
+/**
+ * Freiflächen einer Grundfläche: hellgrün getönt und schraffiert. Die Schraffur sind echte Linien in
+ * Metern (ein Pfad je Grundfläche), kein SVG-<pattern>: Musterfüllungen kosten in WebKit beim Zoomen
+ * und Verschieben bis zu 25 Bilder/s (Lasttest M4-21).
+ */
+const FreeArea = memo(function FreeArea({ result, spacing }: { result: AreaFreeSpaces; spacing: number }) {
+  if (!result.free.length) return null;
+  const hatch = result.free.flatMap((f) => f.polygons.map((poly) => hatchPath(poly, spacing))).join('');
+  return (
+    <>
+      {result.free.map((f) =>
+        f.polygons.map((poly, i) => <polygon key={`${f.key}:${i}`} className="free-space" data-key={f.key} data-area={result.areaId} points={polyPts(poly)} />),
+      )}
+      <path className="free-hatch" d={hatch} />
+    </>
+  );
+});
+
+/** „Frei 20 × 10 m“: horizontal, mittig, feste Schriftgröße wie die Standbeschriftung. */
+const FreeLabels = memo(function FreeLabels({ result, fontSize, window: win }: { result: AreaFreeSpaces; fontSize: number; window: Bounds }) {
+  const inside = (p: Vec) => p.x >= win.minX && p.x <= win.maxX && p.y >= win.minY && p.y <= win.maxY;
+  return (
+    <>
+      {result.free.filter((f) => inside(f.center)).map((f) => (
+        <text key={f.key} className="free-label" data-key={f.key} textAnchor="middle" x={f.center.x * CM} y={(f.center.y + BASELINE * fontSize) * CM}>
+          {freeSpaceLabel(f.width, f.depth)}
+        </text>
+      ))}
+    </>
+  );
+});
+
+/** Warndreieck an der Ecke oben rechts des Stands (Weltgröße, an die Schriftgröße gekoppelt). */
+const WarnIcon = memo(function WarnIcon({ stand, kind, size }: { stand: Stand; kind: 'outside' | 'overlap'; size: number }) {
+  const c = fromLocal(stand, { x: stand.w / 2, y: -stand.d / 2 });
+  const r = size / 2;
+  return (
+    <g className="warn-icon-group" transform={`translate(${c.x} ${c.y})`}>
+      <path className={`warn-icon ${kind}`} d={`M0 ${-r} L${r * 1.1} ${r * 0.85} L${-r * 1.1} ${r * 0.85} Z`} />
+      <rect className="warn-icon-mark" x={-r * 0.09} y={-r * 0.45} width={r * 0.18} height={r * 0.75} />
+      <rect className="warn-icon-mark" x={-r * 0.09} y={r * 0.42} width={r * 0.18} height={r * 0.18} />
+    </g>
+  );
 });
 
 /** Standbeschriftung: horizontal, mittig, feste Schriftgröße; darf über den Stand hinausragen. */

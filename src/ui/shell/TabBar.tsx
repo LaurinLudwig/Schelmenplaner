@@ -1,6 +1,7 @@
 import { useEffect, useLayoutEffect, useRef, useState, type PointerEvent as ReactPointerEvent } from 'react';
 import { confirmDeletePage, runCommand } from '../../app/commands';
 import type { Id } from '../../core/model/types';
+import { cachedPageWarnings, countWarnings } from '../../core/warnings';
 import { addPage, duplicatePage, movePage, renamePage } from '../../state/pages';
 import { selectCanRedo, selectCanUndo, selectDirty, START_PAGE, useStore } from '../../state/store';
 import { Icon } from '../icons/Icon';
@@ -184,7 +185,10 @@ export function TabBar() {
                 }}
               />
             ) : (
-              <span className="label">{p.name}</span>
+              <>
+                <span className="label">{p.name}</span>
+                <WarnBadge pageId={p.id} />
+              </>
             )}
           </div>
         ))}
@@ -199,6 +203,27 @@ export function TabBar() {
       </div>
       {menu && <Menu {...menu} onClose={() => setMenu(null)} />}
     </header>
+  );
+}
+
+/**
+ * Zahl der Stände mit angezeigter Warnung (M4-18), rot sobald eine Überlappung dabei ist. Liest das
+ * gespeicherte Projekt; die Warnungen sind je Page zwischengespeichert, unveränderte Pages kosten nichts.
+ */
+function WarnBadge({ pageId }: { pageId: Id }) {
+  const summary = useStore((s) => {
+    const page = s.project.pages.find((p) => p.id === pageId);
+    if (!page || !page.stands.length) return '';
+    const n = countWarnings(cachedPageWarnings(page.areas, page.stands), page.stands, s.project.settings);
+    return n.stands ? `${n.stands}|${n.overlap}|${n.outside}` : '';
+  });
+  if (!summary) return null;
+  const [n, overlap, outside] = summary.split('|').map(Number) as [number, number, number];
+  const parts = [overlap ? `${overlap} Überlappung${overlap === 1 ? '' : 'en'}` : '', outside ? `${outside} außerhalb` : ''].filter(Boolean);
+  return (
+    <span className={`warn-badge${overlap ? ' overlap' : ''}`} data-testid="warn-badge" {...tip({ label: `${n} ${n === 1 ? 'Warnung' : 'Warnungen'}: ${parts.join(', ')}`, side: 'bottom' })}>
+      {n}
+    </span>
   );
 }
 

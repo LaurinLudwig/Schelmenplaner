@@ -1,30 +1,46 @@
-import { useRef, useState } from 'react';
+import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { moveBy as moveBackground, type BgTransform } from '../../../core/background';
 import { boundsOfRects, resizeRect, type Handle } from '../../../core/geometry/rect';
 import { objectsInBounds, pickObject } from '../../../core/hit';
-import type { EdgeIndex, Id, Vec } from '../../../core/model/types';
+import type { Area, EdgeIndex, Id, Stand, Vec } from '../../../core/model/types';
+import { computeMoveSnap, type Guide, type SnapState } from '../../../core/moveSnap';
 import { findObjects, LIMITS } from '../../../core/objects';
-import { angleTo, moveRects, rotateRects, snapAngle, type RectMap } from '../../../core/transform';
-import { commitRects, select, setAreaFront } from '../../../state/objects';
+import { angleTo, rotateRects, snapAngle, type RectMap } from '../../../core/transform';
+import { cloneForDrag, commitDuplicateDrag, commitRects, select, setAreaFront } from '../../../state/objects';
 import { updateBackground } from '../../../state/pageSettings';
 import { useStore } from '../../../state/store';
+import { IS_MAC } from '../../shortcuts/keys';
 import { tip } from '../../shortcuts/tip';
 import { hitHandle, resizeCursor, selectionGeometry, type HandleHit } from './selectionGeometry';
-import type { ToolContext, ToolHandlers } from './types';
+import { SnapGuides } from './SnapGuides';
+import { SNAP_PX, type ToolContext, type ToolHandlers, type ToolPointer } from './types';
 
 /** Ab dieser Mausbewegung (px) wird aus einem Klick ein Ziehen. */
 const DRAG_PX = 3;
 
 type Gesture =
   /** Maus gedrückt, noch nicht bewegt: Klick oder Ziehen? */
-  | { kind: 'pending'; start: Vec; startWorld: Vec; onClick: () => void; onDrag: 'move' | 'marquee' | 'none'; shift: boolean }
-  | { kind: 'move'; startWorld: Vec; rects0: RectMap }
+  | { kind: 'pending'; start: Vec; startWorld: Vec; onClick: () => void; onDrag: 'move' | 'marquee' | 'none'; shift: boolean; grab: Id | null }
+  | {
+      kind: 'move';
+      startWorld: Vec;
+      rects0: RectMap;
+      /** Gegriffenes Objekt: an ihm rastet der Fang ein (M4). */
+      grabbed: Id | null;
+      snap: SnapState;
+      /** Kopien für Alt+Ziehen, sobald Alt einmal gedrückt war (M4-12). */
+      copies: { areas: Area[]; stands: Stand[]; from: Record<Id, Id> } | null;
+      last: ToolPointer;
+    }
   | { kind: 'rotate'; pivot: Vec; a0: number; rects0: RectMap; single: number | null; start: Vec; moved: boolean }
   | { kind: 'resize'; id: Id; handle: Handle; rects0: RectMap; start: Vec; moved: boolean }
   | { kind: 'marquee'; start: Vec; cur: Vec; base: Id[] }
   | { kind: 'background'; start: Vec; transform0: BgTransform };
 
 const LABEL = { move: 'Verschieben', rotate: 'Drehen', resize: 'Größe ändern' } as const;
+/** Ein eingerasteter Stand löst sich erst bei diesem Abstand von der Vorderseite (Hysterese, M4-06). */
+const RELEASE_PX = 2 * SNAP_PX;
+const MODIFIER_KEYS = new Set(['Shift', 'Alt', 'Meta', 'Control']);
 const EDGE_OF_HANDLE: Record<string, EdgeIndex> = { '0,-1': 0, '1,0': 1, '0,1': 2, '-1,0': 3 };
 
 /**
@@ -36,8 +52,9 @@ const EDGE_OF_HANDLE: Record<string, EdgeIndex> = { '0,-1': 0, '1,0': 1, '0,1': 
 export function useSelectTool(ctx: ToolContext, active: boolean): ToolHandlers {
   const gesture = useRef<Gesture | null>(null);
   const [marquee, setMarquee] = useState<{ a: Vec; b: Vec } | null>(null);
-  const [hover, setHover] = useState<{ handle: HandleHit | null; object: boolean } | null>(null);
-  const [moving, setMoving] = useState(false);
+  const [hover, setHover] = useState<{ handle: HandleHit | null; object: boolean; alt: boolean } | null>(null);
+  const [moving, setMoving] = useState<false | 'move' | 'copy'>(false);
+  const [guides, setGuides] = useState<Guide[]>([]);
   const selection = useStore((s) => s.ui.selection);
   const ids = selection?.kind === 'objects' ? selection.ids : [];
   const geo = active ? selectionGeometry(ctx.page, ids, ctx.view) : null;
@@ -50,6 +67,51 @@ export function useSelectTool(ctx: ToolContext, active: boolean): ToolHandlers {
   };
   const setPreview = (rects: RectMap) => useStore.getState().setPreview({ pageId, rects });
 
+  /**
+   * Ein Schritt beim Verschieben: Shift beschränkt die Richtung, Alt dupliziert, Cmd/Strg schaltet den
+   * Fang aus; sonst rasten Vorderkante, Nachbarstände und Raster ein (core/moveSnap.ts).
+   */
+  const moveStep = (g: Extract<Gesture, { kind: 'move' }>, p: ToolPointer) => {
+    g.last = p;
+    const st = useStore.getState();
+    const stored = st.project.pages.find((x) => x.id === pageId);
+    if (!stored) return;
+    if (p.altKey && !g.copies) g.copies = cloneForDrag(stored, Object.keys(g.rects0));
+    const copyIds = new Set(g.copies ? Object.keys(g.copies.from) : []);
+    const movingIds = new Set(Object.keys(g.rects0));
+    // Ziele des Fangs: alle übrigen sichtbaren Objekte; beim Duplizieren auch die Originale
+    const isTarget = (id: Id) => !copyIds.has(id) && (p.altKey || !movingIds.has(id));
+    const page = ctx.page;
+    const snapCfg = st.project.settings.snap;
+    const options = p.modKey
+      ? { front: false, neighbors: false, grid: null }
+      : { front: snapCfg.front, neighbors: snapCfg.neighbors, grid: snapCfg.grid && page.grid.visible ? page.grid.size : null };
+    const r = computeMoveSnap({
+      rects0: g.rects0,
+      delta: { x: p.world.x - g.startWorld.x, y: p.world.y - g.startWorld.y },
+      grabbed: g.grabbed,
+      standIds: new Set(stored.stands.filter((x) => movingIds.has(x.id)).map((x) => x.id)),
+      areas: page.layers.areas.visible ? page.areas.filter((a) => isTarget(a.id)) : [],
+      stands: page.layers.stands.visible ? page.stands.filter((x) => isTarget(x.id)) : [],
+      options,
+      tol: SNAP_PX / ctx.view.scale,
+      release: RELEASE_PX / ctx.view.scale,
+      state: g.snap,
+      shift: p.shiftKey,
+    });
+    g.snap = r.state;
+    setGuides(r.guides);
+    setMoving(p.altKey ? 'copy' : 'move');
+    if (p.altKey && g.copies) {
+      const c = g.copies;
+      const place = <T extends Area | Stand>(o: T): T => {
+        const q = r.rects[c.from[o.id]!];
+        return q ? { ...o, cx: q.cx, cy: q.cy, w: q.w, d: q.d, rot: q.rot } : o;
+      };
+      st.setPreview({ pageId, rects: {}, added: { areas: c.areas.map(place), stands: c.stands.map(place) } });
+    } else setPreview(r.rects);
+  };
+
   const startGesture = (g: Gesture) => {
     gesture.current = g;
   };
@@ -59,6 +121,7 @@ export function useSelectTool(ctx: ToolContext, active: boolean): ToolHandlers {
     gesture.current = null;
     setMarquee(null);
     setMoving(false);
+    setGuides([]);
     const st = useStore.getState();
     if (!g) return;
     if (g.kind === 'background') {
@@ -67,7 +130,11 @@ export function useSelectTool(ctx: ToolContext, active: boolean): ToolHandlers {
     }
     if (g.kind === 'move' || g.kind === 'rotate' || g.kind === 'resize') {
       const preview = st.preview;
-      if (commit && preview?.pageId === pageId) commitRects(pageId, preview.rects, LABEL[g.kind]);
+      if (commit && preview?.pageId === pageId) {
+        // Alt beim Loslassen: Kopien einfügen (ein Undo-Schritt „Duplizieren“), Originale bleiben
+        if (preview.added) commitDuplicateDrag(pageId, preview.added);
+        else commitRects(pageId, preview.rects, LABEL[g.kind]);
+      }
       st.setPreview(null);
     }
   };
@@ -93,7 +160,7 @@ export function useSelectTool(ctx: ToolContext, active: boolean): ToolHandlers {
       if (handle?.kind === 'edge') {
         const edge: EdgeIndex = handle.edge;
         const id = current[0]!;
-        startGesture({ kind: 'pending', start: p.screen, startWorld: p.world, shift: p.shiftKey, onDrag: 'move', onClick: () => setAreaFront(pageId, id, edge) });
+        startGesture({ kind: 'pending', start: p.screen, startWorld: p.world, shift: p.shiftKey, grab: id, onDrag: 'move', onClick: () => setAreaFront(pageId, id, edge) });
         return true;
       }
 
@@ -109,6 +176,7 @@ export function useSelectTool(ctx: ToolContext, active: boolean): ToolHandlers {
             start: p.screen,
             startWorld: p.world,
             shift: true,
+            grab: hit.id,
             onDrag: hit.kind === 'stand' && !isSelected ? 'move' : hit.kind === 'area' ? 'marquee' : 'none',
             onClick: () => hit.kind === 'area' && !isSelected && select(next),
           });
@@ -121,6 +189,7 @@ export function useSelectTool(ctx: ToolContext, active: boolean): ToolHandlers {
             start: p.screen,
             startWorld: p.world,
             shift: false,
+            grab: hit.id,
             onDrag: 'move',
             // Klick ohne Ziehen auf ein Objekt einer Mehrfachauswahl wählt nur dieses
             onClick: () => isSelected && current.length > 1 && select([hit.id]),
@@ -128,7 +197,7 @@ export function useSelectTool(ctx: ToolContext, active: boolean): ToolHandlers {
           return true;
         }
         // Nicht ausgewählte Grundfläche: Klick wählt sie aus, Ziehen zieht ein Auswahlrechteck auf
-        startGesture({ kind: 'pending', start: p.screen, startWorld: p.world, shift: false, onDrag: 'marquee', onClick: () => select([hit.id]) });
+        startGesture({ kind: 'pending', start: p.screen, startWorld: p.world, shift: false, grab: null, onDrag: 'marquee', onClick: () => select([hit.id]) });
         return true;
       }
 
@@ -146,6 +215,7 @@ export function useSelectTool(ctx: ToolContext, active: boolean): ToolHandlers {
         start: p.screen,
         startWorld: p.world,
         shift: p.shiftKey,
+        grab: null,
         onDrag: 'marquee',
         onClick: () => !p.shiftKey && st.ui.selection && st.setUi({ selection: null }),
       });
@@ -158,7 +228,7 @@ export function useSelectTool(ctx: ToolContext, active: boolean): ToolHandlers {
       if (!g) {
         const handle = hitHandle(geo, p.screen);
         const object = !handle && !!pickObject(ctx.page, p.world);
-        if (hover?.object !== object || JSON.stringify(hover?.handle ?? null) !== JSON.stringify(handle)) setHover({ handle, object });
+        if (hover?.object !== object || hover.alt !== p.altKey || JSON.stringify(hover?.handle ?? null) !== JSON.stringify(handle)) setHover({ handle, object, alt: p.altKey });
         return;
       }
       switch (g.kind) {
@@ -167,8 +237,8 @@ export function useSelectTool(ctx: ToolContext, active: boolean): ToolHandlers {
           const st = useStore.getState();
           if (g.onDrag === 'move') {
             const sel = st.ui.selection?.kind === 'objects' ? st.ui.selection.ids : [];
-            startGesture({ kind: 'move', startWorld: g.startWorld, rects0: rectsOf(sel) });
-            setMoving(true);
+            const grabbed = g.grab && sel.includes(g.grab) ? g.grab : (sel[0] ?? null);
+            startGesture({ kind: 'move', startWorld: g.startWorld, rects0: rectsOf(sel), grabbed, snap: { frontAreaId: null }, copies: null, last: p });
           } else if (g.onDrag === 'marquee') {
             const base = g.shift && st.ui.selection?.kind === 'objects' ? st.ui.selection.ids : [];
             startGesture({ kind: 'marquee', start: g.startWorld, cur: g.startWorld, base });
@@ -180,7 +250,7 @@ export function useSelectTool(ctx: ToolContext, active: boolean): ToolHandlers {
           return;
         }
         case 'move':
-          setPreview(moveRects(g.rects0, { x: p.world.x - g.startWorld.x, y: p.world.y - g.startWorld.y }, undefined, { altKey: p.altKey }));
+          moveStep(g, p);
           return;
         case 'rotate': {
           // Unter 3 px ist es ein Klick: keine Änderung, kein Undo-Schritt (QA-M3-03)
@@ -233,18 +303,55 @@ export function useSelectTool(ctx: ToolContext, active: boolean): ToolHandlers {
     },
 
     onKeyDown(e) {
-      if (!active || e.key !== 'Escape' || !gesture.current) return false;
-      if (gesture.current.kind === 'background') return false;
-      finish(false);
+      const g = gesture.current;
+      if (!active || !g) return false;
+      if (e.key === 'Escape') {
+        if (g.kind === 'background') return false;
+        finish(false);
+        return true;
+      }
+      // Shift/Alt/Cmd/Strg wirken sofort, auch ohne Mausbewegung
+      if (g.kind === 'move' && MODIFIER_KEYS.has(e.key)) moveStep(g, { ...g.last, ...modifiersOf(e) });
+      // Während einer Geste keine Kurzbefehle (sonst z. B. Cmd+Z mitten im Ziehen, M4-20)
       return true;
     },
     overlay: null,
     panel: null,
   };
 
+  // Loslassen von Shift/Alt/Cmd/Strg während des Ziehens wirkt sofort. Einmal anmelden und die aktuelle
+  // Funktion über einen Ref lesen: Ein Neuanmelden bei jedem Rendern ginge verloren, wenn ein anderer
+  // keyup-Listener (Canvas: Alt) mitten im Ereignis synchron neu rendern lässt.
+  const moveStepRef = useRef(moveStep);
+  useLayoutEffect(() => {
+    moveStepRef.current = moveStep;
+  });
+  useEffect(() => {
+    if (!active) return;
+    const up = (e: KeyboardEvent) => {
+      const g = gesture.current;
+      if (g?.kind === 'move' && MODIFIER_KEYS.has(e.key)) moveStepRef.current(g, { ...g.last, ...modifiersOf(e) });
+    };
+    window.addEventListener('keyup', up);
+    return () => window.removeEventListener('keyup', up);
+  }, [active, gesture, moveStepRef]);
+
   if (active) {
     const h = hover?.handle;
-    handlers.cursor = moving ? 'cursor-move' : !h ? (hover?.object ? 'cursor-move' : undefined) : h.kind === 'rotate' ? 'cursor-rotate' : h.kind === 'resize' && geo ? resizeCursor(geo, h.handle) : 'cursor-pointer';
+    const objectCursor = hover?.alt ? 'cursor-copy' : 'cursor-move';
+    handlers.cursor = moving
+      ? moving === 'copy'
+        ? 'cursor-copy'
+        : 'cursor-move'
+      : !h
+        ? hover?.object
+          ? objectCursor
+          : undefined
+        : h.kind === 'rotate'
+          ? 'cursor-rotate'
+          : h.kind === 'resize' && geo
+            ? resizeCursor(geo, h.handle)
+            : 'cursor-pointer';
     handlers.overlay = (
       <g className="selection-overlay">
         {geo && (
@@ -269,11 +376,14 @@ export function useSelectTool(ctx: ToolContext, active: boolean): ToolHandlers {
           </>
         )}
         {marquee && <MarqueeRect ctx={ctx} a={marquee.a} b={marquee.b} />}
+        {guides.length > 0 && <SnapGuides guides={guides} toScreen={ctx.toScreen} />}
       </g>
     );
   }
   return handlers;
 }
+
+const modifiersOf = (e: KeyboardEvent) => ({ shiftKey: e.shiftKey, altKey: e.altKey, modKey: IS_MAC ? e.metaKey : e.ctrlKey });
 
 function MarqueeRect({ ctx, a, b }: { ctx: ToolContext; a: Vec; b: Vec }) {
   const p = ctx.toScreen(a);

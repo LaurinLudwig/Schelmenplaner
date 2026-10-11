@@ -51,3 +51,6 @@ export function areaLabel(a: Area): string {
 
 /** Grobe Textbreite in Schriftgrößen (IBM Plex Sans ≈ 0,56 em pro Zeichen), für die Platzierung. */
 export const approxTextWidth = (text: string, fontSize: number) => text.length * 0.56 * fontSize;
+
+/** Beschriftung einer Freifläche: „Frei 20 × 10 m“. */
+export const freeSpaceLabel = (width: number, depth: number) => `Frei ${fmt(width)} × ${fmt(depth)} m`;

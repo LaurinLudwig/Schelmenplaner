@@ -1,19 +1,43 @@
 /**
- * Formatversionen von `project.json`. Bei jeder inkompatiblen Änderung:
- * CURRENT_SCHEMA_VERSION erhöhen und eine Migration „von n auf n+1“ ergänzen.
+ * Formatversionen von `project.json` (Feld `schemaVersion`).
+ *
+ * Regel (CLAUDE.md): Jede Änderung am Dateiformat erhöht CURRENT_SCHEMA_VERSION und bringt eine
+ * Migration „von n auf n+1“ mit Test mit (src/core/model/migrations.test.ts, Testdatei in
+ * tests/fixtures/). Migrationen arbeiten auf den rohen JSON-Daten, verändern die Eingabe nicht und
+ * ergänzen fehlende Felder mit Standardwerten. Danach prüft und vervollständigt `normalizeProject`
+ * (schema.ts) das Ergebnis.
+ *
+ * Versionen:
+ *   1  M1–M3: Projekt, Pages, Hintergrund, Grundflächen, Geschäfte, Kategorien.
+ *   2  M4: Geschäft `suppressOverlapWarning`, Einstellung `warnOverlap` (Warnungen, Freiflächen).
  */
-export const CURRENT_SCHEMA_VERSION = 1;
+import { UserError } from '../errors';
 
-type Migration = (project: unknown) => unknown;
+export const CURRENT_SCHEMA_VERSION = 2;
+
+type Obj = Record<string, unknown>;
+type Migration = (project: Obj) => Obj;
+
+const isObj = (v: unknown): v is Obj => typeof v === 'object' && v !== null && !Array.isArray(v);
+/** Wendet `fn` auf jedes Element an; alles andere als ein Array bleibt unverändert (die Prüfung macht schema.ts). */
+const mapList = (v: unknown, fn: (x: unknown) => unknown) => (Array.isArray(v) ? v.map(fn) : v);
 
 /** MIGRATIONS[n] hebt ein Projekt von Version n auf n+1. */
-const MIGRATIONS: Record<number, Migration> = {};
+export const MIGRATIONS: Record<number, Migration> = {
+  /** 1 → 2 (M4): Überlappungswarnung pro Stand ignorierbar und projektweit abschaltbar. */
+  1: (p) => ({
+    ...p,
+    settings: isObj(p.settings) ? { warnOverlap: true, ...p.settings } : p.settings,
+    pages: mapList(p.pages, (pg) => (isObj(pg) ? { ...pg, stands: mapList(pg.stands, (s) => (isObj(s) ? { suppressOverlapWarning: false, ...s } : s)) } : pg)),
+  }),
+};
 
 export function migrate(project: unknown, fromVersion: number): unknown {
   let p = project;
   for (let v = fromVersion; v < CURRENT_SCHEMA_VERSION; v++) {
     const step = MIGRATIONS[v];
-    if (!step) throw new Error(`Keine Migration von Formatversion ${v} vorhanden.`);
+    if (!step) throw new UserError(`Die Datei hat Formatversion ${fromVersion}; diese Version kann Schelmeplaner nicht umwandeln.`);
+    if (!isObj(p)) return p;
     p = step(p);
   }
   return p;

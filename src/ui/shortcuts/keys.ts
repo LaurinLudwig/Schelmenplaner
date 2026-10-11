@@ -70,6 +70,7 @@ const KEY_NAMES: Record<string, string> = {
   pageup: 'Bild ↑',
   pagedown: 'Bild ↓',
   enter: 'Enter',
+  ziehen: 'Ziehen',
 };
 
 /** Anzeige im Tooltip: macOS „⌘⇧Z“, Windows „Strg+Umschalt+Z“. */

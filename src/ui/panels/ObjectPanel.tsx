@@ -1,8 +1,9 @@
 import { normAngle, rectCorners, roundRect } from '../../core/geometry/rect';
 import { CONNECTION_LABEL } from '../../core/label';
-import type { Area, Connection, EdgeIndex, Stand } from '../../core/model/types';
+import type { Area, Connection, EdgeIndex, FestplatzPage, Stand } from '../../core/model/types';
 import { LIMITS } from '../../core/objects';
-import { setAreaFront, setRectField, updateArea, updateStands } from '../../state/objects';
+import { cachedPageWarnings } from '../../core/warnings';
+import { setAreaFront, setRectField, setWarningIgnored, updateArea, updateStands, type WarningKind } from '../../state/objects';
 import { useStore } from '../../state/store';
 import { ColorField } from './ColorField';
 import { NumberField } from './NumberField';
@@ -26,6 +27,7 @@ export function ObjectPanel({ sel }: { sel: SelectionInfo }) {
       </div>
       <div className="panel-body form">
         {areas.length === 1 && single && <AreaFields pageId={page.id} area={areas[0]!} />}
+        {stands.length > 0 && !areas.length && <StandWarnings page={page} stands={stands} />}
         {stands.length > 0 && !areas.length && <StandFields pageId={page.id} stands={stands} />}
         <GeometryFields pageId={page.id} sel={sel} />
         {single && areas.length === 1 && <FrontPicker pageId={page.id} area={areas[0]!} />}
@@ -96,6 +98,54 @@ function FrontPicker({ pageId, area }: { pageId: string; area: Area }) {
         </div>
       </div>
       <p className="hint">Oder eine Kante der ausgewählten Fläche anklicken. Die Fläche bleibt, wo sie ist.</p>
+    </div>
+  );
+}
+
+/** Name eines Stands in Meldungen: „Nr. 12 · Name“, ohne beides „ohne Namen“. */
+const standName = (s: Stand) => [s.nr && `Nr. ${s.nr}`, s.name].filter(Boolean).join(' · ') || 'Stand ohne Namen';
+
+/**
+ * Warnungen der ausgewählten Stände (M4-09, M4-10) mit den Häkchen „ignorieren“. Erscheint nur, wenn
+ * ein Stand eine Warnung hat oder eine ignoriert. Die Häkchen gelten je Art und nur für den eigenen Stand.
+ */
+function StandWarnings({ page, stands }: { page: FestplatzPage; stands: Stand[] }) {
+  const settings = useStore((s) => s.project.settings);
+  const w = cachedPageWarnings(page.areas, page.stands);
+  const byId = new Map(page.stands.map((s) => [s.id, s]));
+  const outside = stands.filter((s) => w.byStand.get(s.id)?.outside);
+  const overlap = stands.filter((s) => w.byStand.get(s.id)?.overlaps.length);
+  const ids = stands.map((s) => s.id);
+  const rows: { kind: WarningKind; label: string; hit: Stand[]; ignored: boolean; enabled: boolean }[] = [
+    { kind: 'overlap', label: 'Überlappung ignorieren', hit: overlap, ignored: stands.every((s) => s.suppressOverlapWarning), enabled: settings.warnOverlap },
+    { kind: 'outside', label: '„außerhalb“ ignorieren', hit: outside, ignored: stands.every((s) => s.suppressOutsideWarning), enabled: settings.warnOutside },
+  ];
+  const visible = rows.filter((r) => r.hit.length || stands.some((s) => (r.kind === 'outside' ? s.suppressOutsideWarning : s.suppressOverlapWarning)));
+  if (!visible.length) return null;
+  const single = stands.length === 1;
+  return (
+    <div className="field" data-testid="stand-warnings">
+      <label>Warnungen</label>
+      {visible.map((r) => (
+        <div key={r.kind} className="form">
+          {r.hit.length > 0 && (
+            <div className={`warn-chip ${r.kind}`} data-testid={`warn-chip-${r.kind}`}>
+              {r.kind === 'overlap'
+                ? single
+                  ? `Überlappt mit ${w.byStand.get(stands[0]!.id)!.overlaps.map((id) => standName(byId.get(id)!)).join(', ')}`
+                  : `${r.hit.length} überlappen`
+                : single
+                  ? 'Außerhalb jeder Grundfläche'
+                  : `${r.hit.length} außerhalb`}
+              {!r.enabled && ' (projektweit ausgeschaltet)'}
+            </div>
+          )}
+          <label className="check">
+            <input type="checkbox" checked={r.ignored} onChange={(e) => setWarningIgnored(page.id, ids, r.kind, e.target.checked)} />
+            {r.label}
+          </label>
+        </div>
+      ))}
     </div>
   );
 }

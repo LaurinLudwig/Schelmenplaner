@@ -1,3 +1,4 @@
+import { MIN_FREE_WIDTH } from '../core/freeSpace';
 import { normAngle, roundRect, setFront } from '../core/geometry/rect';
 import { allSelectable } from '../core/hit';
 import { newId } from '../core/id';
@@ -239,6 +240,23 @@ export function paste(view: Bounds | null) {
   insertObjects(page.id, copies.areas, copies.stands, 'Einfügen');
 }
 
+/** Kopien der Objekte für Alt+Ziehen (an derselben Stelle, leere Platznummer); `from` = Kopie → Original. */
+export function cloneForDrag(page: FestplatzPage, ids: readonly Id[]): { areas: Area[]; stands: Stand[]; from: Record<Id, Id> } {
+  const set = new Set(ids);
+  const areas = page.areas.filter((a) => set.has(a.id));
+  const stands = page.stands.filter((s) => set.has(s.id));
+  const copies = cloneObjects(areas, stands, 0, 0);
+  const from: Record<Id, Id> = {};
+  copies.areas.forEach((c, i) => (from[c.id] = areas[i]!.id));
+  copies.stands.forEach((c, i) => (from[c.id] = stands[i]!.id));
+  return { ...copies, from };
+}
+
+/** Alt+Ziehen: Kopien an ihrer neuen Lage einfügen, ein Undo-Schritt; danach sind die Kopien ausgewählt (M4-12). */
+export function commitDuplicateDrag(pageId: Id, copies: { areas: Area[]; stands: Stand[] }) {
+  insertObjects(pageId, copies.areas, copies.stands, 'Duplizieren');
+}
+
 /** Duplizieren: Kopie um 1 m nach rechts unten versetzt, danach ausgewählt. */
 export function duplicateSelection() {
   const page = activePage();
@@ -301,4 +319,29 @@ export function setLabelTemplate(template: string) {
 export function setLabelFontSize(size: number) {
   if (!(size > 0)) return;
   st().change('Schriftgröße ändern', (p) => void (p.settings.labelFontSize = Math.round(size * 100) / 100));
+}
+
+// ---------- Freiflächen und Warnungen (projektweit, M4) ----------
+
+export function setMinFreeWidth(width: number) {
+  if (!(width > 0)) return;
+  const v = Math.min(MIN_FREE_WIDTH.max, Math.max(MIN_FREE_WIDTH.min, Math.round(width * 100) / 100));
+  st().change('Mindestbreite ändern', (p) => void (p.settings.minFreeWidth = v));
+}
+
+export type WarningKind = 'outside' | 'overlap';
+
+/** Warnungen einer Art projektweit ein- oder ausschalten (Undo-Schritt). */
+export function setWarningsEnabled(kind: WarningKind, on: boolean) {
+  const label = `${kind === 'outside' ? 'Warnung „außerhalb“' : 'Warnung „Überlappung“'} ${on ? 'einschalten' : 'ausschalten'}`;
+  st().change(label, (p) => {
+    if (kind === 'outside') p.settings.warnOutside = on;
+    else p.settings.warnOverlap = on;
+  });
+}
+
+/** Warnung einer Art für die angegebenen Stände ignorieren bzw. wieder anzeigen (Undo-Schritt). */
+export function setWarningIgnored(pageId: Id, ids: Id[], kind: WarningKind, ignored: boolean) {
+  const patch = kind === 'outside' ? { suppressOutsideWarning: ignored } : { suppressOverlapWarning: ignored };
+  updateStands(pageId, ids, patch, ignored ? 'Warnung ignorieren' : 'Warnung wieder anzeigen');
 }
