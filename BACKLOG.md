@@ -61,6 +61,7 @@ Erledigte Einträge stehen in `docs/archiv/eingang-erledigt.md` bzw. im Archiv d
 - E-08 (Hinweis) Browser-Autosave nutzt localStorage (ca. 5 MB). Mit eingebetteten Hintergründen (M2) reicht das nicht; betrifft nur den Browser-Dev-Modus.
 - [QA] QA-M1-11 (gering, Dokumentation/Prozess) Die Entwicklung hat QA-Artefakte geändert: Abschnitt „Behoben“ an `qa/M1.md` angehängt und die Erwartung des QA-Tests „M1-24: Zwei-Finger-Wischen“ umgedreht (`tests/e2e/m1-canvas.spec.ts:104-107`, begründet). Dazu Widersprüche: QA-M1-02 steht hier als „erledigt“, in `qa/M1.md` als „teilweise“; die Einträge QA-M1-03/-04 nennen noch `test.fail`, obwohl die Markierungen entfernt sind.
 - [QA] QA-M5-05 (gering, Prozess, wiederholt QA-M1-11) Die Entwicklung hat in den Commits `68ab8cb`/`da424cd` bei M5-01, M5-02, M5-08, M5-14, QA-M5-03 und QA-M5-04 selbst den Vermerk „(QA ✓ M5 Nachtest 2026-10-12)“ in `BACKLOG.md` eingetragen, bevor die QA den Nachtest durchgeführt hat. Der Nachtest (`qa/M5.md`, Abschnitt „Nachtest“) hat die Vermerke inhaltlich bestätigt, trotzdem sollte nur die QA „(QA ✓ …)“ setzen. Siehe `qa/M5.md`.
+- [QA] QA-M7-01 (gering, Dokumentation/Rückfrage) `spec.md` §8 sagte vor M7 „Frei verschiebbar“ für das Schriftfeld; die M7-Planung (Commit `3c5e945`) hat das auf Ecken-Anker (Verschieben rastet beim Loslassen auf eine der vier Blattecken ein) geändert, ohne diese Einschränkung einzeln in den „Entscheidungen der M7-Planung“ zu nennen. Implementierung und aktueller `spec.md`-Wortlaut stimmen überein (kein Fehler), aber Laurin bitte um Bestätigung, dass das wirklich gewollt ist. Siehe `qa/M7.md`.
 
 ---
 
@@ -82,19 +83,19 @@ Aufgabenlisten, erledigte QA-Befunde und Abschlüsse: `docs/archiv/M1.md`, `docs
 ## M7 – Infrastruktur, Blatt, Schriftfeld, Legende
 Entscheidungen der M7-Planung 2026-10-12 (Laurin: Blattrahmen pro Page, Strom für Infrastruktur, eigene Typen,
 Unter-Tab „Infrastruktur“). Testdatei der Vorgängerversion: `tests/fixtures/format-v3-m6.schelme` (Stand `cdde70d`).
-- [x] M7-01 Dateiformat Version 4: Typen mit Geometrie/Standardmaß/„freihalten“, Infrastruktur-Attribute, Blatt, Anker von Schriftfeld und Legende, Ebene „Blatt“; Migration 3 → 4 mit echter v3-Datei (§10, §8, §11)
-- [x] M7-02 Infrastruktur-Logik in `src/core/` mit Tests: Geometrien Rechteck/Linie/Punkt, Standardmaß je Typ, Treffer, Eindringtest Stand × Objekt, lichte Breite (§11)
-- [x] M7-03 Infrastruktur-Objekte anlegen und bearbeiten: Werkzeug, Darstellung je Geometrie, Endpunkt-Griffe mit Fang, Seitenleiste und Steuerungsleiste, Auswahl, Kopieren/Einfügen/Duplizieren, Undo (§11, Allgemein)
-- [x] M7-04 Aufklappbare Werkzeuggruppe mit zuletzt genutztem Typ; Kurzbefehle I und Shift+I (Layout, Tastaturkürzel)
-- [x] M7-05 Belegende Infrastruktur-Objekte in der Freiflächen-Berechnung (§4, Begriffe)
-- [x] M7-06 Strom der Infrastruktur: Summe, Limit, Blockieren, „davon Infrastruktur“ (§6, §11)
-- [x] M7-07 Warnungen „Infrastruktur“ (Stand in Freihaltefläche) und „Durchfahrt zu eng“ mit Mindestbreite; Schalter, Ignorieren, Page-Tab (§3, §11)
-- [x] M7-08 Infrastruktur-Typen in den Projekteinstellungen: feste Typen anpassen, eigene anlegen/ändern/löschen, Symbol-Auswahl (§11, §7)
-- [x] M7-09 Start-Page: Anzahl je Typ und Warnungen getrennt in den Kennzahlen; Unter-Tab „Infrastruktur“ mit Sprung, Bearbeitung, CSV; Cmd/Strg+3/4 (§7)
-- [x] M7-10 Blatt pro Page: Format, Ausrichtung, Maßstab fest/angepasst, Rahmen auf der Zeichenfläche, Bereich „Blatt“, Ebene „Blatt“ (§8)
-- [x] M7-11 Schriftfeld als Papier-Element: Layout, Felder (projektweit Datum/Version, pro Page Freitext), Ecken-Anker, Ziehen, Pfeiltasten, Werkzeug T (§8)
-- [x] M7-12 Legende als Papier-Element: Einträge automatisch aus sichtbarem Inhalt, Spaltenumbruch, Ziehen, ein-/ausblenden (Shift+L) (§8)
-- [x] M7-13 Lasttests unverändert grün, zusätzlich mit Infrastruktur-Objekten (Q-04, NFA) – `m7-perf.spec.ts` (500 Stände, 100 Infrastruktur-Objekte, Blatt mit Schriftfeld und Legende): Chromium 60 Bilder/s, WebKit-Median ≥ 54,5, längstes Bild 82 ms; alle 12 Lasttests grün
+- [x] M7-01 Dateiformat Version 4: Typen mit Geometrie/Standardmaß/„freihalten“, Infrastruktur-Attribute, Blatt, Anker von Schriftfeld und Legende, Ebene „Blatt“; Migration 3 → 4 mit echter v3-Datei (§10, §8, §11) (QA ✓ M7)
+- [x] M7-02 Infrastruktur-Logik in `src/core/` mit Tests: Geometrien Rechteck/Linie/Punkt, Standardmaß je Typ, Treffer, Eindringtest Stand × Objekt, lichte Breite (§11) (QA ✓ M7)
+- [x] M7-03 Infrastruktur-Objekte anlegen und bearbeiten: Werkzeug, Darstellung je Geometrie, Endpunkt-Griffe mit Fang, Seitenleiste und Steuerungsleiste, Auswahl, Kopieren/Einfügen/Duplizieren, Undo (§11, Allgemein) (QA ✓ M7)
+- [x] M7-04 Aufklappbare Werkzeuggruppe mit zuletzt genutztem Typ; Kurzbefehle I und Shift+I (Layout, Tastaturkürzel) (QA ✓ M7)
+- [x] M7-05 Belegende Infrastruktur-Objekte in der Freiflächen-Berechnung (§4, Begriffe) (QA ✓ M7)
+- [x] M7-06 Strom der Infrastruktur: Summe, Limit, Blockieren, „davon Infrastruktur“ (§6, §11) (QA ✓ M7)
+- [x] M7-07 Warnungen „Infrastruktur“ (Stand in Freihaltefläche) und „Durchfahrt zu eng“ mit Mindestbreite; Schalter, Ignorieren, Page-Tab (§3, §11) (QA ✓ M7)
+- [x] M7-08 Infrastruktur-Typen in den Projekteinstellungen: feste Typen anpassen, eigene anlegen/ändern/löschen, Symbol-Auswahl (§11, §7) (QA ✓ M7)
+- [x] M7-09 Start-Page: Anzahl je Typ und Warnungen getrennt in den Kennzahlen; Unter-Tab „Infrastruktur“ mit Sprung, Bearbeitung, CSV; Cmd/Strg+3/4 (§7) (QA ✓ M7)
+- [x] M7-10 Blatt pro Page: Format, Ausrichtung, Maßstab fest/angepasst, Rahmen auf der Zeichenfläche, Bereich „Blatt“, Ebene „Blatt“ (§8) (QA ✓ M7)
+- [x] M7-11 Schriftfeld als Papier-Element: Layout, Felder (projektweit Datum/Version, pro Page Freitext), Ecken-Anker, Ziehen, Pfeiltasten, Werkzeug T (§8) (QA ✓ M7, Hinweis QA-M7-01 zur Ecken-Anker-Einschränkung siehe `qa/M7.md`)
+- [x] M7-12 Legende als Papier-Element: Einträge automatisch aus sichtbarem Inhalt, Spaltenumbruch, Ziehen, ein-/ausblenden (Shift+L) (§8) (QA ✓ M7)
+- [x] M7-13 Lasttests unverändert grün, zusätzlich mit Infrastruktur-Objekten (Q-04, NFA) – `m7-perf.spec.ts` (500 Stände, 100 Infrastruktur-Objekte, Blatt mit Schriftfeld und Legende): Chromium 60 Bilder/s, WebKit-Median ≥ 54,5, längstes Bild 82 ms; alle 12 Lasttests grün (QA ✓ M7)
 
 ### Abschluss M7 (2026-10-12)
 **Umgesetzt** (spec.md §3, §4, §6, §7, §8, §10, §11):

@@ -1,0 +1,32 @@
+npm notice run schelmeplaner@0.1.0 test:e2e
+npm notice run playwright test --reporter=dot
+[WebServer] npm notice run schelmeplaner@0.1.0 predev
+[WebServer] npm notice run node scripts/copy-pdfjs-assets.mjs
+[WebServer] npm notice run schelmeplaner@0.1.0 dev
+[WebServer] npm notice run vite
+
+Running 648 tests using 5 workers
+···········°····································································
+·················································[WebServer] 6:55:53 PM [vite] (client) [console.warn] PDF-Fehler InvalidPDFException: Invalid PDF structure.
+[WebServer] 6:55:53 PM [vite] (client) [console.warn] Warning: Indexing all PDF objects
+·······························
+················································································
+·························································[WebServer] 6:56:36 PM [vite] (client) [console.error] Received NaN for the `x` attribute. If this is expected, cast the value to a string.
+[WebServer] 6:56:36 PM [vite] (client) [console.error] Received NaN for the `y` attribute. If this is expected, cast the value to a string.
+[WebServer] 6:56:36 PM [vite] (client) [console.error] Received NaN for the `width` attribute. If this is expected, cast the value to a string.
+[WebServer] 6:56:36 PM [vite] (client) [console.error] Received NaN for the `height` attribute. If this is expected, cast the value to a string.
+·······················
+···········°·························································°°·········
+·°··°············································°···[WebServer] 6:57:16 PM [vite] (client) [console.warn] PDF-Fehler BaseExceptionClosure@http://localhost:1420/node_modules/.vite/deps/pdfjs-dist.js:305:53
+[WebServer] module code@http://localhost:1420/node_modules/.vite/deps/pdfjs-dist.js:308:2
+[WebServer] 6:57:16 PM [vite] (client) [console.warn] Warning: Indexing all PDF objects
+···························
+················································································
+····························································[WebServer] 6:58:09 PM [vite] (client) [console.error] Received NaN for the `x` attribute. If this is expected, cast the value to a string.
+[WebServer] 6:58:09 PM [vite] (client) [console.error] Received NaN for the `y` attribute. If this is expected, cast the value to a string.
+[WebServer] 6:58:09 PM [vite] (client) [console.error] Received NaN for the `width` attribute. If this is expected, cast the value to a string.
+[WebServer] 6:58:09 PM [vite] (client) [console.error] Received NaN for the `height` attribute. If this is expected, cast the value to a string.
+····················
+········
+  7 skipped
+  641 passed (2.9m)
