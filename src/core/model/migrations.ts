@@ -10,10 +10,12 @@
  * Versionen:
  *   1  M1–M3: Projekt, Pages, Hintergrund, Grundflächen, Geschäfte, Kategorien.
  *   2  M4: Geschäft `suppressOverlapWarning`, Einstellung `warnOverlap` (Warnungen, Freiflächen).
+ *   3  M5: Einstellungen `numbering.digits` und `warnDuplicateNr`, Geschäft `suppressDuplicateWarning`;
+ *      `clockwise.startAngle` gilt relativ zur Nordrichtung der Page (vorher ohne Oberfläche, nie gesetzt).
  */
 import { UserError } from '../errors';
 
-export const CURRENT_SCHEMA_VERSION = 2;
+export const CURRENT_SCHEMA_VERSION = 3;
 
 type Obj = Record<string, unknown>;
 type Migration = (project: Obj) => Obj;
@@ -29,6 +31,14 @@ export const MIGRATIONS: Record<number, Migration> = {
     ...p,
     settings: isObj(p.settings) ? { warnOverlap: true, ...p.settings } : p.settings,
     pages: mapList(p.pages, (pg) => (isObj(pg) ? { ...pg, stands: mapList(pg.stands, (s) => (isObj(s) ? { suppressOverlapWarning: false, ...s } : s)) } : pg)),
+  }),
+  /** 2 → 3 (M5): Stellenzahl der Nummern, Warnung „doppelte Nummer“ projektweit und pro Stand. */
+  2: (p) => ({
+    ...p,
+    settings: isObj(p.settings)
+      ? { warnDuplicateNr: true, ...p.settings, ...(isObj(p.settings.numbering) ? { numbering: { digits: 1, ...p.settings.numbering } } : {}) }
+      : p.settings,
+    pages: mapList(p.pages, (pg) => (isObj(pg) ? { ...pg, stands: mapList(pg.stands, (s) => (isObj(s) ? { suppressDuplicateWarning: false, ...s } : s)) } : pg)),
   }),
 };
 

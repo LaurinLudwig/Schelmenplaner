@@ -3,6 +3,7 @@ import { join } from 'node:path';
 import { strFromU8, unzipSync } from 'fflate';
 import { describe, expect, it } from 'vitest';
 import { decodeProjectFile } from './fileFormat';
+import { CURRENT_SCHEMA_VERSION } from './model/migrations';
 
 /**
  * tests/fixtures/last-500-staende.schelme (erzeugt mit scripts/make-load-project.mjs) muss sich mit
@@ -21,5 +22,12 @@ describe('Testprojekt 500 Stände', () => {
       expect(p.areas).toEqual(raw.pages[i].areas);
       expect(p.stands).toEqual(raw.pages[i].stands);
     });
+  });
+
+  it('hat die aktuelle Formatversion und passt vollständig zum Modell (Laden ergänzt und verwirft nichts)', () => {
+    const file = JSON.parse(strFromU8(unzipSync(bytes)['project.json']!));
+    expect(file.schemaVersion).toBe(CURRENT_SCHEMA_VERSION);
+    const { project } = decodeProjectFile(bytes);
+    expect(JSON.parse(JSON.stringify(project))).toEqual(file.project);
   });
 });

@@ -5,6 +5,7 @@ import { copySelection, cutSelection, deleteSelection, duplicateSelection, hasCl
 import { importBackground } from './backgroundImport';
 import { confirm } from './dialogs';
 import { notify } from './notify';
+import { canRenumber, openRenumber } from './renumber';
 import { newProject, openProject, saveProject } from './fileActions';
 import { fitView, visibleBounds, zoomBy } from './view';
 
@@ -85,6 +86,11 @@ export const COMMANDS: Record<string, Command> = {
     disabledMessage: 'Kalibrieren: Zuerst einen Hintergrund importieren (Cmd/Strg+Shift+P).',
   },
   'file.importBackground': { run: () => void importBackground(), enabled: onDrawingPage },
+  'numbering.renumber': {
+    run: openRenumber,
+    enabled: () => onDrawingPage() && canRenumber(),
+    disabledMessage: 'Neu nummerieren: Diese Page wird manuell nummeriert (Seitenleiste, Bereich „Nummerierung“).',
+  },
   'view.grid': {
     run: () => {
       const page = activePage();

@@ -33,16 +33,18 @@ Erledigte Einträge stehen in `docs/archiv/eingang-erledigt.md` bzw. im Archiv d
 - E-22 (Hinweis) Die Grundflächen-Beschriftung wird über eine geschätzte Textbreite (0,56 em pro Zeichen) vor die Vorderseite gesetzt, nicht gemessen. Bei stark gedrehten Flächen mit langem Namen kann der Abstand zur Fläche etwas größer oder kleiner ausfallen.
 - E-23 (Hinweis, M8) Der helle Rand um die Beschriftung erscheint erst ab 12 px Schrifthöhe (Leistung WebKit, siehe Abschluss M3). Für den PDF-Export (weißes Papier) separat entscheiden.
 - E-24 (Idee) Kopieren/Einfügen zwischen zwei geöffneten Projekten (System-Zwischenablage). Bisher nur innerhalb des Projekts.
-- E-25 (Hinweis, M5) „Festplatz duplizieren“ übernimmt die Platznummern der Stände; die Kopie hat dann doppelte Nummern. Beim Kopieren/Duplizieren einzelner Stände wird die Nummer geleert.
 - E-26 (Idee, aus M4-Planung) Klick mit dem Geschäfts-Werkzeug in eine Grundfläche setzt den Stand gleich an deren Vorderseite.
 - E-27 (Idee, aus M4-Planung) Fang für Grundflächen untereinander (Kanten bündig, Flucht).
 - E-28 (Idee, aus M4-Planung) Drehgriff eines Stands rastet an der Drehung der Grundfläche ein, in der er steht.
 - E-31 (Hinweis, aus QA-M4-03) Die Lasttests laufen gegen den Entwicklungsserver (React im Entwicklungsmodus, deutlich langsamer als der Produktions-Build). Die Werte sind damit vorsichtig; in der Desktop-App mit der Bildraten-Anzeige (Cmd/Strg+Alt+F) gegenmessen.
 - E-32 (Hinweis, aus QA-M4-03) Im macOS-Stromsparmodus drosselt WebKit `requestAnimationFrame` auf 30 Bilder/s. Lasttests (und Messungen in der Mac-App) nur mit ausgeschaltetem Stromsparmodus durchführen.
 - E-30 (Lücke, aus M4) Grundflächen-Beschriftung und Freiflächen-Beschriftung können sich bei sehr schmalen Freiflächen mit Standbeschriftungen überdecken (Text wird nicht gekürzt, §3/§4).
+- E-33 (Hinweis, aus M5) Wird Einfügen wegen des Stromlimits abgewiesen, zählt der Versatz für das nächste Einfügen trotzdem weiter (nächste Kopie 1 m weiter versetzt).
+- E-34 (Idee, aus M5) Mittelpunkt der Nummerierung im Uhrzeigersinn direkt auf der Zeichenfläche ziehen; bisher Klickmodus „Mittelpunkt setzen“ oder Felder X/Y. Das Werkzeug hat keinen eigenen Kurzbefehl und kein Icon in der Werkzeugleiste.
+- E-35 (Idee, aus M5, → M6) „Neu nummerieren“ auf der Start-Page für alle Festplätze, auch bei „pro Festplatz“. Bisher nur auf einer Festplatz-Page (bei „global“ betrifft es dort schon alle Pages).
+- E-36 (Idee, aus M5) Vorschau „Neu nummerieren“: Zeile anklicken hebt den Stand auf der Zeichenfläche hervor, bzw. alt → neu direkt auf dem Plan zeigen.
 - E-08 (Hinweis) Browser-Autosave nutzt localStorage (ca. 5 MB). Mit eingebetteten Hintergründen (M2) reicht das nicht; betrifft nur den Browser-Dev-Modus.
 - [QA] QA-M1-11 (gering, Dokumentation/Prozess) Die Entwicklung hat QA-Artefakte geändert: Abschnitt „Behoben“ an `qa/M1.md` angehängt und die Erwartung des QA-Tests „M1-24: Zwei-Finger-Wischen“ umgedreht (`tests/e2e/m1-canvas.spec.ts:104-107`, begründet). Dazu Widersprüche: QA-M1-02 steht hier als „erledigt“, in `qa/M1.md` als „teilweise“; die Einträge QA-M1-03/-04 nennen noch `test.fail`, obwohl die Markierungen entfernt sind.
-- [x] [QA] QA-M4-05 (gering, Doku; Abschluss M4) Abschluss M4 widersprüchlich/veraltet: „Formatversion bleibt 1“ (Umgesetzt) vs. `CURRENT_SCHEMA_VERSION = 2` (Antworten); „165 Unit-Tests“, tatsächlich 170; „Zwei M3-E2E-Tests … schlagen fehl“ (Bekannte Bugs), beide sind angepasst und grün. Siehe `qa/M4.md`. **Erledigt 2026-10-11:** Abschluss M4 überarbeitet (Stand nach der QA-Nacharbeit).
 
 ---
 
@@ -50,52 +52,32 @@ Erledigte Einträge stehen in `docs/archiv/eingang-erledigt.md` bzw. im Archiv d
 - [ ] Q-01 Läuft auf Windows und macOS (NFA)
 - [ ] Q-02 Komplett offline, kein Server, kein Account (NFA)
 - [~] Q-03 Personenbezogene Händlerdaten bleiben lokal; nichts wird von fremden Servern nachgeladen, auch keine Schriften oder Icons (NFA, DSGVO, Gestaltung) – bisher eingehalten: Schriften über @fontsource, Icons über npm, CSP erlaubt nur `self`
-- [~] Q-04 Flüssig mit mindestens 500 Ständen über alle Festplätze (NFA) – M3: Lasttest 500 Stände auf einer Page ≥ 55 Bilder/s in Chromium und WebKit (M3-23); M4: mit Freiflächen, Warnungen und Fang ≥ 51 Bilder/s (M4-21)
+- [~] Q-04 Flüssig mit mindestens 500 Ständen über alle Festplätze (NFA) – M3: Lasttest 500 Stände auf einer Page ≥ 55 Bilder/s in Chromium und WebKit (M3-23); M4: mit Freiflächen, Warnungen und Fang ≥ 51 Bilder/s (M4-21); M5: Lasttests unverändert grün (WebKit-Median ≥ 56)
 - [~] Q-05 TypeScript strict (NFA) – aktiv seit M1 (`strict`, `noUncheckedIndexedAccess`)
-- [~] Q-06 Geometrie-, Freiflächen- und Nummerierungslogik als reine, UI-unabhängige Module mit Unit-Tests (Vorgehen 4, NFA) – M3: Rechteck-Geometrie, Treffer, Gruppen-Transformation, Beschriftung in `src/core/` mit Tests; M4: Freiflächen, Warnungen, Fang mit Fall-Tabelle und Eigenschaftstests
+- [~] Q-06 Geometrie-, Freiflächen- und Nummerierungslogik als reine, UI-unabhängige Module mit Unit-Tests (Vorgehen 4, NFA) – M3: Rechteck-Geometrie, Treffer, Gruppen-Transformation, Beschriftung in `src/core/` mit Tests; M4: Freiflächen, Warnungen, Fang mit Fall-Tabelle und Eigenschaftstests; M5: Nummerierung (`numbering.ts`) und Strom (`power.ts`) mit Tests
 - [x] Q-07 Builds für Windows und macOS über GitHub Actions (Tech-Stack) – Workflow `.github/workflows/build.yml` seit 2026-10-12 (Zwischenschritt vor M5): check + E2E Chromium, dann `.dmg` (Universal) und `.msi`/`.exe` als Artefakte, ohne Signatur; Fundort siehe CLAUDE.md. Erster grüner Lauf 2026-10-12. Dafür QA-Test `m4-qa.spec.ts:982` korrigiert (erwartete nur „⇧F“/„Shift+F“, auf Windows/Linux zeigt die App „Umschalt+F“)
 - [~] Q-08 Oberfläche komplett auf Deutsch (UI/Allgemein) – bisher eingehalten
-- [ ] Q-09 Jedes Werkzeug, jede Page und jeder wichtige Button hat einen Shortcut; neue Funktionen tragen sich in die zentrale Shortcut-Konfiguration ein (Tastaturkürzel)
+- [ ] Q-09 Jedes Werkzeug, jede Page und jeder wichtige Button hat einen Shortcut; neue Funktionen tragen sich in die zentrale Shortcut-Konfiguration ein (Tastaturkürzel) – M5: „Neu nummerieren …“ Cmd/Strg+Alt+N; „Mittelpunkt setzen“ ohne Kurzbefehl (E-34)
 
-## M1 bis M3 – abgeschlossen und abgenommen
-Aufgabenlisten, erledigte QA-Befunde und Abschlüsse: `docs/archiv/M1.md`, `docs/archiv/M2.md`, `docs/archiv/M3.md`.
-
-## M4 – Freiflächen, Fang, Warnungen
-Entscheidungen aus der Planung (2026-10-11) stehen in `spec.md` (Begriffe, §3, §4, Allgemein, Tastaturkürzel, NFA).
-- [x] M4-01 Freiflächen-Kernlogik aus dem Prototyp mit Unit-Tests: Achse entlang der Vorderseite [0, Breite], belegtes Intervall = Projektion der Schnittmenge, Freiflächen = [0, Breite] minus Vereinigung, volle Tiefe, nie hinter einem Stand; Fall-Tabelle A1–A13 und Eigenschaftstests (fast-check) (§4) (QA ✓ M4)
-- [x] M4-02 Freiflächen werden nie manuell gezeichnet und nie gespeichert, nur berechnet und angezeigt (hellgrün schraffiert, Ebene „Freiflächen“) (Begriffe, §4) (QA ✓ M4)
-- [x] M4-03 Mindestbreite für Freiflächen (Standard 0,5 m, 0,05–100 m) im Seitenleisten-Bereich „Freiflächen & Warnungen“ (§4) (QA ✓ M4)
-- [x] M4-04 Live-Neuberechnung beim Verschieben (auch während des Ziehens), Drehen, Ändern der Maße, Löschen; nur betroffene Grundflächen werden neu berechnet (§4) (QA ✓ M4)
-- [x] M4-05 Freiflächen-Beschriftung „Frei B × T m“ horizontal mit fester Schriftgröße, wie bei Ständen (§4) (QA ✓ M4)
-- [x] M4-06 Fang an der Vorderseite: Vorderseite des Stands legt sich an die der Grundfläche, übernimmt deren Drehung, gleitet entlang (Hysterese 8/16 px), fängt an Achsenenden und Nachbarn (§3) (QA ✓ M4)
-- [x] M4-07 Fang-Umschalter in der Werkzeugleiste, einzeln schaltbar: Vorderkante, Raster, Nachbarstände; Ansichtseinstellungen ohne Undo-Schritt (§3, Layout) (QA ✓ M4)
-- [x] M4-08 Cmd/Strg beim Ziehen schaltet den Fang vorübergehend aus (ersetzt die Alt-Umkehr; Entscheidung 2026-10-11) (§3, Allgemein) (QA ✓ M4)
-- [x] M4-09 Warnung „außerhalb“ (orange), wenn ein Teil des Stands außerhalb der Vereinigung aller Grundflächen liegt (auch hinten herausragend); keine Blockade; global und pro Stand abschaltbar, mit Undo (§3) (QA ✓ M4)
-- [x] M4-10 Warnung bei Überlappung zweier Stände (rot); global und pro Stand abschaltbar, mit Undo (§3) (QA ✓ M4)
-- [x] M4-11 Shift beim Verschieben beschränkt die Richtung auf waagerecht/senkrecht/45°; eingerastet bleibt der Stand an der Vorderseite (aus E-20, Illustrator-Konvention) (QA ✓ M4)
-- [x] M4-12 Alt+Ziehen dupliziert die Auswahl (Alt beim Loslassen entscheidet, ein Undo-Schritt) (aus E-20; Konflikt mit der Alt-Umkehr durch M4-08 aufgelöst) (QA ✓ M4)
-- [x] M4-13 Toleranz 0,01 m für Überlappung, Bündigkeit, Belegung und „außerhalb“ (Begriffe, §4) (QA M4: Nacharbeit, QA-M4-01, QA-M4-02 in `qa/M4.md`) **Erledigt 2026-10-11:** bis einschließlich 0,01 m bündig, Rechentoleranz 1e-6 m, zentrale Vergleichsfunktionen (`src/core/geometry/tolerance.ts`), „außerhalb“ gegen die um 0,01 m aufgeweiteten Grundflächen.
-- [x] M4-14 Überlappende Grundflächen: die frühere gewinnt, spätere rechnen nur mit ihrem Rest (§4) (QA ✓ M4)
-- [x] M4-15 Fang an Nachbarständen (Anliegen, Flucht; nur parallele Nachbarn) (§3) (QA ✓ M4)
-- [x] M4-16 Fang am Raster (Rand/Mitte des Hüllrechtecks, nur bei eingeblendetem Raster) (§3) (QA ✓ M4)
-- [x] M4-17 Fang-Priorität (Vorderkante > Nachbar > Raster), Mehrfachauswahl nur parallel verschoben, Hilfslinien beim Einrasten (§3) (QA ✓ M4)
-- [x] M4-18 Warnzähler am Page-Tab (§3) (QA ✓ M4)
-- [x] M4-19 Stabiler Schlüssel je Freifläche und Auflösefunktion als Grundlage für die Sprung-Links in M6-02 (§4, §7) (QA ✓ M4)
-- [x] M4-20 Während eines Ziehens keine Kurzbefehle (außer Esc); Übersicht (?) nennt die Tasten beim Ziehen (Allgemein, Tastaturkürzel) (QA ✓ M4)
-- [x] M4-22 Versioniertes Dateiformat: Formatversion 2, Migration 1 → 2 (neue Felder mit Standardwerten), neuere Versionen mit deutscher Meldung abgewiesen; echte M3-Datei (Version 1) als Testdatei; Regel in CLAUDE.md (§10, Entscheidung 2026-10-11) (QA ✓ M4)
-- [x] M4-21 Lasttest 500 Stände mit Freiflächen, Warnungen und Fang: ≥ 50 Bilder/s beim Zoomen, Verschieben der Ansicht und Ziehen quer über mehrere Grundflächen, Chromium und WebKit (NFA, Teil von Q-04) (QA M4: Nacharbeit, QA-M4-03 in `qa/M4.md`) **Erledigt 2026-10-11:** Kriterium präzisiert (Plan 8000 × 6000 px, Median aus 5 Läufen, kein Bild über 100 ms); Ursache der langen Einzelbilder (Autosave) behoben; zwischengespeicherte Ebenen beim Zoomen/Verschieben.
-- [x] M4-23 Einblendbare Bildraten-Anzeige (Bilder/s, längstes Bild der letzten 2 s), Cmd/Strg+Alt+F, standardmäßig aus, nicht im PDF-Export (NFA, Messen in der Desktop-App; Auftrag Laurin 2026-10-11)
+## M1 bis M4 – abgeschlossen und abgenommen
+Aufgabenlisten, erledigte QA-Befunde und Abschlüsse: `docs/archiv/M1.md`, `docs/archiv/M2.md`, `docs/archiv/M3.md`,
+`docs/archiv/M4.md`.
 
 ## M5 – Nummerierung, Strom
-- [ ] M5-01 Nummerierung links → rechts entlang der Vorderseite, Grundflächen in festlegbarer Reihenfolge (§5)
-- [ ] M5-02 Nummerierung im Uhrzeigersinn um einen pro Festplatz manuell gesetzten Mittelpunkt mit Startrichtung (§5)
-- [ ] M5-03 Manueller Nummerierungsmodus (§5)
-- [ ] M5-04 Startnummer, Präfix pro Festplatz (z. B. „A-“), global durchgehend oder pro Festplatz (§5)
-- [ ] M5-05 Manuelle Nummern fixierbar; die Automatik überspringt den Stand und seine Nummer (keine Duplikate) (§5)
-- [ ] M5-06 Neu nummerieren nur per Button mit Vorschau (§5)
-- [ ] M5-07 Optionales Stromlimit pro Festplatz in kW (§6)
-- [ ] M5-08 Strombalken auf der Festplatz-Page (grün, gelb ab 90 %, rot über Limit) (§6)
-- [ ] M5-09 Warnung beim Überschreiten des Stromlimits, Blockieren optional (§6)
+Entscheidungen aus der Planung (2026-10-12) stehen in `spec.md` (§3, §5, §6, §10).
+- [x] M5-01 Nummerierung links → rechts über den ganzen Festplatz nach der x-Lage der Standmitte, unabhängig von den Grundflächen, bei gleicher Lage der obere zuerst (geändert 2026-10-12 auf Wunsch von Laurin; vorher je Grundfläche entlang der Vorderseite). Reihenfolge der Grundflächen per ↑/↓ im eigenen Bereich „Grundflächen“, nur noch für überlappende Grundflächen (§4, §5)
+- [x] M5-02 Nummerierung im Uhrzeigersinn um einen pro Festplatz gesetzten Mittelpunkt (Klick oder X/Y), Startrichtung relativ zu Norden, Fadenkreuz mit Strahl auf der Zeichenfläche (§5)
+- [x] M5-03 Manueller Nummerierungsmodus: Automatik lässt die Page aus, bei „global“ gelten ihre Nummern als belegt (§5)
+- [x] M5-04 Format: Präfix pro Festplatz, Startnummer und Stellenzahl projektweit (z. B. „A-01“); Nummernkreis global durchgehend (Tab-Reihenfolge) oder pro Festplatz (§5)
+- [x] M5-05 Fixierte Nummern (Schloss, auch bei Mehrfachauswahl): Automatik überspringt Stand und Nummer im selben Nummernkreis (§5)
+- [x] M5-06 Neu nummerieren nur per Button/Kurzbefehl (Cmd/Strg+Alt+N) mit Vorschau alt → neu, Übernehmen ist ein Undo-Schritt; neue Stände bleiben ohne Nummer, Anzeige „n Stände ohne Nummer“ (§5)
+- [x] M5-07 Optionales Stromlimit pro Festplatz in kW; es zählen alle Stände der Page (§6)
+- [x] M5-08 Strombalken im Seitenleisten-Bereich „Strom“ (immer sichtbar; grün, gelb ab 90 %, rot über Limit) (§6)
+- [x] M5-09 Überschreitung: Blitz-Symbol am Page-Tab, Hinweis beim Überschreiten; Blockieren optional (Strom-Feld, Einfügen, Duplizieren, Alt+Ziehen; Senkungen erlaubt) (§6)
+- [x] M5-10 Warnung „doppelte Nummer“ je Nummernkreis (auch nach „Festplatz duplizieren“, aus E-25), projektweit abschaltbar, pro Stand ignorierbar, im Warnzähler am Tab (§3, §5)
+- [x] M5-11 Anzahl und kW je Anschlussart im Bereich „Strom“ (§6)
+- [x] M5-12 Strom-Berechnung UI-unabhängig in `src/core/` inklusive Projektsumme, Grundlage für M6-01 (§6, §7)
+- [x] M5-13 Formatversion 3: Stellenzahl, Warnung „doppelte Nummer“ (Einstellung und Häkchen am Stand), geprüfter Mittelpunkt; Migration 2 → 3 mit echter M4-Datei (§10)
 
 ## M6 – Start-Page: Statistik, Listen, Tabelle, Einstellungen
 - [ ] M6-01 Kennzahlen global und pro Festplatz: Anzahl Geschäfte, Summe Frontmeter, belegte Fläche, Stromsumme vs. Limit inkl. Strombalken (§6, §7)
@@ -143,110 +125,108 @@ Zuordnungen, die in der Meilensteinliste der Spec nicht ausdrücklich stehen:
 
 ---
 
-## Abschluss M4 (2026-10-11)
+## Abschluss M5 (2026-10-12)
 
-Abgleich mit `spec.md` vor diesem Abschluss: Die Entscheidungen der M4-Planung (Toleranz 0,01 m, Fälle A1–A13,
-„frühere Grundfläche gewinnt“, Warnung auch bei hinten herausragenden Ständen, Abschalten je Art, Fang mit
-Priorität und Hysterese, Cmd/Strg statt Alt-Umkehr, Alt+Ziehen dupliziert, keine Kurzbefehle während des
-Ziehens, Warnzähler am Tab, stabiler Freiflächen-Schlüssel) stehen in `spec.md` (Begriffe, §3, §4, Allgemein,
-Tastaturkürzel, NFA) und sind auf M4-01 bis M4-21 abgebildet. Eine Präzisierung aus der Umsetzung ist
-nachgetragen (Freiflächen-Beschriftung ab 6 px, siehe Abweichungen).
+Abgleich mit `spec.md` vor diesem Abschluss: Die Entscheidungen der M5-Planung (2026-10-12) stehen in `spec.md` §3
+(Warnung „doppelte Nummer“), §5 (Nummerierung), §6 (Strom) und §10 (Formatversion 3). Sie sind auf M5-01 bis M5-13
+abgebildet. E-25 ist in M5-10 aufgegangen.
 
 ### Umgesetzt
 - **Kern (`src/core/`, ohne DOM/React):**
-  - `geometry/polygon.ts`: Fläche, `clipConvex` (aus dem Prototyp), `subtractConvex`/`subtractAll` (konvex minus konvex), `penetration` (SAT), `thickness`, Zwischenspeicher der Rechteck-Ecken je Objekt, Schraffurlinien.
-  - `geometry/interval.ts`: Vereinigung mit Toleranz und den IDs der begrenzenden Stände, Lücken.
-  - `freeSpace.ts`: TOL = 0,01 m, Belegung (Eindringtiefe > TOL, Zuschnitt auf die Fläche, Enden an den Achsenenden), Freiflächen über die volle Tiefe, Regel für überlappende Grundflächen (L-förmige Reste mit Hüllmaßen), Schlüssel `areaId|links|rechts[#k]`, `resolveFreeSpace` für M6, Zwischenspeicher je Grundfläche.
-  - `warnings.ts`: außerhalb (echter Abstand: Stand gegen die um TOL aufgeweiteten Grundflächen, QA-M4-02), Überlappung (Sweep + SAT) mit Schnittfläche, Zähler je Page.
-  - `geometry/tolerance.ts` (QA-Nacharbeit): fachliche Toleranz TOL = 0,01 m (bis einschließlich bündig) und Rechentoleranz EPS = 1e-6 m; alle geometrischen Entscheidungen laufen über diese Vergleichsfunktionen.
-  - `moveSnap.ts`: Fang beim Ziehen (Vorderkante mit Hysterese 8/16 px, Achsenenden und Nachbarn entlang der Vorderseite, Nachbarstände anliegen/fluchten, Raster, Priorität, Mehrfachauswahl nur parallel, Hilfslinien). `transform.ts`: `constrainDelta` (Shift).
-- **Modell:** `Stand.suppressOverlapWarning`, `settings.warnOverlap` (Standard an). Formatversion 2 mit Migration 1 → 2 (M4-22, siehe Antworten).
-- **Zeichenfläche:** Ebene „Freiflächen“ hellgrün getönt und schraffiert (Linien in Metern, Abstand ≈ 8 px in Zweierpotenzen), Beschriftung „Frei B × T m“ in der Ebene Beschriftung. Warnkonturen orange/rot, Warndreieck an der Stand-Ecke, rote Schnittfläche bei Überlappung. Alles live aus der Vorschau, also auch während des Ziehens; nur geänderte Grundflächen werden neu berechnet.
-- **Auswahlwerkzeug:** Fang beim Ziehen mit Hilfslinien (Vorderseite mit Namen, Anliegen, Flucht, Achsenende). Shift beschränkt (eingerastet: bleibt an der Vorderseite), Alt dupliziert (Alt beim Loslassen zählt, Zeiger „Kopieren“), Cmd/Strg schaltet den Fang aus. Modifikatoren wirken sofort, auch ohne Mausbewegung. Während einer Geste werden Kurzbefehle verschluckt (außer Esc).
+  - `numbering.ts`:
+    - Format (`formatNr`) und Vergleich (`nrKey`, „12“ = „012“).
+    - Reihenfolgen links → rechts (über den ganzen Festplatz nach der x-Lage der Standmitte, `orderLeftToRight`) und
+      im Uhrzeigersinn (Startrichtung relativ zu Norden).
+    - `planRenumber`: pro Festplatz/global, fixierte und manuelle Nummern belegt, verbleibende Duplikate.
+    - `findDuplicates`/`cachedDuplicates` je Nummernkreis.
+  - `power.ts`:
+    - `pagePower`: Summe, Stufe ok/warn/over, je Anschlussart.
+    - `projectPower` für M6.
+    - `checkPowerChange`: blockiert bzw. „erstes Überschreiten“; nur Erhöhungen über das Limit.
+  - `warnings.ts`: dritte Warnart „doppelte Nummer“ in `activeWarnings`/`countWarnings`.
+- **Modell:** Formatversion 3 mit Migration 2 → 3. Neu sind `numbering.digits`, `warnDuplicateNr` und
+  `suppressDuplicateWarning`. Geprüft werden jetzt `clockwise` und `powerLimitKw`. Echte M4-Datei:
+  `tests/fixtures/format-v2-m4.schelme`.
+- **State:**
+  - `src/state/numbering.ts`: Modus, Präfix, Mittelpunkt, Startrichtung, Reihenfolge der Grundflächen,
+    Nummernkreis/Start/Stellen, Fixieren, `applyRenumber` als ein Undo-Schritt.
+  - `changeWithPowerCheck` in `src/state/objects.ts` für das Strom-Feld, Einfügen, Duplizieren und Alt+Ziehen.
+  - `setPowerLimit`/`setBlockOverLimit` in `pageSettings.ts`.
 - **Oberfläche:**
-  - Fang-Umschalter in der Werkzeugleiste aktiv (Shift+F/R/N, Ansichtseinstellung).
-  - Seitenleisten-Bereich „Freiflächen & Warnungen“ (Mindestbreite, zwei Warnschalter, mit Undo).
-  - Warnungen am Stand mit Häkchen „Überlappung ignorieren“ / „„außerhalb“ ignorieren“ (mit Undo, auch bei Mehrfachauswahl).
-  - Ebene „Freiflächen“ im Ebenen-Panel (ohne Schloss).
-  - Warnzähler am Page-Tab (rot bei Überlappung, Tooltip mit Aufschlüsselung).
-  - Übersicht (?) mit Gruppe „Beim Ziehen“.
+  - Bereich „Nummerierung“ in den Page-Einstellungen: Modus, Präfix, im Uhrzeigersinn Mitte X/Y, Start und
+    „Mittelpunkt auf dem Plan setzen“; Nummernkreis, Startnummer, Stellen, Beispiel; Status „n ohne
+    Nummer, n fixiert“; Button „Neu nummerieren …“.
+  - Bereich „Grundflächen“ (ab zwei Grundflächen): Reihenfolge per ↑/↓, bestimmt, welche bei Überlappung gewinnt.
+  - Vorschau-Dialog (`RenumberDialog.tsx`) mit alt → neu, fixiert, unverändert und dem Hinweis auf verbleibende
+    Duplikate.
+  - Bereich „Strom“, immer sichtbar: Balken, Limit (leer = kein Limit), „Überschreitung blockieren“, Tabelle je
+    Anschlussart.
+  - Blitz-Symbol am Page-Tab. Der Warnzähler zählt doppelte Nummern mit; das Tooltip nennt sie.
+  - Platznummer mit Schloss, auch bei Mehrfachauswahl.
+  - Warn-Chip „Nummer 12 auch bei: … (Festplatz 2)“ mit „doppelte Nummer ignorieren“.
+  - Schalter „Warnung bei doppelten Platznummern“ im Bereich „Freiflächen & Warnungen“.
+  - Fadenkreuz mit Startstrahl auf der Zeichenfläche im Modus „Uhrzeigersinn“.
+  - Zahlenfeld: Ein abgewiesener Wert springt zurück; optional leer erlaubt.
 - **Tests:**
-  - `src/core/m4.test.ts`: 56 Tests, darunter die Fall-Tabelle A1–A13 mit Toleranzgrenzen, Schlüssel, Auflösung, Cache-Zähler, Warnungen, Fang, Schraffur.
-  - `src/core/m4.property.test.ts`: 6 Eigenschaften mit fast-check (je 300 zufällige Szenen): Breitensumme, keine Überschneidung, Reihenfolge, Drehung/Verschiebung, überlappende Flächen, Mindestbreite.
-  - `src/core/m4.tolerance.test.ts` (QA-Nacharbeit): 0,009 / 0,010 / 0,011 m für Belegung, Überlappung und „außerhalb“, jeweils gerade, in gedrehter Szene und mit schräger Ecke; Eigenschaftstest (1000 Szenen): gemeinsame Drehung und Verschiebung ändert keine Entscheidung.
-  - `src/core/model/migrations.test.ts`: Migration 1 → 2 mit echter M3-Datei.
-  - Zusammen 201 Unit-Tests (Stand nach der QA-Nacharbeit).
-  - `tests/e2e/m4-freespace.spec.ts`: 15 Tests × 2 Browser.
-  - Lasttest `tests/e2e/m4-perf.spec.ts`.
-  - Testprojekt `tests/fixtures/last-500-staende.schelme` neu erzeugt (neues Feld).
-  - Neue devDependency: fast-check (nur Tests).
-
-### Lasttest M4-21 (Abnahmekriterium, Stand nach der QA-Nacharbeit)
-Kriterium (spec.md NFA): 500 Stände, viele Freiflächen, Plan 8000 × 6000 px; Median aus 5 Läufen ≥ 50 Bilder/s;
-kein Bild über 100 ms. Gemessen am 2026-10-11 mit `npm run test:perf` (Dev-Server, ohne Stromsparmodus, auf Akku):
-ein Komplettlauf und drei WebKit-Läufe hintereinander, alle grün.
-
-| Median Bilder/s (längstes Bild) | Chromium | WebKit (3 Läufe) |
-|---|---|---|
-| Zoomen | 60 (17 ms) | 58,0–58,7 (≤ 57 ms) |
-| Ansicht verschieben | 60 (17 ms) | 57,5–58,3 (≤ 51 ms) |
-| Ansicht verschieben in Lesegröße (20 px/m) | 60 (17 ms) | 55,2–56,3 (≤ 67 ms) |
-| Stand quer über die Grundflächen ziehen | 60 (17 ms) | 58,7–59,5 (≤ 39 ms) |
-
-QA-Lasttest M4 (unverändert): WebKit 55,6–58,6, Chromium 59,6–60. QA-Lasttest M3: WebKit ≥ 53,8 in allen drei
-Läufen. Vor der Nacharbeit lag WebKit mit Plan bei 45,6–50,9 (Lesegröße), mit Einzelbildern bis 265 ms.
-
-Ursachen und Maßnahmen (Details in `qa/M4.md`, Abschnitt „Behoben“):
-- **Einzelbilder 250–650 ms:** Autosave zippte das Projekt samt Plan synchron im Hauptthread (im Browser zusätzlich
-  Base64). Jetzt asynchron in Workern und nie während einer Geste.
-- **Zoomen/Verschieben:** Plan und Objekte liegen in zwischengespeicherten Ebenen, die per CSS-Transform bewegt werden.
-  Neu gezeichnet wird nur bei Zoomänderung nach 150 ms Ruhe, an Rand- und Zoomgrenzen und bei Sprüngen.
-- **Ziehen:** Unbewegte und bewegte Objekte sind getrennt gerendert; höchstens eine Berechnung pro Bild.
-- Aus M4 (vorher): Schraffur als Linien statt Muster, Freiflächen ohne gestrichelte Kontur, Freiflächen-Beschriftung
-  ab 6 px und nur im sichtbaren Bereich.
+  - Unit-Tests: `numbering.test.ts` (21), `power.test.ts` (8), Migration 2 → 3 (2); zusammen 231.
+  - E2E: `m5-numbering.spec.ts` (8) und `m5-power.spec.ts` (3), je Chromium und WebKit.
+  - Komplette Suite grün in beiden Browsern, nach Anpassung von 4 überholten Tests (siehe Abweichungen).
+- **Lasttests** (`npm run test:perf`, 8/8 grün, ohne Stromsparmodus): M4-21 WebKit-Median Zoomen 57,8,
+  Verschieben 56,6, Lesegröße 56,3, Ziehen 58,4, längstes Bild 74 ms; Chromium 60. Log:
+  `test-artifacts/logs/m5-perf.log`.
 
 ### Nicht umgesetzt / verschoben
-- Nichts aus M4.
+- Strom auf der Start-Page: nur die Berechnung (`projectPower`), die Anzeige kommt mit M6-01 (wie geplant).
 
 ### Abweichungen von SPEC.md bzw. vom Plan
-- **Freiflächen-Beschriftung erst ab 6 px Schrifthöhe** (Standbeschriftung ab 3 px) und ohne hellen Rand. Grund ist die Bildrate in WebKit. Die Spec ist angepasst.
-- **Freiflächen ohne eigene Kontur:** Tönung und Schraffur grenzen sie ab. Im Prototyp war die Kontur gestrichelt; sie kostete in WebKit 8 Bilder/s.
-- **Schraffur in Metern** statt als Muster in Bildschirmgröße. Der Abstand springt beim Zoomen in Zweierpotenzen und bleibt so etwa 8 px.
-- **Häkchen sind keine Textfelder mehr:** Nach einem Klick auf ein Häkchen wirken Cmd/Strg+Z usw. global (`src/app/keyboard.ts`). Das ist nötig für „ignorieren … mit Undo“ und betrifft auch die Häkchen aus M2/M3.
-- **Etikett der Vorderkanten-Hilfslinie** am linken Ende der Vorderseite: Die Mitte trägt schon die Grundflächen-Beschriftung.
-- **Zeichenfläche in Ebenen (QA-Nacharbeit):** Plan, Klickfläche mit Raster, Objekte und Werkzeuge sind getrennte
-  SVG-Ebenen; Mausereignisse behandelt der Container. Der Hintergrund wird geometrisch getroffen. Während fortlaufenden
-  Zoomens ist das Bild bis zu 150 ms leicht unscharf, dann wieder scharf.
-- **Bildraten-Anzeige** (M4-23, Cmd/Strg+Alt+F) auf Wunsch von Laurin ergänzt.
+- **Links → rechts geändert (Laurin, 2026-10-12):** Statt Grundfläche für Grundfläche entlang der Vorderseite läuft die
+  Nummerierung jetzt über den ganzen Festplatz von links nach rechts (x der Standmitte, bei gleicher Lage der obere
+  zuerst). `spec.md` §5 ist angepasst. Der gespeicherte Modusname `frontLtr` bleibt; Formatversion 3 war noch nicht
+  veröffentlicht, deshalb keine weitere Migration. Die ↑/↓-Liste der Grundflächen steht jetzt im eigenen Bereich
+  „Grundflächen“.
+- **Vier QA-/Entwicklertests angepasst**, weil die Formatversion nach der Regel in CLAUDE.md auf 3 steigt. Vermerkt
+  in `qa/M1.md`, `qa/M3.md` und `qa/M4.md`:
+  - `m1-file.spec.ts:43` und `m4-qa.spec.ts:888`: erwarten Version 3.
+  - `m4-qa.spec.ts:903`: Die „neuere“ Datei hat jetzt Version 4.
+  - `m3-qa.spec.ts:47`: `BASE` hat das neue Feld.
+- **Doppelte Nummer** wird auf der Zeichenfläche wie „außerhalb“ markiert (orange Kontur und Warndreieck). Die
+  Seitenleiste nennt die Art.
+- **Hinweis beim Überschreiten** ohne Blockieren nur beim ersten Überschreiten (vorher ≤ Limit), damit weitere
+  Änderungen über dem Limit nicht jedes Mal einen Hinweis zeigen. Das Blitz-Symbol bleibt sichtbar.
+- **Blockieren:** Ein abgewiesener Wert erscheint als Dialog „Stromlimit überschritten“ (nicht nur als kurzer
+  Hinweis). Das Feld zeigt danach wieder den alten Wert.
 
 ### Bekannte Bugs und Einschränkungen
-- Schmale Freiflächen: Beschriftungen können sich überdecken (E-30).
-- Nach einem großen Zoomsprung (Knopf, Kurzbefehl) dauert das erste Bild in neuer Größe in WebKit bis ca. 150–200 ms (Plan-Kacheln, alle Beschriftungen neu). Fortlaufendes Zoomen und Verschieben sind davon nicht betroffen.
-- Der Warnzähler am Tab ändert sich nach dem Loslassen, nicht während des Ziehens (wie geplant).
+- Einfügen trotz Abweisung zählt den Versatz weiter (E-33).
+- Der Mittelpunkt lässt sich nicht ziehen (E-34).
+- Bei gleich weit entfernten Ständen auf demselben Winkel bzw. derselben Lage entscheiden Toleranzen
+  (0,1° bzw. 0,01 m) und danach die interne ID. Das ist stabil, aber für den Nutzer nicht sichtbar begründet.
 
 ### Manuell testen (Desktop-App)
-- [ ] Bildraten-Anzeige (Cmd+Alt+F) einblenden, `last-500-staende.schelme` mit großem Plan: Zoomen, Verschieben, Ziehen flüssig? Ohne Stromsparmodus messen.
-- [ ] Stand an eine gedrehte Grundfläche ziehen: rastet ein, dreht sich mit, gleitet entlang, löst sich beim Wegziehen.
-- [ ] Alt+Ziehen dupliziert; Alt vor dem Loslassen lösen verschiebt nur. Cmd halten: kein Fang.
-- [ ] Unter Windows: Alt während des Ziehens aktiviert keine Menüleiste.
-- [ ] Testprojekt `last-500-staende.schelme`: Freiflächen sichtbar, Ziehen über die Grundflächen bleibt flüssig.
+- [ ] Festplatz mit mehreren Grundflächen übereinander: neu nummerieren, die Nummern laufen quer über alle Flächen von
+  links nach rechts; Vorschau prüfen, übernehmen, einmal Cmd+Z.
+- [ ] Uhrzeigersinn: Mittelpunkt setzen, Nordrichtung ändern (Startstrahl dreht mit), neu nummerieren.
+- [ ] Nummer eintragen, fixieren, neu nummerieren: Nummer bleibt und wird nicht doppelt vergeben.
+- [ ] „global durchgehend“, Festplatz duplizieren: Warnzähler an beiden Tabs, Hinweis am Stand.
+- [ ] Limit setzen, „Überschreitung blockieren“: Strom erhöhen bzw. Stände einfügen wird abgewiesen, senken geht.
+- [ ] Alte Projektdatei (M4) öffnen: lädt ohne Meldung, nach Speichern Version 3.
 
-### Antworten (2026-10-11)
-- Beide Tests angepasst wie vorgeschlagen, dazu `tests/e2e/m1-file.spec.ts:42` (Formatversion 2). Vermerkt in `qa/M3.md` und `qa/M1.md`.
-- **Versioniertes Dateiformat (M4-22):**
-  - `CURRENT_SCHEMA_VERSION = 2`.
-  - `MIGRATIONS[1]` ergänzt `suppressOverlapWarning: false` und `warnOverlap: true`, ohne vorhandene Werte zu überschreiben.
-  - Fehlt eine Migration, kommt eine deutsche Meldung.
-  - Neuere Dateien werden wie bisher mit „neueren Version“ abgewiesen.
-  - Echte Datei aus M3: `tests/fixtures/format-v1-m3.schelme` (das Testprojekt aus Commit f548eb5, Version 1, 500 Stände, 5 Kategorien), geprüft in `src/core/model/migrations.test.ts`.
-  - Das Lasttest-Projekt `last-500-staende.schelme` ist jetzt Version 2.
-  - Regel in CLAUDE.md.
-  - Der Schlüssel in der Datei heißt weiterhin `schemaVersion`: Ein Umbenennen wäre selbst eine Formatänderung.
+### Offene Fragen (beantwortet, siehe unten)
+1. Soll ich M5 committen und pushen? Der Push startet den Build-Workflow.
+2. M4 steht noch nicht im Archiv. Gilt M4 als abgenommen, sodass ich es nach `docs/archiv/M4.md` verschieben soll?
+
+### Antworten (2026-10-12)
+- „Strikt von links nach rechts“, inklusive des Springens zwischen versetzten Reihen, ist so gewollt.
 - Committen und pushen: ja.
-
-### Offene Fragen (beantwortet, siehe oben)
-1. **Zwei überholte Tests ändern?** Beide prüfen M3-Verhalten, das sich durch M4 bewusst geändert hat:
-   - `tests/e2e/m3-objects.spec.ts:414` (mein Entwicklertest M3-14) erwartet die Ebenenliste `Grundflächen, Geschäfte, Beschriftung`. Seit M4 erscheint dazwischen „Freiflächen“, sobald es Grundflächen gibt. Vorschlag: Erwartung um „Freiflächen“ ergänzen.
-   - `tests/e2e/m3-qa.spec.ts:45` (QA-Test M3-01/M3-18, Speichern und Öffnen) legt Stände ohne das neue Feld `suppressOverlapWarning` an. Nach dem Laden ergänzt der Ladecode es mit `false`, deshalb ist das Projekt nicht mehr gleich. Vorschlag: `suppressOverlapWarning: false` in `BASE` ergänzen.
-2. Soll ich M4 committen?
-
+- M4 ist abgenommen und liegt jetzt in `docs/archiv/M4.md`.
+- Vor dem QA-Lauf geprüft:
+  - `npm run check` grün (232 Unit-Tests).
+  - `npm run test:e2e` in beiden Browsern: 529 grün, 7 übersprungen (die bekannten browserspezifischen Skips).
+  - `npm run test:perf` 8/8 grün. Zwei WebKit-Tests hatten im Komplettlauf keine Verbindung zum Dev-Server und
+    waren einzeln wiederholt grün. M4-21 WebKit-Median: Zoomen 58,4, Verschieben 58,1, Lesegröße 55,2, Ziehen 58,7,
+    längstes Bild 73 ms.
+- **Fixtures geprüft:** Version 3 hat nur `last-500-staende.schelme`. Ihre M5-Felder passten. Abweichend war nur
+  `infraTypes`: in der Datei leer, beim Laden mit den 8 Standardtypen ergänzt. Das Skript schreibt sie jetzt mit,
+  die Datei ist neu erzeugt, und `src/core/fixtures.test.ts` prüft zusätzlich, dass Laden das ganze Projekt
+  unverändert lässt. Der Lasttest, der die Datei nutzt (`m3-qa-perf.spec.ts`), ist danach in beiden Browsern grün.
+  `format-v1-m3.schelme` und `format-v2-m4.schelme` sind absichtlich ältere Versionen (Migrationstests).

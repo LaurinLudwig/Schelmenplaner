@@ -8,6 +8,8 @@ import { setGridSize, setGridVisible, setNorthAngle, updateBackground } from '..
 import { useStore } from '../../state/store';
 import { keyLabel, tip } from '../shortcuts/tip';
 import { NumberField } from './NumberField';
+import { AreaOrderPanel } from './AreaOrderPanel';
+import { NumberingPanel } from './NumberingPanel';
 
 const KIND_LABEL = { pdf: 'PDF', svg: 'SVG', image: 'Bild' } as const;
 
@@ -19,7 +21,7 @@ async function applyPaperScaleChecked(pageId: string, bg: Background, n: number)
   updateBackground(pageId, 'Planmaßstab setzen', { transform, paperScale: n, calibration: undefined });
 }
 
-/** Einstellungen der Festplatz-Page in der Seitenleiste: Hintergrund, Raster, Norden. */
+/** Einstellungen der Festplatz-Page in der Seitenleiste: Hintergrund, Nummerierung, Grundflächen, Raster, Norden. */
 export function PagePanel({ page }: { page: FestplatzPage }) {
   const bg = page.background;
   const selected = useStore((s) => s.ui.selection?.kind === 'background');
@@ -121,6 +123,8 @@ export function PagePanel({ page }: { page: FestplatzPage }) {
           )}
         </div>
       </section>
+      <NumberingPanel page={page} />
+      <AreaOrderPanel page={page} />
       <section className="panel" aria-label="Raster">
         <div className="panel-head">Raster</div>
         <div className="panel-body form">

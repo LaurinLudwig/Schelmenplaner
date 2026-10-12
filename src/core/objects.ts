@@ -46,6 +46,7 @@ export function createStand(rect: Rect, fields: Partial<Omit<Stand, 'id'>> = {})
     color: null,
     suppressOutsideWarning: false,
     suppressOverlapWarning: false,
+    suppressDuplicateWarning: false,
     ...fields,
     cx: rect.cx,
     cy: rect.cy,

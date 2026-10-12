@@ -7,6 +7,7 @@ import { fmt } from '../../core/format';
 import type { FestplatzPage, Rect, Vec, View } from '../../core/model/types';
 import { findSnap, rectSnapSource } from '../../core/snap';
 import { defaultView, screenToWorld, worldToScreen, zoomAt, type Bounds } from '../../core/viewport';
+import { cachedDuplicates } from '../../core/numbering';
 import { cachedPageWarnings } from '../../core/warnings';
 import { useStore } from '../../state/store';
 import { IS_MAC } from '../shortcuts/keys';
@@ -17,6 +18,8 @@ import { FpsMeter } from './FpsMeter';
 import { ObjectsLayer } from './objects/ObjectsLayer';
 import { SNAP_PX, type ToolContext, type ToolPointer } from './tools/types';
 import { useCalibrateTool } from './tools/useCalibrateTool';
+import { useCenterTool } from './tools/useCenterTool';
+import { ClockwiseMarker } from './ClockwiseMarker';
 import { useCreateTool } from './tools/useCreateTool';
 import { useMeasureTool } from './tools/useMeasureTool';
 import { useSelectTool } from './tools/useSelectTool';
@@ -134,7 +137,10 @@ export function Canvas({ page: storedPage }: { page: FestplatzPage }) {
   const minFreeWidth = useStore((s) => s.project.settings.minFreeWidth);
   const warnOutside = useStore((s) => s.project.settings.warnOutside);
   const warnOverlap = useStore((s) => s.project.settings.warnOverlap);
-  const warnSettings = useMemo(() => ({ warnOutside, warnOverlap }), [warnOutside, warnOverlap]);
+  const warnDuplicateNr = useStore((s) => s.project.settings.warnDuplicateNr);
+  const warnSettings = useMemo(() => ({ warnOutside, warnOverlap, warnDuplicateNr }), [warnOutside, warnOverlap, warnDuplicateNr]);
+  // Doppelte Nummern (M5-10) aus dem gespeicherten Projekt: Nummern ändern sich während einer Geste nicht
+  const duplicates = useStore((s) => cachedDuplicates(s.project.pages, s.project.settings.numbering.scope));
   // Freiflächen und Warnungen live aus der Page mit Vorschau; der Zwischenspeicher rechnet nur
   // Grundflächen neu, deren Eingaben sich geändert haben (M4-04)
   const [freeCache] = useState(createFreeSpaceCache);
@@ -201,8 +207,21 @@ export function Canvas({ page: storedPage }: { page: FestplatzPage }) {
   const selectTool = useSelectTool(ctx, tool === 'select' && !spaceDown);
   const areaTool = useCreateTool(ctx, 'area', tool === 'area' && !spaceDown);
   const standTool = useCreateTool(ctx, 'stand', tool === 'stand' && !spaceDown);
+  const centerTool = useCenterTool(ctx, tool === 'numberCenter' && !spaceDown);
   const activeTool =
-    tool === 'measure' ? measureTool : tool === 'calibrate' ? calibrateTool : tool === 'select' ? selectTool : tool === 'area' ? areaTool : tool === 'stand' ? standTool : null;
+    tool === 'measure'
+      ? measureTool
+      : tool === 'calibrate'
+        ? calibrateTool
+        : tool === 'select'
+          ? selectTool
+          : tool === 'area'
+            ? areaTool
+            : tool === 'stand'
+              ? standTool
+              : tool === 'numberCenter'
+                ? centerTool
+                : null;
   const activeToolRef = useRef(activeTool);
   useLayoutEffect(() => {
     activeToolRef.current = activeTool;
@@ -419,11 +438,13 @@ export function Canvas({ page: storedPage }: { page: FestplatzPage }) {
             freeLabelWindow={freeLabelWindow}
             warnings={warnings}
             warnSettings={warnSettings}
+            duplicates={duplicates}
             baseStands={storedPage.stands}
             movingIds={movingIds}
           />
       </WorldLayer>
       <svg className="canvas-layer canvas-overlay" aria-hidden="true">
+        <ClockwiseMarker page={storedPage} toScreen={ctx.toScreen} />
         {activeTool?.overlay}
       </svg>
       {activeTool?.panel && <div className="tool-panel-host">{activeTool.panel}</div>}

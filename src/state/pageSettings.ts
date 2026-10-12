@@ -1,10 +1,11 @@
 import { LAYER_OF } from '../core/objects';
+import { POWER_LIMIT } from '../core/power';
 import type { Background, FestplatzPage, Id, LayerId } from '../core/model/types';
 import { useStore } from './store';
 
-/** Änderungen an einer Festplatz-Page (Hintergrund, Raster, Norden). Alle rückgängig machbar. */
+/** Änderungen an einer Festplatz-Page (Hintergrund, Raster, Norden, Strom). Alle rückgängig machbar. */
 
-function updatePage(pageId: Id, label: string, fn: (page: FestplatzPage) => void): boolean {
+export function updatePage(pageId: Id, label: string, fn: (page: FestplatzPage) => void): boolean {
   return useStore.getState().change(label, (p) => {
     const page = p.pages.find((x) => x.id === pageId);
     if (page) fn(page);
@@ -82,4 +83,18 @@ export function setLayer(pageId: Id, layer: LayerId, patch: { visible?: boolean;
     const ids = sel.ids.filter((id) => !drop.has(id));
     if (ids.length !== sel.ids.length) after.setUi({ selection: ids.length ? { kind: 'objects', ids } : null });
   }
+}
+
+/** Stromlimit in kW (M5-07); null = kein Limit. Ein Limit unter der aktuellen Summe ist erlaubt (§6). */
+export function setPowerLimit(pageId: Id, limitKw: number | null) {
+  const v = limitKw === null ? null : Math.round(Math.min(POWER_LIMIT.max, Math.max(POWER_LIMIT.min, limitKw)) * 1000) / 1000;
+  updatePage(pageId, v === null ? 'Stromlimit entfernen' : 'Stromlimit ändern', (page) => {
+    page.powerLimitKw = v;
+  });
+}
+
+export function setBlockOverLimit(pageId: Id, on: boolean) {
+  updatePage(pageId, on ? 'Überschreitung blockieren' : 'Überschreitung erlauben', (page) => {
+    page.blockOverLimit = on;
+  });
 }

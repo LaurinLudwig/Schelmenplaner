@@ -9,7 +9,7 @@ import * as H from './history';
 export const START_PAGE = 'start';
 export type PageRef = typeof START_PAGE | Id;
 
-export type ToolId = 'select' | 'hand' | 'zoom' | 'measure' | 'calibrate' | 'area' | 'stand';
+export type ToolId = 'select' | 'hand' | 'zoom' | 'measure' | 'calibrate' | 'area' | 'stand' | 'numberCenter';
 
 /** Auswahl auf der aktiven Page: der Hintergrund oder Objekte (Grundflächen und Geschäfte gemischt). */
 export type Selection = { kind: 'background' } | { kind: 'objects'; ids: Id[] } | null;

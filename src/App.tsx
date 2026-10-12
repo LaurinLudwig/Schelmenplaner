@@ -8,6 +8,7 @@ import { Canvas } from './ui/canvas/Canvas';
 import { ControlBar } from './ui/shell/ControlBar';
 import { DialogHost } from './ui/shell/DialogHost';
 import { PdfPagePicker } from './ui/shell/PdfPagePicker';
+import { RenumberDialog } from './ui/shell/RenumberDialog';
 import { ShortcutsOverlay } from './ui/shell/ShortcutsOverlay';
 import { Toasts } from './ui/shell/Toasts';
 import { Sidebar } from './ui/shell/Sidebar';
@@ -54,6 +55,7 @@ export function App() {
       <TooltipHost />
       <Toasts />
       <PdfPagePicker />
+      <RenumberDialog />
       <DialogHost />
       <ShortcutsOverlay />
     </div>

@@ -35,6 +35,7 @@ export const SHORTCUTS: ShortcutDef[] = [
   { id: 'edit.delete', label: 'Löschen', group: 'Bearbeiten', keys: ['Delete', 'Backspace'] },
   { id: 'edit.selectAll', label: 'Alles auswählen', group: 'Bearbeiten', keys: ['Mod+A'] },
   { id: 'edit.deselect', label: 'Auswahl aufheben', group: 'Bearbeiten', keys: ['Escape'] },
+  { id: 'numbering.renumber', label: 'Neu nummerieren …', group: 'Bearbeiten', keys: ['Mod+Alt+N'] },
   { id: 'edit.nudgeLeft', label: 'Nach links verschieben (0,1 m)', group: 'Bearbeiten', keys: ['ArrowLeft'] },
   { id: 'edit.nudgeRight', label: 'Nach rechts verschieben (0,1 m)', group: 'Bearbeiten', keys: ['ArrowRight'] },
   { id: 'edit.nudgeUp', label: 'Nach oben verschieben (0,1 m)', group: 'Bearbeiten', keys: ['ArrowUp'] },

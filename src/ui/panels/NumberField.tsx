@@ -11,8 +11,14 @@ interface Props {
   max?: number;
   step?: number;
   digits?: number;
-  /** Wird erst bei Enter, Verlassen des Feldes oder Pfeiltasten aufgerufen (ein Undo-Schritt pro Eingabe). */
-  onCommit: (value: number) => void;
+  /**
+   * Wird erst bei Enter, Verlassen des Feldes oder Pfeiltasten aufgerufen (ein Undo-Schritt pro Eingabe).
+   * Liefert die Funktion false, wurde der Wert abgewiesen; das Feld zeigt wieder den bisherigen Wert.
+   */
+  onCommit: (value: number) => void | boolean;
+  /** Erlaubt ein leeres Feld (z. B. „kein Limit“); `value` null bedeutet dann „leer“. */
+  onClear?: () => void;
+  placeholder?: string;
   disabled?: boolean;
   /** Beschriftung nur für Screenreader (z. B. in der kompakten Steuerungsleiste). */
   className?: string;
@@ -21,7 +27,7 @@ interface Props {
 /** Zahlenfeld mit deutscher Eingabe (Komma), Einheit, Grenzen und Pfeiltasten (Shift = ×10). */
 const show = (v: number | null, digits: number) => (v === null ? '' : fmtInput(v, digits));
 
-export function NumberField({ id, label, value, unit, min, max, step = 1, digits = 2, onCommit, disabled, className }: Props) {
+export function NumberField({ id, label, value, unit, min, max, step = 1, digits = 2, onCommit, onClear, placeholder, disabled, className }: Props) {
   const [text, setText] = useState(show(value, digits));
   const [bad, setBad] = useState(false);
   const [focused, setFocused] = useState(false);
@@ -38,10 +44,18 @@ export function NumberField({ id, label, value, unit, min, max, step = 1, digits
   }
 
   const valid = (n: number) => Number.isFinite(n) && (min === undefined || n >= min) && (max === undefined || n <= max);
+  const clearing = (t: string) => !!onClear && t.trim() === '';
 
   const commit = () => {
     // Fokus rein/raus ohne Eingabe ändert nie den Wert (auch nicht durch Runden der Anzeige)
     if (!edited) return;
+    if (clearing(text)) {
+      setEdited(false);
+      setBad(false);
+      if (value !== null) onClear!();
+      setText('');
+      return;
+    }
     const n = parseNum(text);
     if (!valid(n)) {
       setBad(true);
@@ -49,7 +63,10 @@ export function NumberField({ id, label, value, unit, min, max, step = 1, digits
     }
     setEdited(false);
     setBad(false);
-    if (n !== value) onCommit(n);
+    if (n !== value && onCommit(n) === false) {
+      setText(show(value, digits));
+      return;
+    }
     setText(fmtInput(n, digits));
   };
 
@@ -66,7 +83,8 @@ export function NumberField({ id, label, value, unit, min, max, step = 1, digits
           spellCheck={false}
           disabled={disabled}
           aria-invalid={bad}
-          title={value === null ? 'Unterschiedliche Werte – eine Eingabe gilt für alle ausgewählten Objekte' : undefined}
+          placeholder={placeholder}
+          title={value === null && !onClear ? 'Unterschiedliche Werte – eine Eingabe gilt für alle ausgewählten Objekte' : undefined}
           onFocus={() => setFocused(true)}
           onBlur={() => {
             setFocused(false);
@@ -76,7 +94,7 @@ export function NumberField({ id, label, value, unit, min, max, step = 1, digits
           onChange={(e) => {
             setEdited(true);
             setText(e.target.value);
-            setBad(!valid(parseNum(e.target.value)));
+            setBad(!clearing(e.target.value) && !valid(parseNum(e.target.value)));
           }}
           onKeyDown={(e) => {
             if (e.key === 'Enter') {
@@ -97,10 +115,9 @@ export function NumberField({ id, label, value, unit, min, max, step = 1, digits
               let n = Math.round((base + (e.key === 'ArrowUp' ? 1 : -1) * step * (e.shiftKey ? 10 : 1)) * 1e6) / 1e6;
               if (min !== undefined) n = Math.max(min, n);
               if (max !== undefined) n = Math.min(max, n);
-              setText(fmtInput(n, digits));
               setBad(false);
               setEdited(false);
-              onCommit(n);
+              setText(onCommit(n) === false ? show(value, digits) : fmtInput(n, digits));
             }
           }}
         />

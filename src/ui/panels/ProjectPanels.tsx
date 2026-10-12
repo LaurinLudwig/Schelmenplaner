@@ -33,11 +33,12 @@ export function LabelPanel() {
   );
 }
 
-/** Freiflächen und Warnungen (projektweit, bis M6 hier; M4-03, M4-09, M4-10). */
+/** Freiflächen und Warnungen (projektweit, bis M6 hier; M4-03, M4-09, M4-10, M5-10). */
 export function FreeSpacePanel() {
   const minWidth = useStore((s) => s.project.settings.minFreeWidth);
   const warnOutside = useStore((s) => s.project.settings.warnOutside);
   const warnOverlap = useStore((s) => s.project.settings.warnOverlap);
+  const warnDuplicateNr = useStore((s) => s.project.settings.warnDuplicateNr);
   return (
     <section className="panel" aria-label="Freiflächen und Warnungen">
       <div className="panel-head">
@@ -56,6 +57,10 @@ export function FreeSpacePanel() {
         <label className="check">
           <input type="checkbox" checked={warnOverlap} onChange={(e) => setWarningsEnabled('overlap', e.target.checked)} />
           Warnung, wenn sich Geschäfte überlappen
+        </label>
+        <label className="check">
+          <input type="checkbox" checked={warnDuplicateNr} onChange={(e) => setWarningsEnabled('duplicate', e.target.checked)} />
+          Warnung bei doppelten Platznummern
         </label>
       </div>
     </section>

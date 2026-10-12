@@ -13,9 +13,10 @@ export const DEFAULT_SETTINGS: ProjectSettings = {
   minFreeWidth: 0.5,
   labelFontSize: 0.6,
   labelTemplate: '{nr}\n{name}\n{breite}×{tiefe} m',
-  numbering: { scope: 'perPage', start: 1 },
+  numbering: { scope: 'perPage', start: 1, digits: 1 },
   warnOutside: true,
   warnOverlap: true,
+  warnDuplicateNr: true,
   snap: { front: true, grid: false, neighbors: true },
 };
 

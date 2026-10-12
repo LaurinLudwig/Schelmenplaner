@@ -3,6 +3,7 @@ import { newId } from '../id';
 import { UserError } from '../errors';
 import { createPage, defaultLayers, DEFAULT_INFRA_TYPES, DEFAULT_SETTINGS } from './defaults';
 import { CURRENT_SCHEMA_VERSION, migrate } from './migrations';
+import { clampDigits, clampStart } from '../numbering';
 import { LAYER_IDS, type Area, type Background, type Category, type Connection, type FestplatzPage, type Project, type ProjectFile, type Stand, type Vec } from './types';
 
 export class ProjectFileError extends UserError {
@@ -63,10 +64,12 @@ function normalizeProject(p: Obj): Project {
       labelTemplate: str(s.labelTemplate, DEFAULT_SETTINGS.labelTemplate),
       numbering: {
         scope: numbering.scope === 'global' ? 'global' : 'perPage',
-        start: num(numbering.start, DEFAULT_SETTINGS.numbering.start),
+        start: clampStart(num(numbering.start, DEFAULT_SETTINGS.numbering.start)),
+        digits: clampDigits(num(numbering.digits, DEFAULT_SETTINGS.numbering.digits)),
       },
       warnOutside: bool(s.warnOutside, DEFAULT_SETTINGS.warnOutside),
       warnOverlap: bool(s.warnOverlap, DEFAULT_SETTINGS.warnOverlap),
+      warnDuplicateNr: bool(s.warnDuplicateNr, DEFAULT_SETTINGS.warnDuplicateNr),
       snap: {
         front: bool(snap.front, DEFAULT_SETTINGS.snap.front),
         grid: bool(snap.grid, DEFAULT_SETTINGS.snap.grid),
@@ -107,8 +110,8 @@ function normalizePage(raw: unknown, index: number, ids: Set<string>, objectIds:
     id: raw.id,
     prefix: str(raw.prefix, ''),
     numberingMode: mode === 'clockwise' || mode === 'manual' ? mode : 'frontLtr',
-    ...(isObj(raw.clockwise) ? { clockwise: raw.clockwise as unknown as FestplatzPage['clockwise'] } : {}),
-    powerLimitKw: typeof raw.powerLimitKw === 'number' ? raw.powerLimitKw : null,
+    ...normalizeClockwise(raw.clockwise),
+    powerLimitKw: typeof raw.powerLimitKw === 'number' && Number.isFinite(raw.powerLimitKw) && raw.powerLimitKw > 0 ? raw.powerLimitKw : null,
     blockOverLimit: bool(raw.blockOverLimit, false),
     northAngle: num(raw.northAngle, 0),
     grid: { size: num(grid.size, base.grid.size), visible: bool(grid.visible, base.grid.visible) },
@@ -124,7 +127,13 @@ function normalizePage(raw: unknown, index: number, ids: Set<string>, objectIds:
 }
 
 const vecOrNull = (v: unknown): Vec | null =>
-  isObj(v) && typeof v.x === 'number' && typeof v.y === 'number' ? { x: v.x, y: v.y } : null;
+  isObj(v) && typeof v.x === 'number' && typeof v.y === 'number' && Number.isFinite(v.x) && Number.isFinite(v.y) ? { x: v.x, y: v.y } : null;
+
+/** Mittelpunkt und Startrichtung der Nummerierung im Uhrzeigersinn; unbrauchbare Angaben entfallen. */
+function normalizeClockwise(raw: unknown): Pick<FestplatzPage, 'clockwise'> {
+  const center = isObj(raw) ? vecOrNull(raw.center) : null;
+  return isObj(raw) && center ? { clockwise: { center, startAngle: normAngle(num(raw.startAngle, 0)) } } : {};
+}
 
 /** Hintergrund prüfen; ein unbrauchbarer Eintrag wird verworfen statt die ganze Datei abzulehnen. */
 function normalizeBackground(raw: unknown): Background | null {
@@ -214,6 +223,7 @@ function normalizeStand(raw: unknown, ids: Set<string>, categoryIds: Set<string>
     color: isColor(raw.color) ? raw.color : null,
     suppressOutsideWarning: bool(raw.suppressOutsideWarning, false),
     suppressOverlapWarning: bool(raw.suppressOverlapWarning, false),
+    suppressDuplicateWarning: bool(raw.suppressDuplicateWarning, false),
     ...r,
   };
 }

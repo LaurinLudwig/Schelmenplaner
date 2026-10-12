@@ -1,6 +1,9 @@
 import { useEffect, useLayoutEffect, useRef, useState, type PointerEvent as ReactPointerEvent } from 'react';
 import { confirmDeletePage, runCommand } from '../../app/commands';
 import type { Id } from '../../core/model/types';
+import { fmt } from '../../core/format';
+import { cachedDuplicates } from '../../core/numbering';
+import { sumPower } from '../../core/power';
 import { cachedPageWarnings, countWarnings } from '../../core/warnings';
 import { addPage, duplicatePage, movePage, renamePage } from '../../state/pages';
 import { selectCanRedo, selectCanUndo, selectDirty, START_PAGE, useStore } from '../../state/store';
@@ -188,6 +191,7 @@ export function TabBar() {
               <>
                 <span className="label">{p.name}</span>
                 <WarnBadge pageId={p.id} />
+                <PowerBadge pageId={p.id} />
               </>
             )}
           </div>
@@ -207,22 +211,43 @@ export function TabBar() {
 }
 
 /**
- * Zahl der Stände mit angezeigter Warnung (M4-18), rot sobald eine Überlappung dabei ist. Liest das
+ * Zahl der Stände mit angezeigter Warnung (M4-18, M5-10), rot sobald eine Überlappung dabei ist. Liest das
  * gespeicherte Projekt; die Warnungen sind je Page zwischengespeichert, unveränderte Pages kosten nichts.
  */
 function WarnBadge({ pageId }: { pageId: Id }) {
   const summary = useStore((s) => {
     const page = s.project.pages.find((p) => p.id === pageId);
     if (!page || !page.stands.length) return '';
-    const n = countWarnings(cachedPageWarnings(page.areas, page.stands), page.stands, s.project.settings);
-    return n.stands ? `${n.stands}|${n.overlap}|${n.outside}` : '';
+    const dups = cachedDuplicates(s.project.pages, s.project.settings.numbering.scope);
+    const n = countWarnings(cachedPageWarnings(page.areas, page.stands), page.stands, s.project.settings, dups);
+    return n.stands ? `${n.stands}|${n.overlap}|${n.outside}|${n.duplicate}` : '';
   });
   if (!summary) return null;
-  const [n, overlap, outside] = summary.split('|').map(Number) as [number, number, number];
-  const parts = [overlap ? `${overlap} Überlappung${overlap === 1 ? '' : 'en'}` : '', outside ? `${outside} außerhalb` : ''].filter(Boolean);
+  const [n, overlap, outside, duplicate] = summary.split('|').map(Number) as [number, number, number, number];
+  const parts = [
+    overlap ? `${overlap} Überlappung${overlap === 1 ? '' : 'en'}` : '',
+    outside ? `${outside} außerhalb` : '',
+    duplicate ? `${duplicate} mit doppelter Nummer` : '',
+  ].filter(Boolean);
   return (
     <span className={`warn-badge${overlap ? ' overlap' : ''}`} data-testid="warn-badge" {...tip({ label: `${n} ${n === 1 ? 'Warnung' : 'Warnungen'}: ${parts.join(', ')}`, side: 'bottom' })}>
       {n}
+    </span>
+  );
+}
+
+/** Stromlimit überschritten (M5-09): eigenes Symbol, getrennt vom Warnzähler der Stände. */
+function PowerBadge({ pageId }: { pageId: Id }) {
+  const text = useStore((s) => {
+    const page = s.project.pages.find((p) => p.id === pageId);
+    if (!page || page.powerLimitKw === null) return '';
+    const sum = sumPower(page.stands);
+    return sum > page.powerLimitKw ? `Stromlimit überschritten: ${fmt(sum)} / ${fmt(page.powerLimitKw)} kW` : '';
+  });
+  if (!text) return null;
+  return (
+    <span className="power-badge" data-testid="power-badge" aria-label={text} {...tip({ label: text, side: 'bottom' })}>
+      <Icon name="bolt" size={14} />
     </span>
   );
 }

@@ -2,7 +2,11 @@ import { normAngle, rectCorners, roundRect } from '../../core/geometry/rect';
 import { CONNECTION_LABEL } from '../../core/label';
 import type { Area, Connection, EdgeIndex, FestplatzPage, Stand } from '../../core/model/types';
 import { LIMITS } from '../../core/objects';
+import { cachedDuplicates } from '../../core/numbering';
 import { cachedPageWarnings } from '../../core/warnings';
+import { Icon } from '../icons/Icon';
+import { tip } from '../shortcuts/tip';
+import { setNrLocked } from '../../state/numbering';
 import { setAreaFront, setRectField, setWarningIgnored, updateArea, updateStands, type WarningKind } from '../../state/objects';
 import { useStore } from '../../state/store';
 import { ColorField } from './ColorField';
@@ -105,22 +109,43 @@ function FrontPicker({ pageId, area }: { pageId: string; area: Area }) {
 /** Name eines Stands in Meldungen: „Nr. 12 · Name“, ohne beides „ohne Namen“. */
 const standName = (s: Stand) => [s.nr && `Nr. ${s.nr}`, s.name].filter(Boolean).join(' · ') || 'Stand ohne Namen';
 
+const SUPPRESS: Record<WarningKind, 'suppressOutsideWarning' | 'suppressOverlapWarning' | 'suppressDuplicateWarning'> = {
+  outside: 'suppressOutsideWarning',
+  overlap: 'suppressOverlapWarning',
+  duplicate: 'suppressDuplicateWarning',
+};
+
 /**
- * Warnungen der ausgewählten Stände (M4-09, M4-10) mit den Häkchen „ignorieren“. Erscheint nur, wenn
+ * Warnungen der ausgewählten Stände (M4-09, M4-10, M5-10) mit den Häkchen „ignorieren“. Erscheint nur, wenn
  * ein Stand eine Warnung hat oder eine ignoriert. Die Häkchen gelten je Art und nur für den eigenen Stand.
  */
 function StandWarnings({ page, stands }: { page: FestplatzPage; stands: Stand[] }) {
   const settings = useStore((s) => s.project.settings);
+  const pages = useStore((s) => s.project.pages);
   const w = cachedPageWarnings(page.areas, page.stands);
+  const dups = cachedDuplicates(pages, settings.numbering.scope);
   const byId = new Map(page.stands.map((s) => [s.id, s]));
   const outside = stands.filter((s) => w.byStand.get(s.id)?.outside);
   const overlap = stands.filter((s) => w.byStand.get(s.id)?.overlaps.length);
+  const duplicate = stands.filter((s) => dups.has(s.id));
   const ids = stands.map((s) => s.id);
   const rows: { kind: WarningKind; label: string; hit: Stand[]; ignored: boolean; enabled: boolean }[] = [
     { kind: 'overlap', label: 'Überlappung ignorieren', hit: overlap, ignored: stands.every((s) => s.suppressOverlapWarning), enabled: settings.warnOverlap },
     { kind: 'outside', label: '„außerhalb“ ignorieren', hit: outside, ignored: stands.every((s) => s.suppressOutsideWarning), enabled: settings.warnOutside },
+    { kind: 'duplicate', label: 'doppelte Nummer ignorieren', hit: duplicate, ignored: stands.every((s) => s.suppressDuplicateWarning), enabled: settings.warnDuplicateNr },
   ];
-  const visible = rows.filter((r) => r.hit.length || stands.some((s) => (r.kind === 'outside' ? s.suppressOutsideWarning : s.suppressOverlapWarning)));
+  const visible = rows.filter((r) => r.hit.length || stands.some((s) => s[SUPPRESS[r.kind]]));
+  /** „Stand X (Festplatz 2)“ für die anderen Stände mit derselben Nummer. */
+  const dupText = (s: Stand) =>
+    dups
+      .get(s.id)!
+      .map((r) => {
+        const pg = pages.find((p) => p.id === r.pageId);
+        const other = pg?.stands.find((x) => x.id === r.standId);
+        const name = other ? other.name.trim() || 'Stand ohne Namen' : 'Stand';
+        return pg && pg.id !== page.id ? `${name} (${pg.name})` : name;
+      })
+      .join(', ');
   if (!visible.length) return null;
   const single = stands.length === 1;
   return (
@@ -134,9 +159,13 @@ function StandWarnings({ page, stands }: { page: FestplatzPage; stands: Stand[] 
                 ? single
                   ? `Überlappt mit ${w.byStand.get(stands[0]!.id)!.overlaps.map((id) => standName(byId.get(id)!)).join(', ')}`
                   : `${r.hit.length} überlappen`
-                : single
-                  ? 'Außerhalb jeder Grundfläche'
-                  : `${r.hit.length} außerhalb`}
+                : r.kind === 'duplicate'
+                  ? single
+                    ? `Nummer ${stands[0]!.nr.trim()} auch bei: ${dupText(stands[0]!)}`
+                    : `${r.hit.length} mit doppelter Nummer`
+                  : single
+                    ? 'Außerhalb jeder Grundfläche'
+                    : `${r.hit.length} außerhalb`}
               {!r.enabled && ' (projektweit ausgeschaltet)'}
             </div>
           )}
@@ -150,6 +179,40 @@ function StandWarnings({ page, stands }: { page: FestplatzPage; stands: Stand[] 
   );
 }
 
+/**
+ * Platznummer mit Schloss (M5-05): Eine fixierte Nummer überspringt die Automatik. Bei Mehrfachauswahl
+ * nur das Schloss (gilt für alle); die Nummer selbst wird einzeln vergeben.
+ */
+function NrField({ pageId, stands }: { pageId: string; stands: Stand[] }) {
+  const single = stands.length === 1;
+  const locked = stands.every((s) => s.nrLocked);
+  const mixed = !locked && stands.some((s) => s.nrLocked);
+  const ids = stands.map((s) => s.id);
+  const lockLabel = locked ? 'Fixierung lösen' : 'Nummer fixieren';
+  return (
+    <div className="nr-row">
+      {single ? (
+        <TextField id="st-nr" className="grow" label="Platznummer" value={stands[0]!.nr} onCommit={(nr) => updateStands(pageId, ids, { nr: nr.trim() }, 'Platznummer ändern')} />
+      ) : (
+        <div className="field grow">
+          <label>Platznummer</label>
+          <span className="hint">{mixed ? 'teilweise fixiert' : locked ? 'alle fixiert' : 'einzeln vergeben'}</span>
+        </div>
+      )}
+      <button
+        type="button"
+        className={`icon-btn nr-lock${mixed ? ' mixed' : ''}`}
+        aria-pressed={locked}
+        data-testid="nr-lock"
+        onClick={() => setNrLocked(pageId, ids, !locked)}
+        {...tip({ label: lockLabel, desc: 'Fixierte Nummern überspringt „Neu nummerieren“', side: 'top' })}
+      >
+        <Icon name={locked ? 'lock' : 'unlock'} size={16} />
+      </button>
+    </div>
+  );
+}
+
 const CONNECTIONS: (Connection | null)[] = [null, '230V', 'CEE16', 'CEE32'];
 const MIXED = '__mixed';
 
@@ -157,7 +220,7 @@ function StandFields({ pageId, stands }: { pageId: string; stands: Stand[] }) {
   const categories = useStore((s) => s.project.categories);
   const ids = stands.map((s) => s.id);
   const single = stands.length === 1;
-  const text = (key: 'nr' | 'name' | 'owner' | 'ware' | 'note') => common(stands.map((s) => s[key]));
+  const text = (key: 'name' | 'owner' | 'ware' | 'note') => common(stands.map((s) => s[key]));
   const set = (patch: Partial<Stand>, label: string) => updateStands(pageId, ids, patch, label);
   const cat = common(stands.map((s) => s.categoryId ?? ''));
   const conn = common(stands.map((s) => s.connection ?? ''));
@@ -165,7 +228,7 @@ function StandFields({ pageId, stands }: { pageId: string; stands: Stand[] }) {
   const mixedColor = !single && color === null && stands.some((s) => s.color !== null);
   return (
     <>
-      {single && <TextField id="st-nr" label="Platznummer" value={text('nr')} onCommit={(nr) => set({ nr: nr.trim() }, 'Platznummer ändern')} />}
+      <NrField pageId={pageId} stands={stands} />
       <TextField id="st-name" label="Geschäftsname" value={text('name')} onCommit={(name) => set({ name }, 'Geschäftsname ändern')} />
       <TextField id="st-owner" label="Eigentümer" value={text('owner')} onCommit={(owner) => set({ owner }, 'Eigentümer ändern')} />
       <TextField id="st-ware" label="Typ/Ware" value={text('ware')} onCommit={(ware) => set({ ware }, 'Ware ändern')} />

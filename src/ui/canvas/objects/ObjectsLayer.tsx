@@ -50,9 +50,12 @@ interface Props {
   baseStands: Stand[];
   /** Objekte, die die laufende Geste bewegt (bzw. Kopien bei Alt+Ziehen). */
   movingIds: ReadonlySet<Id>;
-  warnSettings: Pick<ProjectSettings, 'warnOutside' | 'warnOverlap'>;
+  warnSettings: Pick<ProjectSettings, 'warnOutside' | 'warnOverlap' | 'warnDuplicateNr'>;
+  /** Stände mit doppelter Nummer (M5-10, numbering.ts). */
+  duplicates: ReadonlyMap<Id, unknown>;
 }
 
+/** Art der Markierung am Stand: rot bei Überlappung, sonst orange („außerhalb“ oder doppelte Nummer). */
 type WarnKind = 'outside' | 'overlap' | null;
 
 /**
@@ -72,7 +75,7 @@ const pts = (r: Area | Stand) =>
 
 export const standColor = (s: Stand, cat: Category | undefined) => s.color ?? cat?.color ?? DEFAULT_STAND_COLOR;
 
-export const ObjectsLayer = memo(function ObjectsLayer({ page, categories, template, fontSize, selected, labelsTiny, labelHalo, free, hatchSpacing, freeLabelsTiny, freeLabelWindow, warnings, baseStands, movingIds, warnSettings }: Props) {
+export const ObjectsLayer = memo(function ObjectsLayer({ page, categories, template, fontSize, selected, labelsTiny, labelHalo, free, hatchSpacing, freeLabelsTiny, freeLabelWindow, warnings, baseStands, movingIds, warnSettings, duplicates }: Props) {
   const catById = useMemo(() => new Map(categories.map((c) => [c.id, c])), [categories]);
   const L = page.layers;
   // Leistung beim Ziehen (QA-M4-03): Unbewegte Stände kommen aus der gespeicherten Liste, die während der
@@ -81,8 +84,8 @@ export const ObjectsLayer = memo(function ObjectsLayer({ page, categories, templ
   const staticStands = movingIds.size ? unmoved : page.stands;
   const movingStands = movingIds.size ? page.stands.filter((s) => movingIds.has(s.id)) : NO_STANDS;
   const kindOf = (s: Stand): WarnKind => {
-    const a = activeWarnings(warnings.byStand.get(s.id), s, warnSettings);
-    return a.overlap ? 'overlap' : a.outside ? 'outside' : null;
+    const a = activeWarnings(warnings.byStand.get(s.id), s, warnSettings, duplicates.has(s.id));
+    return a.overlap ? 'overlap' : a.outside || a.duplicate ? 'outside' : null;
   };
   // Warnungen der unbewegten Stände: nur eine neue Map, wenn sich eine Warnung wirklich ändert
   const kindsKey = staticStands.map((s) => kindOf(s) ?? '').join(',');

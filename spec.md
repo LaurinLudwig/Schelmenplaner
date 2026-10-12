@@ -103,8 +103,12 @@ Freiflächen-Logik wurde bereits erfolgreich getestet (prototype/freiflaechen.ht
     Grundflächen, auch wenn er nur hinten herausragt. Ein Stand über zwei aneinanderliegenden
     Grundflächen ist nicht außerhalb.
   - Überlappung (rot, Vorrang vor orange): zwei Stände dringen mehr als 0,01 m ineinander ein.
+  - Doppelte Nummer (orange, Entscheidung 2026-10-12): zwei Stände im selben Nummernkreis (§5) haben dieselbe
+    Platznummer („12“ = „012“, Groß-/Kleinschreibung und Leerzeichen am Rand egal). Leere Nummern sind nie doppelt.
+    Die Seitenleiste nennt die anderen Stände mit dieser Nummer (auch auf anderen Pages).
   - Jede Art ist projektweit abschaltbar und pro Stand ignorierbar („außerhalb ignorieren“,
-    „Überlappung ignorieren“, wirkt nur auf den eigenen Stand); alles rückgängig machbar.
+    „Überlappung ignorieren“, „doppelte Nummer ignorieren“, wirkt nur auf den eigenen Stand); alles rückgängig
+    machbar.
   - Der Page-Tab zeigt die Zahl der Stände mit aktiver Warnung (rot, sobald eine Überlappung dabei ist),
     damit Probleme auf anderen Pages sichtbar sind.
 - Attribute (Seitenleiste rechts): Platznummer, Geschäftsname, Eigentümer, Typ/Ware,
@@ -157,18 +161,48 @@ Freiflächen-Logik wurde bereits erfolgreich getestet (prototype/freiflaechen.ht
   dient den Sprung-Links der Start-Page (§7).
 
 ### 5. Standnummern
-- Modi: links → rechts entlang der Vorderseite (Grundflächen in festgelegter Reihenfolge),
-  Uhrzeigersinn um einen pro Festplatz manuell gesetzten Mittelpunkt mit Startrichtung, manuell.
-- Einstellbar: Startnummer, Präfix pro Festplatz (z. B. „A-“), global durchgehend oder pro Festplatz.
-  [ANPASSEN]
-- Manuell gesetzte Nummern können fixiert werden. Die Automatik überspringt den Stand und seine
-  Nummer, sodass keine Nummer doppelt vergeben wird.
-- Neu nummerieren nur per Button (mit Vorschau), damit vergebene Nummern nicht unbemerkt springen.
+Entscheidungen 2026-10-12 (M5-Planung).
+- Modi pro Festplatz: links → rechts über den Festplatz, Uhrzeigersinn um einen Mittelpunkt, manuell.
+- **Links → rechts** (geändert 2026-10-12, Laurin): Alle Stände der Page werden von links nach rechts durchlaufen,
+  unabhängig von den Grundflächen. Maßgeblich ist die Mitte des Stands auf dem Plan (x-Achse der Zeichenfläche,
+  unabhängig von der Nordrichtung). Gleiche Lage (bis 0,01 m): der obere Stand zuerst. Stände außerhalb von
+  Grundflächen zählen genauso mit. Die Reihenfolge der Grundflächen spielt für die Nummerierung keine Rolle mehr;
+  sie entscheidet nur noch, welche Grundfläche bei Überlappung gewinnt (§4), und ist im Seitenleisten-Bereich
+  „Grundflächen“ mit ↑/↓ änderbar (Undo-Schritt).
+- **Uhrzeigersinn:** um einen pro Festplatz gesetzten Mittelpunkt (Klick auf die Zeichenfläche nach „Mittelpunkt
+  setzen“ oder Felder X/Y; beim ersten Umschalten die Mitte aller Grundflächen und Stände). Startrichtung in Grad
+  im Uhrzeigersinn relativ zum Norden des Plans (Nordrichtung der Page), Standard 0° = Norden. Sortiert wird nach
+  dem Winkel der Standmitte ab der Startrichtung, bei gleichem Winkel (bis 0,1°) der Stand näher am Mittelpunkt
+  zuerst. Es zählen alle Stände der Page. Mittelpunkt und Startrichtung sind auf der Zeichenfläche als Fadenkreuz
+  mit Strahl sichtbar, solange der Modus aktiv ist (nicht im PDF).
+- **Manuell:** Die Automatik lässt die Page aus.
+- **Format:** Präfix der Page + Zahl, aufgefüllt auf die Stellenzahl (z. B. Präfix „A-“, 2 Stellen → „A-01“).
+  Präfix pro Festplatz; Startnummer und Stellenzahl (1–4, Standard 1 = ohne führende Nullen) projektweit.
+- **Nummernkreis:** „pro Festplatz“ (jede Page beginnt bei der Startnummer) oder „global durchgehend“ (Pages in
+  der Reihenfolge der Tabs; Pages im Modus „manuell“ werden übersprungen, ihre Nummern gelten als belegt).
+- **Fixierte Nummern:** Schloss neben der Platznummer (auch bei Mehrfachauswahl). Die Automatik überspringt
+  fixierte Stände und vergibt keine Nummer, die einer fixierten im selben Nummernkreis gleicht (Vergleich wie bei
+  der Warnung „doppelte Nummer“, §3). Eine fixierte Nummer bleibt von Hand änderbar; fixiert und leer = der Stand
+  bleibt ohne Nummer.
+- **Neue Stände** und Kopien bekommen keine Nummer, bis neu nummeriert wird. Der Bereich „Nummerierung“ zeigt die
+  Zahl der Stände ohne Nummer.
+- **Neu nummerieren** nur per Button bzw. Kurzbefehl, damit vergebene Nummern nicht unbemerkt springen. Bei „pro
+  Festplatz“ betrifft es die aktive Page, bei „global“ alle Pages außer den manuellen. Eine Vorschau zeigt alt → neu
+  für alle betroffenen Stände und die Zahl der fixierten und unveränderten; Übernehmen ist ein Undo-Schritt.
+  Doppelte Nummern, die danach bleiben (z. B. zwischen fixierten Ständen), nennt die Vorschau.
 
 ### 6. Strom
-- Optionales Stromlimit pro Festplatz in kW.
-- Laufende Summe als Balken (grün / gelb ab 90 % / rot über Limit), sichtbar auf der jeweiligen
-  Festplatz-Page und auf der Start-Page. Warnung beim Überschreiten, Blockieren optional.
+Entscheidungen 2026-10-12 (M5-Planung).
+- Optionales Stromlimit pro Festplatz in kW. Es zählen alle Stände der Page, auch außerhalb von Grundflächen.
+- Laufende Summe als Balken (grün / gelb ab 90 % / rot über Limit) mit „84 / 100 kW (84 %)“, auf der Festplatz-Page
+  im Seitenleisten-Bereich „Strom“ (immer sichtbar, auch bei Auswahl), auf der Start-Page in M6. Ohne Limit nur
+  die Summe. Dazu Anzahl und kW je Anschlussart (230 V, CEE 16 A, CEE 32 A, ohne Angabe).
+- Überschreitung: eigenes Blitz-Symbol am Page-Tab (getrennt vom Warnzähler der Stände). Ohne Blockieren erscheint
+  ein Hinweis, wenn eine Änderung das Limit überschreitet.
+- Blockieren (pro Festplatz einschaltbar): Eine Änderung, die die Summe der Page erhöht und danach über dem Limit
+  liegt, wird mit deutscher Meldung abgewiesen (Strom-Feld, Einfügen, Duplizieren, Alt+Ziehen). Senkungen sind
+  immer erlaubt. Nicht blockiert werden Rückgängig/Wiederholen, Öffnen, ein Limit unter der aktuellen Summe und das
+  Duplizieren einer Page. Bestehende Überschreitungen bleiben sichtbar und werden nicht korrigiert.
 
 ### 7. Start-Page (Statistik & Listen)
 - Kennzahlen global und pro Festplatz: Anzahl Geschäfte, Summe Frontmeter (Breiten),
@@ -200,7 +234,7 @@ Freiflächen-Logik wurde bereits erfolgreich getestet (prototype/freiflaechen.ht
 - Das Dateiformat ist versioniert (`schemaVersion` in `project.json`). Jede Formatänderung erhöht die
   Version und bringt eine Migration mit, die ältere Dateien beim Öffnen umwandelt und fehlende Felder mit
   Standardwerten ergänzt. Dateien einer neueren Version, als die App kennt, werden mit einer
-  verständlichen Meldung abgewiesen (Entscheidung 2026-10-11; Version 2 seit M4).
+  verständlichen Meldung abgewiesen (Entscheidung 2026-10-11; Version 2 seit M4, Version 3 seit M5).
 - Projekt als Vorlage fürs nächste Jahr duplizieren.
 - Import einer Händlerliste aus CSV/XLSX (Spalten zuordnen). Importierte Händler landen in einer
   Liste „noch nicht platziert“ und können per Drag & Drop platziert werden. [Phase 2]

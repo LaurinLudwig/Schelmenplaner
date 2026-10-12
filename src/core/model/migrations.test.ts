@@ -66,8 +66,52 @@ describe('Migration 1 → 2 (M4: Warnungen)', () => {
     project.pages.forEach((p, i) => {
       expect(p.name).toBe(raw.project.pages[i].name);
       expect(p.areas).toEqual(raw.project.pages[i].areas);
-      // alle bisherigen Felder unverändert, das neue Feld ergänzt
-      expect(p.stands).toEqual(raw.project.pages[i].stands.map((s: object) => ({ ...s, suppressOverlapWarning: false })));
+      // alle bisherigen Felder unverändert, die neuen Felder (M4, M5) ergänzt
+      expect(p.stands).toEqual(raw.project.pages[i].stands.map((s: object) => ({ ...s, suppressOverlapWarning: false, suppressDuplicateWarning: false })));
+    });
+  });
+});
+
+describe('Migration 2 → 3 (M5: Nummerierung)', () => {
+  it('ergänzt Stellenzahl, warnDuplicateNr und suppressDuplicateWarning, ohne vorhandene Werte zu überschreiben', () => {
+    const v2 = {
+      id: 'p',
+      settings: { numbering: { scope: 'global', start: 100 }, warnOverlap: false },
+      pages: [{ id: 'a', stands: [{ id: 's1', nr: '7' }, { id: 's2', suppressDuplicateWarning: true }] }],
+    };
+    const before = structuredClone(v2);
+    const v3 = MIGRATIONS[2]!(v2) as any;
+    expect(v2).toEqual(before);
+    expect(v3.settings).toEqual({ numbering: { scope: 'global', start: 100, digits: 1 }, warnOverlap: false, warnDuplicateNr: true });
+    expect(v3.pages[0].stands).toEqual([
+      { id: 's1', nr: '7', suppressDuplicateWarning: false },
+      { id: 's2', suppressDuplicateWarning: true },
+    ]);
+    expect((MIGRATIONS[2]!({ id: 'x', settings: 'kaputt', pages: 'kaputt' }) as any).settings).toBe('kaputt');
+  });
+
+  it('echte Datei aus M4 (Version 2, tests/fixtures/format-v2-m4.schelme) wird vollständig migriert', () => {
+    const bytes = new Uint8Array(readFileSync(join(process.cwd(), 'tests', 'fixtures', 'format-v2-m4.schelme')));
+    const raw = JSON.parse(strFromU8(unzipSync(bytes)['project.json']!));
+    expect(raw.schemaVersion).toBe(2);
+    expect(raw.project.settings.numbering).not.toHaveProperty('digits');
+    expect(raw.project.settings).not.toHaveProperty('warnDuplicateNr');
+    expect(raw.project.pages[0].stands[0]).not.toHaveProperty('suppressDuplicateWarning');
+
+    const { project } = decodeProjectFile(bytes);
+    expect(project.settings.numbering).toEqual({ ...raw.project.settings.numbering, digits: 1 });
+    expect(project.settings.warnDuplicateNr).toBe(true);
+    expect(project.settings.warnOverlap).toBe(raw.project.settings.warnOverlap ?? true);
+    expect(project.categories).toEqual(raw.project.categories);
+    expect(project.pages.reduce((n, p) => n + p.stands.length, 0)).toBe(500);
+    project.pages.forEach((p, i) => {
+      const rp = raw.project.pages[i];
+      expect(p.name).toBe(rp.name);
+      expect(p.prefix).toBe(rp.prefix);
+      expect(p.numberingMode).toBe(rp.numberingMode);
+      expect(p.powerLimitKw).toBe(rp.powerLimitKw);
+      expect(p.areas).toEqual(rp.areas);
+      expect(p.stands).toEqual(rp.stands.map((s: object) => ({ ...s, suppressDuplicateWarning: false })));
     });
   });
 });

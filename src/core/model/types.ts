@@ -91,6 +91,8 @@ export interface Stand extends Rect {
   suppressOutsideWarning: boolean;
   /** Warnung „Überlappung“ für diesen Stand ignorieren (die Warnung am anderen Stand bleibt). */
   suppressOverlapWarning: boolean;
+  /** Warnung „doppelte Nummer“ für diesen Stand ignorieren. */
+  suppressDuplicateWarning: boolean;
 }
 
 export interface InfraObject extends Rect {
@@ -130,21 +132,29 @@ export interface View {
   ty: number;
 }
 
+export type NumberingScope = 'global' | 'perPage';
+/** `frontLtr` = links → rechts über den ganzen Festplatz (Name aus der Planung, im Dateiformat beibehalten). */
 export type NumberingMode = 'frontLtr' | 'clockwise' | 'manual';
+
+/** Nummerierung im Uhrzeigersinn: Mittelpunkt und Startrichtung (Grad im Uhrzeigersinn ab Norden der Page). */
+export interface ClockwiseSettings {
+  center: Vec;
+  startAngle: number;
+}
 
 export interface FestplatzPage {
   id: Id;
   name: string;
   prefix: string;
   numberingMode: NumberingMode;
-  clockwise?: { center: Vec; startAngle: number };
+  clockwise?: ClockwiseSettings;
   powerLimitKw: number | null;
   blockOverLimit: boolean;
   northAngle: number;
   grid: { size: number; visible: boolean };
   layers: Record<LayerId, LayerState>;
   background: Background | null;
-  /** Array-Reihenfolge = Reihenfolge der Grundflächen für die Nummerierung. */
+  /** Array-Reihenfolge der Grundflächen: Bei Überlappung gewinnt die frühere (spec.md §4). */
   areas: Area[];
   stands: Stand[];
   infra: InfraObject[];
@@ -159,9 +169,11 @@ export interface ProjectSettings {
   /** Schriftgröße der Standbeschriftung in Metern (Planeinheiten). */
   labelFontSize: number;
   labelTemplate: string;
-  numbering: { scope: 'global' | 'perPage'; start: number };
+  /** Nummernkreis, Startnummer und Stellenzahl (führende Nullen bis `digits` Stellen). */
+  numbering: { scope: NumberingScope; start: number; digits: number };
   warnOutside: boolean;
   warnOverlap: boolean;
+  warnDuplicateNr: boolean;
   /** Fang-Umschalter: Ansichtseinstellung (kein Undo-Schritt), wird aber mitgespeichert. */
   snap: { front: boolean; grid: boolean; neighbors: boolean };
 }

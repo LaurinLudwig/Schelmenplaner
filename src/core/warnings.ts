@@ -2,6 +2,7 @@
  * Warnungen für Geschäfte (M4, spec.md §3):
  * - außerhalb: Ein Teil des Stands liegt mehr als TOL außerhalb der Vereinigung aller Grundflächen.
  * - Überlappung: Zwei Stände dringen mehr als TOL ineinander ein.
+ * - doppelte Nummer (M5): berechnet in numbering.ts (`cachedDuplicates`), hier nur angezeigt und gezählt.
  * Die Rohdaten hängen nur von der Geometrie ab; ob eine Warnung angezeigt wird, entscheiden die
  * Projekteinstellungen und die Häkchen am Stand (`activeWarnings`).
  */
@@ -82,30 +83,44 @@ export function pageWarnings(areas: readonly Area[], stands: readonly Stand[]): 
   return { byStand, regions };
 }
 
-type WarnSettings = Pick<ProjectSettings, 'warnOutside' | 'warnOverlap'>;
+export type WarnSettings = Pick<ProjectSettings, 'warnOutside' | 'warnOverlap' | 'warnDuplicateNr'>;
 
-/** Angezeigte Warnungen eines Stands nach Projekteinstellung und eigenen Häkchen. */
-export function activeWarnings(w: StandWarning | undefined, stand: Stand, settings: WarnSettings): { outside: boolean; overlap: boolean } {
+export interface ActiveWarnings {
+  outside: boolean;
+  overlap: boolean;
+  duplicate: boolean;
+}
+
+/**
+ * Angezeigte Warnungen eines Stands nach Projekteinstellung und eigenen Häkchen.
+ * `duplicate` = der Stand hat eine doppelte Nummer (numbering.ts).
+ */
+export function activeWarnings(w: StandWarning | undefined, stand: Stand, settings: WarnSettings, duplicate = false): ActiveWarnings {
   return {
     outside: !!w?.outside && settings.warnOutside && !stand.suppressOutsideWarning,
     overlap: !!w?.overlaps.length && settings.warnOverlap && !stand.suppressOverlapWarning,
+    duplicate: duplicate && settings.warnDuplicateNr && !stand.suppressDuplicateWarning,
   };
 }
 
 export interface WarningCount {
   /** Stände mit mindestens einer angezeigten Warnung. */
   stands: number;
+  /** Je Art; ein Stand mit Überlappung zählt nur dort, sonst bei „außerhalb“. */
   outside: number;
   overlap: number;
+  /** Stände mit doppelter Nummer (zusätzlich zu den beiden anderen gezählt). */
+  duplicate: number;
 }
 
-export function countWarnings(w: PageWarnings, stands: readonly Stand[], settings: WarnSettings): WarningCount {
-  const n: WarningCount = { stands: 0, outside: 0, overlap: 0 };
+export function countWarnings(w: PageWarnings, stands: readonly Stand[], settings: WarnSettings, duplicates?: ReadonlyMap<Id, unknown>): WarningCount {
+  const n: WarningCount = { stands: 0, outside: 0, overlap: 0, duplicate: 0 };
   for (const s of stands) {
-    const a = activeWarnings(w.byStand.get(s.id), s, settings);
-    if (a.outside || a.overlap) n.stands++;
+    const a = activeWarnings(w.byStand.get(s.id), s, settings, !!duplicates?.has(s.id));
+    if (a.outside || a.overlap || a.duplicate) n.stands++;
     if (a.overlap) n.overlap++;
     else if (a.outside) n.outside++;
+    if (a.duplicate) n.duplicate++;
   }
   return n;
 }

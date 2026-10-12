@@ -1,4 +1,9 @@
+import { produce } from 'immer';
+import { showError } from '../app/dialogs';
+import { notify } from '../app/notify';
+import { fmt } from '../core/format';
 import { MIN_FREE_WIDTH } from '../core/freeSpace';
+import { checkPowerChange } from '../core/power';
 import { normAngle, roundRect, setFront } from '../core/geometry/rect';
 import { allSelectable } from '../core/hit';
 import { newId } from '../core/id';
@@ -46,6 +51,27 @@ const assignRect = (o: Rect, r: Rect) => {
   o.d = n.d;
   o.rot = n.rot;
 };
+
+/**
+ * Änderung mit Prüfung des Stromlimits (M5-09, spec.md §6): Erhöht sie die Summe einer Page, die
+ * Überschreitungen blockiert, über deren Limit, wird sie nicht übernommen (Meldung, Rückgabe false).
+ * Ohne Blockieren erscheint beim ersten Überschreiten ein Hinweis.
+ */
+export function changeWithPowerCheck(label: string, recipe: (p: Project) => void): boolean {
+  const before = st().project;
+  const checks = checkPowerChange(before.pages, produce(before, recipe).pages);
+  const blocked = checks.find((c) => c.blocked);
+  if (blocked) {
+    void showError(
+      'Stromlimit überschritten',
+      `${blocked.pageName} hätte ${fmt(blocked.after)} kW bei einem Limit von ${fmt(blocked.limitKw)} kW. Die Änderung wurde nicht übernommen. Das Blockieren lässt sich im Bereich „Strom“ der Seitenleiste ausschalten.`,
+    );
+    return false;
+  }
+  st().change(label, recipe);
+  for (const c of checks) if (c.crossed) notify(`Stromlimit überschritten: ${c.pageName} hat ${fmt(c.after)} von ${fmt(c.limitKw)} kW.`, 'error', 6000);
+  return true;
+}
 
 const clamp = (v: number, kind: ObjectKind) => Math.min(LIMITS[kind].max, Math.max(LIMITS[kind].min, v));
 
@@ -143,8 +169,9 @@ export function setAreaFront(pageId: Id, id: Id, edge: EdgeIndex) {
 
 // ---------- Attribute ----------
 
-export function updateStands(pageId: Id, ids: Id[], patch: Partial<Omit<Stand, 'id' | keyof Rect>>, label: string) {
-  st().change(label, (p) => {
+/** Attribute der Stände ändern; false, wenn das Stromlimit die Änderung blockiert. */
+export function updateStands(pageId: Id, ids: Id[], patch: Partial<Omit<Stand, 'id' | keyof Rect>>, label: string): boolean {
+  return changeWithPowerCheck(label, (p) => {
     const page = pageOf(p, pageId);
     if (page) eachObject(page, ids, (o, kind) => kind === 'stand' && Object.assign(o, patch));
   });
@@ -205,13 +232,13 @@ export function cutSelection() {
 }
 
 function insertObjects(pageId: Id, areas: Area[], stands: Stand[], label: string) {
-  st().change(label, (p) => {
+  const ok = changeWithPowerCheck(label, (p) => {
     const page = pageOf(p, pageId);
     if (!page) return;
     page.areas.push(...areas.map((a) => roundRect(a)));
     page.stands.push(...stands.map((s) => roundRect(s)));
   });
-  select([...areas.map((a) => a.id), ...stands.map((s) => s.id)]);
+  if (ok) select([...areas.map((a) => a.id), ...stands.map((s) => s.id)]);
 }
 
 /**
@@ -329,19 +356,22 @@ export function setMinFreeWidth(width: number) {
   st().change('Mindestbreite ändern', (p) => void (p.settings.minFreeWidth = v));
 }
 
-export type WarningKind = 'outside' | 'overlap';
+export type WarningKind = 'outside' | 'overlap' | 'duplicate';
+
+const WARNING: Record<WarningKind, { name: string; setting: 'warnOutside' | 'warnOverlap' | 'warnDuplicateNr'; suppress: 'suppressOutsideWarning' | 'suppressOverlapWarning' | 'suppressDuplicateWarning' }> = {
+  outside: { name: 'Warnung „außerhalb“', setting: 'warnOutside', suppress: 'suppressOutsideWarning' },
+  overlap: { name: 'Warnung „Überlappung“', setting: 'warnOverlap', suppress: 'suppressOverlapWarning' },
+  duplicate: { name: 'Warnung „doppelte Nummer“', setting: 'warnDuplicateNr', suppress: 'suppressDuplicateWarning' },
+};
 
 /** Warnungen einer Art projektweit ein- oder ausschalten (Undo-Schritt). */
 export function setWarningsEnabled(kind: WarningKind, on: boolean) {
-  const label = `${kind === 'outside' ? 'Warnung „außerhalb“' : 'Warnung „Überlappung“'} ${on ? 'einschalten' : 'ausschalten'}`;
-  st().change(label, (p) => {
-    if (kind === 'outside') p.settings.warnOutside = on;
-    else p.settings.warnOverlap = on;
+  st().change(`${WARNING[kind].name} ${on ? 'einschalten' : 'ausschalten'}`, (p) => {
+    p.settings[WARNING[kind].setting] = on;
   });
 }
 
 /** Warnung einer Art für die angegebenen Stände ignorieren bzw. wieder anzeigen (Undo-Schritt). */
 export function setWarningIgnored(pageId: Id, ids: Id[], kind: WarningKind, ignored: boolean) {
-  const patch = kind === 'outside' ? { suppressOutsideWarning: ignored } : { suppressOverlapWarning: ignored };
-  updateStands(pageId, ids, patch, ignored ? 'Warnung ignorieren' : 'Warnung wieder anzeigen');
+  updateStands(pageId, ids, { [WARNING[kind].suppress]: ignored }, ignored ? 'Warnung ignorieren' : 'Warnung wieder anzeigen');
 }

@@ -2,6 +2,7 @@ import { SHORTCUTS } from '../ui/shortcuts/definitions';
 import { IS_MAC, matches, parseCombo } from '../ui/shortcuts/keys';
 import { useDialogs } from './dialogs';
 import { usePagePicker } from './pagePicker';
+import { useRenumber } from './renumber';
 import { COMMANDS, runCommand } from './commands';
 
 const compiled = SHORTCUTS.flatMap((def) => def.keys.map((k) => ({ id: def.id, combo: parseCombo(k) })));
@@ -35,7 +36,7 @@ export function setInteractionKeyHandler(handler: InteractionKeyHandler): () => 
  */
 export function handleKeyDown(e: KeyboardEvent) {
   if (e.defaultPrevented || e.isComposing) return;
-  if (useDialogs.getState().queue.length || usePagePicker.getState().request) return;
+  if (useDialogs.getState().queue.length || usePagePicker.getState().request || useRenumber.getState().plan) return;
   const inText = isTextField(e.target);
   if (!inText && interaction?.(e)) {
     e.preventDefault();

@@ -36,6 +36,10 @@ import i_hidden from '@material-symbols/svg-400/outlined/visibility_off.svg?raw'
 import i_lock from '@material-symbols/svg-400/outlined/lock.svg?raw';
 import i_unlock from '@material-symbols/svg-400/outlined/lock_open.svg?raw';
 import i_colorReset from '@material-symbols/svg-400/outlined/format_color_reset.svg?raw';
+import i_bolt from '@material-symbols/svg-400/outlined/bolt.svg?raw';
+import i_up from '@material-symbols/svg-400/outlined/keyboard_arrow_up.svg?raw';
+import i_down from '@material-symbols/svg-400/outlined/keyboard_arrow_down.svg?raw';
+import i_center from '@material-symbols/svg-400/outlined/my_location.svg?raw';
 
 const RAW = {
   select: i_select,
@@ -75,6 +79,10 @@ const RAW = {
   lock: i_lock,
   unlock: i_unlock,
   colorReset: i_colorReset,
+  bolt: i_bolt,
+  up: i_up,
+  down: i_down,
+  center: i_center,
 };
 
 export type IconName = keyof typeof RAW;

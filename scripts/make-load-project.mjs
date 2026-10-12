@@ -94,6 +94,7 @@ function fillPage(pg, rows, counter) {
         color: n % 23 === 0 ? '#ffffff' : null,
         suppressOutsideWarning: false,
         suppressOverlapWarning: false,
+        suppressDuplicateWarning: false,
         cx: r2(area.cx + lx * c - ly * sn),
         cy: r2(area.cy + lx * sn + ly * c),
         w,
@@ -123,13 +124,25 @@ const project = {
     minFreeWidth: 0.5,
     labelFontSize: 0.6,
     labelTemplate: '{nr}\n{name}\n{breite}×{tiefe} m',
-    numbering: { scope: 'perPage', start: 1 },
+    numbering: { scope: 'perPage', start: 1, digits: 1 },
     warnOutside: true,
+    warnOverlap: true,
+    warnDuplicateNr: true,
     snap: { front: true, grid: false, neighbors: true },
   },
   pages: pages.map(([pg]) => pg),
   categories: CATEGORIES,
-  infraTypes: [],
+  // wie DEFAULT_INFRA_TYPES in src/core/model/defaults.ts (die Datei soll beim Laden unverändert bleiben)
+  infraTypes: [
+    { type: 'barrierMobile', label: 'Mobile Sperre', color: '#e0a526', icon: 'fence', occupiesArea: true },
+    { type: 'barrierFixed', label: 'Feste Sperre', color: '#c0392b', icon: 'fence', occupiesArea: true },
+    { type: 'medical', label: 'Sanitätsdienst', color: '#e74c3c', icon: 'medical_services', occupiesArea: true },
+    { type: 'ambulance', label: 'RTW-Platz', color: '#d35454', icon: 'ambulance', occupiesArea: true },
+    { type: 'toilet', label: 'Toilette', color: '#3a86c8', icon: 'wc', occupiesArea: true },
+    { type: 'waste', label: 'Müllcontainer', color: '#6d7a80', icon: 'delete', occupiesArea: true },
+    { type: 'narrowPassage', label: 'Enge Durchfahrt', color: '#9b59b6', icon: 'signpost', occupiesArea: false },
+    { type: 'marker', label: 'Marker', color: '#16a085', icon: 'location_on', occupiesArea: false },
+  ],
   exportProfiles: [],
   titleBlock: { dateText: '', version: '' },
   unplaced: [],
@@ -138,6 +151,6 @@ const project = {
 const total = project.pages.reduce((n, p) => n + p.stands.length, 0);
 if (total !== 500) throw new Error(`Erwartet 500 Stände, erzeugt ${total}`);
 
-const file = { format: 'schelmeplaner', schemaVersion: 2, project };
+const file = { format: 'schelmeplaner', schemaVersion: 3, project };
 writeFileSync(out, zipSync({ 'project.json': [strToU8(JSON.stringify(file, null, 2)), { level: 6 }] }, { mtime: new Date('2026-01-01T00:00:00Z') }));
 console.warn(`${out}: ${total} Stände auf ${project.pages.length} Festplätzen`);
