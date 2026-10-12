@@ -61,7 +61,6 @@ Erledigte Einträge stehen in `docs/archiv/eingang-erledigt.md` bzw. im Archiv d
 - E-08 (Hinweis) Browser-Autosave nutzt localStorage (ca. 5 MB). Mit eingebetteten Hintergründen (M2) reicht das nicht; betrifft nur den Browser-Dev-Modus.
 - [QA] QA-M1-11 (gering, Dokumentation/Prozess) Die Entwicklung hat QA-Artefakte geändert: Abschnitt „Behoben“ an `qa/M1.md` angehängt und die Erwartung des QA-Tests „M1-24: Zwei-Finger-Wischen“ umgedreht (`tests/e2e/m1-canvas.spec.ts:104-107`, begründet). Dazu Widersprüche: QA-M1-02 steht hier als „erledigt“, in `qa/M1.md` als „teilweise“; die Einträge QA-M1-03/-04 nennen noch `test.fail`, obwohl die Markierungen entfernt sind.
 - [QA] QA-M5-05 (gering, Prozess, wiederholt QA-M1-11) Die Entwicklung hat in den Commits `68ab8cb`/`da424cd` bei M5-01, M5-02, M5-08, M5-14, QA-M5-03 und QA-M5-04 selbst den Vermerk „(QA ✓ M5 Nachtest 2026-10-12)“ in `BACKLOG.md` eingetragen, bevor die QA den Nachtest durchgeführt hat. Der Nachtest (`qa/M5.md`, Abschnitt „Nachtest“) hat die Vermerke inhaltlich bestätigt, trotzdem sollte nur die QA „(QA ✓ …)“ setzen. Siehe `qa/M5.md`.
-- [QA] QA-M7-01 (gering, Dokumentation/Rückfrage) `spec.md` §8 sagte vor M7 „Frei verschiebbar“ für das Schriftfeld; die M7-Planung (Commit `3c5e945`) hat das auf Ecken-Anker (Verschieben rastet beim Loslassen auf eine der vier Blattecken ein) geändert, ohne diese Einschränkung einzeln in den „Entscheidungen der M7-Planung“ zu nennen. Implementierung und aktueller `spec.md`-Wortlaut stimmen überein (kein Fehler), aber Laurin bitte um Bestätigung, dass das wirklich gewollt ist. Siehe `qa/M7.md`.
 
 ---
 
@@ -76,53 +75,9 @@ Erledigte Einträge stehen in `docs/archiv/eingang-erledigt.md` bzw. im Archiv d
 - [~] Q-08 Oberfläche komplett auf Deutsch (UI/Allgemein) – bisher eingehalten
 - [ ] Q-09 Jedes Werkzeug, jede Page und jeder wichtige Button hat einen Shortcut; neue Funktionen tragen sich in die zentrale Shortcut-Konfiguration ein (Tastaturkürzel) – M5: „Neu nummerieren …“ Cmd/Strg+Alt+N; „Mittelpunkt setzen“ ohne Kurzbefehl (E-34); M6: Unter-Tabs der Start-Page Cmd/Strg+1/2/3, Suche Cmd/Strg+F, CSV Cmd/Strg+Shift+E; M7: I, Shift+I, T, Shift+L, Start-Page Cmd/Strg+1–4
 
-## M1 bis M6 – abgeschlossen und abgenommen
+## M1 bis M7 – abgeschlossen und abgenommen
 Aufgabenlisten, erledigte QA-Befunde und Abschlüsse: `docs/archiv/M1.md`, `docs/archiv/M2.md`, `docs/archiv/M3.md`,
-`docs/archiv/M4.md`, `docs/archiv/M5.md`, `docs/archiv/M6.md`.
-
-## M7 – Infrastruktur, Blatt, Schriftfeld, Legende
-Entscheidungen der M7-Planung 2026-10-12 (Laurin: Blattrahmen pro Page, Strom für Infrastruktur, eigene Typen,
-Unter-Tab „Infrastruktur“). Testdatei der Vorgängerversion: `tests/fixtures/format-v3-m6.schelme` (Stand `cdde70d`).
-- [x] M7-01 Dateiformat Version 4: Typen mit Geometrie/Standardmaß/„freihalten“, Infrastruktur-Attribute, Blatt, Anker von Schriftfeld und Legende, Ebene „Blatt“; Migration 3 → 4 mit echter v3-Datei (§10, §8, §11) (QA ✓ M7)
-- [x] M7-02 Infrastruktur-Logik in `src/core/` mit Tests: Geometrien Rechteck/Linie/Punkt, Standardmaß je Typ, Treffer, Eindringtest Stand × Objekt, lichte Breite (§11) (QA ✓ M7)
-- [x] M7-03 Infrastruktur-Objekte anlegen und bearbeiten: Werkzeug, Darstellung je Geometrie, Endpunkt-Griffe mit Fang, Seitenleiste und Steuerungsleiste, Auswahl, Kopieren/Einfügen/Duplizieren, Undo (§11, Allgemein) (QA ✓ M7)
-- [x] M7-04 Aufklappbare Werkzeuggruppe mit zuletzt genutztem Typ; Kurzbefehle I und Shift+I (Layout, Tastaturkürzel) (QA ✓ M7)
-- [x] M7-05 Belegende Infrastruktur-Objekte in der Freiflächen-Berechnung (§4, Begriffe) (QA ✓ M7)
-- [x] M7-06 Strom der Infrastruktur: Summe, Limit, Blockieren, „davon Infrastruktur“ (§6, §11) (QA ✓ M7)
-- [x] M7-07 Warnungen „Infrastruktur“ (Stand in Freihaltefläche) und „Durchfahrt zu eng“ mit Mindestbreite; Schalter, Ignorieren, Page-Tab (§3, §11) (QA ✓ M7)
-- [x] M7-08 Infrastruktur-Typen in den Projekteinstellungen: feste Typen anpassen, eigene anlegen/ändern/löschen, Symbol-Auswahl (§11, §7) (QA ✓ M7)
-- [x] M7-09 Start-Page: Anzahl je Typ und Warnungen getrennt in den Kennzahlen; Unter-Tab „Infrastruktur“ mit Sprung, Bearbeitung, CSV; Cmd/Strg+3/4 (§7) (QA ✓ M7)
-- [x] M7-10 Blatt pro Page: Format, Ausrichtung, Maßstab fest/angepasst, Rahmen auf der Zeichenfläche, Bereich „Blatt“, Ebene „Blatt“ (§8) (QA ✓ M7)
-- [x] M7-11 Schriftfeld als Papier-Element: Layout, Felder (projektweit Datum/Version, pro Page Freitext), Ecken-Anker, Ziehen, Pfeiltasten, Werkzeug T (§8) (QA ✓ M7, Hinweis QA-M7-01 zur Ecken-Anker-Einschränkung siehe `qa/M7.md`)
-- [x] M7-12 Legende als Papier-Element: Einträge automatisch aus sichtbarem Inhalt, Spaltenumbruch, Ziehen, ein-/ausblenden (Shift+L) (§8) (QA ✓ M7)
-- [x] M7-13 Lasttests unverändert grün, zusätzlich mit Infrastruktur-Objekten (Q-04, NFA) – `m7-perf.spec.ts` (500 Stände, 100 Infrastruktur-Objekte, Blatt mit Schriftfeld und Legende): Chromium 60 Bilder/s, WebKit-Median ≥ 54,5, längstes Bild 82 ms; alle 12 Lasttests grün (QA ✓ M7)
-
-### Abschluss M7 (2026-10-12)
-**Umgesetzt** (spec.md §3, §4, §6, §7, §8, §10, §11):
-- Dateiformat Version 4 mit Migration 3 → 4, getestet mit der echten Datei `tests/fixtures/format-v3-m6.schelme` (vorher mit der App im Stand `cdde70d` gespeichert). Das Lastprojekt `last-500-staende.schelme` ist per Skript auf Version 4 neu erzeugt.
-- Infrastruktur: 8 feste Typen mit Geometrie Rechteck/Linie/Punkt, eigene Typen in den Projekteinstellungen (Name, Geometrie solange unbenutzt, Symbol aus 33 Material Symbols, Farbe, Standardmaß, „belegt Fläche“, „freihalten“). Anlegen per Klick oder Aufziehen, Linien mit Endpunkt-Griffen und Fang, Marker mit Text, Seiten- und Steuerungsleiste mit Maßfeldern je Geometrie, Kopieren/Einfügen/Duplizieren/Alt+Ziehen, Undo.
-- Werkzeuggruppe mit zuletzt genutztem Typ (Dreieck, Rechtsklick, langes Drücken), Kurzbefehle I, Shift+I, T, Shift+L, Start-Page Cmd/Strg+3 (Infrastruktur) und Cmd/Strg+4 (Einstellungen).
-- Belegung der Freiflächen, Strom im Limit (inkl. Blockieren, „davon Infrastruktur“), Warnungen „Infrastruktur“ (Stand in Freihaltefläche) und „Durchfahrt zu eng“ (Mindestbreite projektweit, Standard 3,5 m), Zählung am Page-Tab und in den Kennzahlen.
-- Start-Page: Anzahl je Typ und Infrastruktur-Strom in den Kennzahlen, Warnungen getrennt („n Warnungen“ für Stände, „m Infrastruktur“), Unter-Tab „Infrastruktur“ mit Filter, Sortierung, Bearbeiten, Sprung und CSV; die Geschäftstabelle zeigt die Warnung „Infrastruktur“.
-- Blatt pro Page (Format, Ausrichtung, Maßstab fest oder angepasst), Rahmen auf der Zeichenfläche, Ebene „Blatt“; Schriftfeld und Legende als Papier-Elemente in mm mit Ecken-Anker, Ziehen, Pfeiltasten (1/10 mm), Entf blendet aus.
-- Kern in `src/core/` mit Tests: `infra.ts` (`m7.test.ts`), `sheet.ts`, `legend.ts`, `paper.ts` (`sheet.test.ts`), `infraTable.ts` (`infraTable.test.ts`), Migration (`migrations.test.ts`). E2E: `m7-infra.spec.ts`, `m7-sheet.spec.ts`; Lasttest `m7-perf.spec.ts`.
-
-**Abweichungen von der Planung** (in spec.md nachgezogen):
-- Linie ohne Stärke (Durchfahrt) warnt, wenn sie mehr als 0,01 m in den Stand hineinreicht; eine Linie auf der Standkante warnt nicht (§11). Beim Belegen zählt sie als 5 cm breiter Streifen (§4).
-- Infrastrukturliste: Bearbeiten in Eingabefeldern der Zeile statt der Zellnavigation der Geschäftstabelle (§7, E-51).
-- Die Ebene „Blatt“ erscheint im Ebenen-Panel erst, wenn es Objekte gibt (wie die übrigen Ebenen).
-
-**Geänderte Tests in `tests/e2e/`** (nachweislich überholt durch Formatversion 4 bzw. die neue Ebene, jeweils mit Kommentar):
-- `m1-file.spec.ts:43`, `m4-qa.spec.ts:899`, `m5-qa.spec.ts:624`: erwartete Formatversion 3 → 4; `m4-qa.spec.ts` „neuere Version“ 4 → 5 (vgl. E-38).
-- `m3-qa.spec.ts`, `m5-qa.spec.ts`: `BASE` der Testdaten um `suppressInfraWarning: false` ergänzt (Rundreise-Vergleich nach dem Laden, wie in M5 bei `suppressDuplicateWarning`).
-- `m3-objects.spec.ts` (M3-14) und `m4-freespace.spec.ts`: Ebenenliste um „Blatt“ ergänzt.
-
-**Bekannte Bugs / Grenzen:** E-47 bis E-50.
-
-**Entscheidungen nach dem Abschluss (Laurin, 2026-10-12):**
-- Toilette und Müllcontainer haben „freihalten“ standardmäßig an (spec.md §11); unter den festen Typen hat nur der Marker es aus.
-- Geometrie und Symbol fester Typen bleiben fest, wie umgesetzt.
-- Geprüft: Die echte Datei der Vorgängerversion `tests/fixtures/format-v3-m6.schelme` liegt vor und wird in `migrations.test.ts` (Migration 3 → 4) und `m7-sheet.spec.ts` (Öffnen, Speichern als Version 4) getestet.
+`docs/archiv/M4.md`, `docs/archiv/M5.md`, `docs/archiv/M6.md`, `docs/archiv/M7.md`.
 
 ## M8 – PDF-Export
 - [ ] M8-01 Export Gesamtplan (alle Festplatz-Pages, optional Start-Page-Listen als Anhang) oder einzelne Pages (§9)

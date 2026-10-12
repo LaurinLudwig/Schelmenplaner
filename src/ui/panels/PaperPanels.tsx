@@ -3,7 +3,7 @@ import { fmt } from '../../core/format';
 import { PAPER_FORMATS, type FestplatzPage, type PaperFormat } from '../../core/model/types';
 import { SCALE_LIMITS } from '../../core/model/schema';
 import { pagePaper } from '../../core/paper';
-import { scaleText, TITLE_BLOCK_MAX_TEXT_LINES } from '../../core/sheet';
+import { anchorToPaper, scaleText, shownOnPaper, TITLE_BLOCK_MAX_TEXT_LINES } from '../../core/sheet';
 import { fixSheetScale, setPaperVisible, setSheet, setTitleBlockField, setTitleBlockText, todayText } from '../../state/paper';
 import { useStore, type PaperElement } from '../../state/store';
 import { keyLabel, tip } from '../shortcuts/tip';
@@ -96,6 +96,12 @@ export function PaperElementPanel({ page, element }: { page: FestplatzPage; elem
   if (element === 'sheet') return <SheetPanel page={page} />;
   const anchor = page[element];
   const title = element === 'titleBlock' ? 'Schriftfeld' : 'Legende';
+  // Passt der gespeicherte Abstand nach einem Formatwechsel nicht mehr, steht das Element am Blattrand (QA-M7-01)
+  const pp = pagePaper(page, project);
+  const el = element === 'titleBlock' ? pp.titleBlock : pp.legend;
+  const raw = el && anchorToPaper(anchor, el.layout, pp.frame.paper);
+  const shown = el && shownOnPaper(anchor, el.layout, pp.frame.paper);
+  const atEdge = !!raw && !!shown && (Math.abs(raw.x - shown.x) > 0.01 || Math.abs(raw.y - shown.y) > 0.01);
   const lines = page.titleBlockText.split('\n').filter((l, i, a) => l || i < a.length - 1).length;
   return (
     <section className="panel" aria-label={title}>
@@ -105,8 +111,13 @@ export function PaperElementPanel({ page, element }: { page: FestplatzPage; elem
       </div>
       <div className="panel-body form">
         <p className="hint" data-testid="paper-anchor">
-          Ecke {CORNER_LABEL[anchor.corner]}, {fmt(anchor.dx, 0)} × {fmt(anchor.dy, 0)} mm vom Rand. Ziehen oder Pfeiltasten (1 mm, mit Shift 10 mm); Entf blendet aus.
+          Ecke {CORNER_LABEL[anchor.corner]}, {fmt(anchor.dx, 0)} × {fmt(anchor.dy, 0)} mm vom Rand. Frei ziehen (fängt an den Blattecken, Cmd/Strg: ohne Fang) oder Pfeiltasten (1 mm, mit Shift 10 mm); Entf blendet aus.
         </p>
+        {atEdge && (
+          <p className="hint" data-testid="paper-at-edge">
+            Auf diesem Format passt der Abstand nicht; das Element steht am Blattrand. Bei einem größeren Format steht es wieder an seiner Stelle.
+          </p>
+        )}
         {element === 'titleBlock' && (
           <>
             <TextField id="tb-text" label="Freitext dieser Page" value={page.titleBlockText} multiline onCommit={(t) => setTitleBlockText(page.id, t)} />

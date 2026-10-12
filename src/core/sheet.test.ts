@@ -4,7 +4,7 @@ import { legendEntries, legendLayout, fitText, LEGEND_COLUMN } from './legend';
 import { createPage, DEFAULT_INFRA_TYPES, defaultLayers } from './model/defaults';
 import type { FestplatzPage } from './model/types';
 import { createArea, createStand } from './objects';
-import { anchorToPaper, anchorToWorld, fitScale, mmToM, nudgeAnchor, paperSize, paperToAnchor, sheetFrame, titleBlockLayout, titleBlockMeta, worldToAnchor } from './sheet';
+import { anchorToPaper, anchorToWorld, clampToPaper, fitScale, mmToM, nudgeAnchor, paperSize, paperToAnchor, sheetFrame, shownOnPaper, snapToPaperCorners, titleBlockLayout, titleBlockMeta, worldToAnchor } from './sheet';
 
 /** M7: Blatt, Papier-Elemente, Schriftfeld, Legende (spec.md §8). */
 
@@ -65,6 +65,26 @@ describe('Ecken-Anker', () => {
       expect(f.bounds.maxY - (tl.y + mmToM(size.h, scale))).toBeCloseTo(mmToM(10, scale));
       expect(worldToAnchor(f, tl, size)).toEqual(a);
     }
+  });
+
+  it('Formatwechsel: Abstand zur Ecke bleibt gespeichert, angezeigt wird das Element auf dem Blatt (QA-M7-01)', () => {
+    const anchor = { corner: 'tl' as const, dx: 300, dy: 250 };
+    const a3 = { w: 420, h: 297 };
+    const a4 = { w: 297, h: 210 };
+    expect(shownOnPaper(anchor, size, a3)).toEqual({ x: 240, y: 250 }); // 300 + 180 mm passt nicht in 420 mm: x an den Rand begrenzt
+    expect(shownOnPaper(anchor, size, a4)).toEqual({ x: 297 - 180, y: 210 - 30 });
+    // von unten rechts: gleicher Abstand zur Ecke bei jedem Format
+    for (const p of [a3, a4]) expect(shownOnPaper({ corner: 'br', dx: 10, dy: 10 }, size, p)).toEqual({ x: p.w - 190, y: p.h - 40 });
+    // größer als das Blatt: oben links bündig
+    expect(clampToPaper({ x: 50, y: 50 }, { w: 500, h: 400 }, a4)).toEqual({ x: 0, y: 0 });
+  });
+
+  it('Fang an den Blattecken: bündig oder mit 10 mm Rand, sonst frei; nie über den Rand', () => {
+    expect(snapToPaperCorners({ x: 12, y: 8 }, size, paper, 3)).toEqual({ p: { x: 10, y: 10 }, corner: 'tl' });
+    expect(snapToPaperCorners({ x: 1, y: 2 }, size, paper, 3)).toEqual({ p: { x: 0, y: 0 }, corner: 'tl' });
+    expect(snapToPaperCorners({ x: 228, y: 259 }, size, paper, 3)).toEqual({ p: { x: 230, y: 257 }, corner: 'br' });
+    expect(snapToPaperCorners({ x: 100, y: 120 }, size, paper, 3)).toEqual({ p: { x: 100, y: 120 }, corner: null });
+    expect(snapToPaperCorners({ x: 400, y: -20 }, size, paper, 3)).toEqual({ p: { x: 240, y: 0 }, corner: null });
   });
 
   it('Pfeiltasten: 1 mm bzw. 10 mm auf dem Papier, an jeder Ecke in Bildschirmrichtung', () => {

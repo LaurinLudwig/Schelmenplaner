@@ -12,7 +12,7 @@ import { angleTo, rotateRects, snapAngle, type RectMap } from '../../../core/tra
 import { cloneForDrag, commitDuplicateDrag, commitRects, select, setAreaFront } from '../../../state/objects';
 import { updateBackground } from '../../../state/pageSettings';
 import { useStore, type PaperElement } from '../../../state/store';
-import { mmToM, worldToAnchor } from '../../../core/sheet';
+import { mmToM, mToMm, paperToAnchor, paperToWorld, snapToPaperCorners, worldToPaper } from '../../../core/sheet';
 import type { Bounds } from '../../../core/viewport';
 import { setPaperAnchor, setSheet } from '../../../state/paper';
 import { IS_MAC } from '../../shortcuts/keys';
@@ -45,7 +45,7 @@ type Gesture =
   | { kind: 'end'; id: Id; end: 0 | 1; fixed: Vec; rects0: RectMap; start: Vec; moved: boolean }
   | { kind: 'marquee'; start: Vec; cur: Vec; base: Id[] }
   /** Blatt, Schriftfeld oder Legende ziehen (M7): Vorschau als Umriss, beim Loslassen ein Undo-Schritt. */
-  | { kind: 'paper'; element: PaperElement; startWorld: Vec; box0: Bounds; start: Vec; moved: boolean; delta: Vec }
+  | { kind: 'paper'; element: PaperElement; startWorld: Vec; box0: Bounds; start: Vec; moved: boolean; delta: Vec; target: Vec | null }
   | { kind: 'background'; start: Vec; transform0: BgTransform };
 
 const LABEL = { move: 'Verschieben', rotate: 'Drehen', resize: 'Größe ändern', end: 'Länge ändern' } as const;
@@ -218,7 +218,7 @@ export function useSelectTool(ctx: ToolContext, active: boolean): ToolHandlers {
         setSheet(pageId, { cx: Math.round(c.x * 100) / 100, cy: Math.round(c.y * 100) / 100 });
       } else {
         const el = g.element === 'titleBlock' ? pp.titleBlock : pp.legend;
-        if (el) setPaperAnchor(pageId, g.element, worldToAnchor(pp.frame, { x: g.box0.minX + g.delta.x, y: g.box0.minY + g.delta.y }, el.layout));
+        if (el && g.target) setPaperAnchor(pageId, g.element, paperToAnchor(g.target, el.layout, pp.frame.paper));
       }
       return;
     }
@@ -270,7 +270,7 @@ export function useSelectTool(ctx: ToolContext, active: boolean): ToolHandlers {
         const box0 = paperBox(paperHit)!;
         // Ein angepasstes Blatt folgt dem Inhalt und lässt sich nicht ziehen
         if (paperHit === 'sheet' && ctx.page.sheet.scale === null) return true;
-        startGesture({ kind: 'paper', element: paperHit, startWorld: p.world, box0, start: p.screen, moved: false, delta: { x: 0, y: 0 } });
+        startGesture({ kind: 'paper', element: paperHit, startWorld: p.world, box0, start: p.screen, moved: false, delta: { x: 0, y: 0 }, target: null });
         return true;
       }
       const hit = pick(p.world);
@@ -400,7 +400,18 @@ export function useSelectTool(ctx: ToolContext, active: boolean): ToolHandlers {
           if (!g.moved && Math.hypot(p.screen.x - g.start.x, p.screen.y - g.start.y) < DRAG_PX) return;
           g.moved = true;
           g.delta = { x: p.world.x - g.startWorld.x, y: p.world.y - g.startWorld.y };
-          setPaperGhost({ minX: g.box0.minX + g.delta.x, minY: g.box0.minY + g.delta.y, maxX: g.box0.maxX + g.delta.x, maxY: g.box0.maxY + g.delta.y });
+          let min = { x: g.box0.minX + g.delta.x, y: g.box0.minY + g.delta.y };
+          const pp = ctx.paper;
+          const el = g.element === 'titleBlock' ? pp.titleBlock : g.element === 'legend' ? pp.legend : null;
+          if (el) {
+            // Schriftfeld und Legende: Fang an den Blattecken (Cmd/Strg aus), nie über den Blattrand (QA-M7-01)
+            const tolMm = p.modKey ? -1 : mToMm(SNAP_PX / ctx.view.scale, pp.frame.scale);
+            g.target = snapToPaperCorners(worldToPaper(pp.frame, min), el.layout, pp.frame.paper, tolMm).p;
+            min = paperToWorld(pp.frame, g.target);
+          }
+          const w = g.box0.maxX - g.box0.minX;
+          const h = g.box0.maxY - g.box0.minY;
+          setPaperGhost({ minX: min.x, minY: min.y, maxX: min.x + w, maxY: min.y + h });
           return;
         }
         case 'background':

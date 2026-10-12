@@ -94,9 +94,24 @@ export function anchorToPaper(anchor: Pick<PaperAnchor, 'corner' | 'dx' | 'dy'>,
   };
 }
 
-/** Linke obere Ecke eines Papier-Elements auf dem Plan (Meter). */
+/**
+ * Lage auf das Blatt begrenzen: Das Element ragt nie über den Blattrand (QA-M7-01). Ist es größer als das Blatt,
+ * liegt es oben links bündig.
+ */
+export function clampToPaper(p: Vec, size: { w: number; h: number }, paper: { w: number; h: number }): Vec {
+  return { x: Math.max(0, Math.min(paper.w - size.w, p.x)), y: Math.max(0, Math.min(paper.h - size.h, p.y)) };
+}
+
+/**
+ * Angezeigte Lage auf dem Papier: aus Ecke und Abstand, auf das Blatt begrenzt. Der gespeicherte Abstand bleibt
+ * unverändert; wird das Blatt wieder größer, steht das Element wieder an seiner alten Stelle.
+ */
+export const shownOnPaper = (anchor: Pick<PaperAnchor, 'corner' | 'dx' | 'dy'>, size: { w: number; h: number }, paper: { w: number; h: number }) =>
+  clampToPaper(anchorToPaper(anchor, size, paper), size, paper);
+
+/** Linke obere Ecke eines Papier-Elements auf dem Plan (Meter), auf das Blatt begrenzt. */
 export function anchorToWorld(frame: SheetFrame, anchor: Pick<PaperAnchor, 'corner' | 'dx' | 'dy'>, size: { w: number; h: number }): Vec {
-  const p = anchorToPaper(anchor, size, frame.paper);
+  const p = shownOnPaper(anchor, size, frame.paper);
   return { x: frame.bounds.minX + mmToM(p.x, frame.scale), y: frame.bounds.minY + mmToM(p.y, frame.scale) };
 }
 
@@ -116,14 +131,38 @@ export function paperToAnchor(topLeft: Vec, size: { w: number; h: number }, pape
   return { corner, dx, dy };
 }
 
+/** Lage auf dem Papier (mm) aus einer Lage auf dem Plan (Meter). */
+export const worldToPaper = (frame: SheetFrame, w: Vec): Vec => ({ x: mToMm(w.x - frame.bounds.minX, frame.scale), y: mToMm(w.y - frame.bounds.minY, frame.scale) });
+export const paperToWorld = (frame: SheetFrame, p: Vec): Vec => ({ x: frame.bounds.minX + mmToM(p.x, frame.scale), y: frame.bounds.minY + mmToM(p.y, frame.scale) });
+
 /** Anker aus einer Lage auf dem Plan (linke obere Ecke in Metern). */
 export function worldToAnchor(frame: SheetFrame, topLeft: Vec, size: { w: number; h: number }): Pick<PaperAnchor, 'corner' | 'dx' | 'dy'> {
-  return paperToAnchor({ x: mToMm(topLeft.x - frame.bounds.minX, frame.scale), y: mToMm(topLeft.y - frame.bounds.minY, frame.scale) }, size, frame.paper);
+  return paperToAnchor(worldToPaper(frame, topLeft), size, frame.paper);
+}
+
+/** Standardrand der Papier-Elemente zum Blattrand (mm); auch Fangabstand an den Ecken. */
+export const PAPER_MARGIN_MM = 10;
+
+/**
+ * Fang an den Blattecken beim Ziehen eines Papier-Elements (QA-M7-01): Liegt eine Ecke des Elements höchstens
+ * `tolMm` von einer Blattecke entfernt – bündig (0 mm) oder mit Standardrand (10 mm) –, rastet sie dort ein. Das
+ * Ergebnis ist auf das Blatt begrenzt. `corner` = die Ecke, an der eingerastet wurde, sonst null.
+ */
+export function snapToPaperCorners(topLeft: Vec, size: { w: number; h: number }, paper: { w: number; h: number }, tolMm: number): { p: Vec; corner: Corner | null } {
+  let best: { p: Vec; corner: Corner; d: number } | null = null;
+  for (const corner of ['tl', 'tr', 'bl', 'br'] as const) {
+    for (const m of [0, PAPER_MARGIN_MM]) {
+      const q = anchorToPaper({ corner, dx: m, dy: m }, size, paper);
+      const d = Math.max(Math.abs(q.x - topLeft.x), Math.abs(q.y - topLeft.y));
+      if (d <= tolMm && (!best || d < best.d)) best = { p: q, corner, d };
+    }
+  }
+  return best ? { p: clampToPaper(best.p, size, paper), corner: best.corner } : { p: clampToPaper(topLeft, size, paper), corner: null };
 }
 
 /** Pfeiltasten: um (dx, dy) mm auf dem Papier verschieben (rechts/unten positiv), Ecke wird neu bestimmt. */
 export function nudgeAnchor(anchor: Pick<PaperAnchor, 'corner' | 'dx' | 'dy'>, dxMm: number, dyMm: number, size: { w: number; h: number }, paper: { w: number; h: number }) {
-  const p = anchorToPaper(anchor, size, paper);
+  const p = shownOnPaper(anchor, size, paper);
   return paperToAnchor({ x: p.x + dxMm, y: p.y + dyMm }, size, paper);
 }
 

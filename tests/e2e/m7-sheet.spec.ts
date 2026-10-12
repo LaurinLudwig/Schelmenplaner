@@ -95,6 +95,68 @@ test.describe('M7: Blatt und Papier-Elemente', () => {
     await expect(page.getByTestId('title-block')).toBeVisible();
   });
 
+  test('QA-M7-01: frei verschiebbar, Blattecken fangen (10 mm Rand), Cmd/Strg ohne Fang', async ({ page }) => {
+    await openApp(page);
+    await seed(page, { areas: [{ id: 'G', cx: 0, cy: 0, w: 100, d: 60 }] });
+    await fitView(page);
+    const frame = (await page.getByTestId('sheet-frame').boundingBox())!;
+    const k = frame.width / 420; // px je mm (A3 quer)
+    const dragBy = async (dx: number, dy: number, mod = false) => {
+      const box = (await page.getByTestId('title-block').locator('.paper-box').boundingBox())!;
+      const from = { x: box.x + box.width / 2, y: box.y + box.height / 2 };
+      await page.mouse.move(from.x, from.y);
+      if (mod) await page.keyboard.down('ControlOrMeta');
+      await page.mouse.down();
+      await page.mouse.move(from.x + dx, from.y + dy, { steps: 12 });
+      await page.mouse.up();
+      if (mod) await page.keyboard.up('ControlOrMeta');
+      return box;
+    };
+    // linke obere Ecke des Schriftfelds 3 px neben „10 mm vom Rand oben links“: rastet dort ein
+    let box = (await page.getByTestId('title-block').locator('.paper-box').boundingBox())!;
+    await dragBy(frame.x + 10 * k + 3 - box.x, frame.y + 10 * k + 3 - box.y);
+    expect((await activePg(page)).titleBlock).toMatchObject({ corner: 'tl', dx: 10, dy: 10 });
+    // frei an eine beliebige Stelle (Mitte des Blatts, kein Fang)
+    box = await dragBy(frame.width * 0.3, frame.height * 0.3);
+    const free = (await activePg(page)).titleBlock;
+    expect(free.dx).toBeGreaterThan(40);
+    // mit Cmd/Strg kein Fang: knapp neben der Ecke bleibt es knapp daneben
+    box = (await page.getByTestId('title-block').locator('.paper-box').boundingBox())!;
+    await dragBy(frame.x + 10 * k + 4 - box.x, frame.y + 10 * k + 4 - box.y, true);
+    const nosnap = (await activePg(page)).titleBlock;
+    expect(nosnap.corner).toBe('tl');
+    expect(nosnap.dx).not.toBe(10);
+    // über den Blattrand hinaus: begrenzt
+    box = (await page.getByTestId('title-block').locator('.paper-box').boundingBox())!;
+    await dragBy(-frame.width, -frame.height);
+    expect((await activePg(page)).titleBlock).toMatchObject({ corner: 'tl', dx: 0, dy: 0 });
+  });
+
+  test('QA-M7-01: Formatwechsel behält den Abstand zur Ecke; zu groß für das Blatt → am Rand angezeigt', async ({ page }) => {
+    await openApp(page);
+    await seed(page, { areas: [{ id: 'G', cx: 0, cy: 0, w: 100, d: 60 }] });
+    await page.evaluate(() =>
+      (window as any).__schelmeStore.getState().change('t', (p: any) => {
+        p.pages[0].titleBlock = { visible: true, corner: 'tl', dx: 200, dy: 20 };
+      }),
+    );
+    await page.evaluate(() => (window as any).__schelmeStore.getState().setUi({ selection: { kind: 'paper', element: 'titleBlock' } }));
+    await expect(page.getByTestId('paper-at-edge')).toHaveCount(0);
+    await page.getByRole('button', { name: 'Auswahl aufheben' }).click();
+    await page.locator('#sheet-format').selectOption('A4');
+    expect((await activePg(page)).titleBlock).toEqual({ visible: true, corner: 'tl', dx: 200, dy: 20 });
+    // A4 quer ist 297 mm breit: 200 + 180 mm passen nicht, das Schriftfeld steht am rechten Rand
+    const frame = (await page.getByTestId('sheet-frame').boundingBox())!;
+    const tb = (await page.getByTestId('title-block').locator('.paper-box').boundingBox())!;
+    expect(Math.abs(tb.x + tb.width - (frame.x + frame.width))).toBeLessThan(2);
+    await page.evaluate(() => (window as any).__schelmeStore.getState().setUi({ selection: { kind: 'paper', element: 'titleBlock' } }));
+    await expect(page.getByTestId('paper-at-edge')).toBeVisible();
+    // zurück auf A3: wieder an der alten Stelle
+    await page.keyboard.press('ControlOrMeta+z');
+    expect((await activePg(page)).sheet.format).toBe('A3');
+    await expect(page.getByTestId('paper-at-edge')).toHaveCount(0);
+  });
+
   test('Werkzeug T setzt das Schriftfeld an die Klickstelle; Shift+L blendet die Legende aus', async ({ page }) => {
     await openApp(page);
     // Inhalt so groß, dass das angepasste Blatt nach Cmd/Strg+0 ganz im Fenster liegt

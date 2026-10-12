@@ -333,11 +333,18 @@ Papier festgelegt, nicht in Metern auf dem Plan. Damit sind sie im PDF bei jedem
 **Papier-Elemente:**
 - Anker: Jedes Element hängt an einer Ecke des Blatts (oben links, oben rechts, unten links, unten rechts). Dazu kommt
   ein Abstand in mm von den beiden Blatträndern dieser Ecke.
-- Ändern sich Format, Ausrichtung oder Maßstab, bleibt das Element an seiner Ecke. Es bleibt auf dem Papier gleich
-  groß und deckt bei 1:500 mehr Planfläche ab als bei 1:200.
+- Ändern sich Format, Ausrichtung oder Maßstab, bleibt der Abstand zur gewählten Ecke erhalten. Das Element bleibt
+  auf dem Papier gleich groß und deckt bei 1:500 mehr Planfläche ab als bei 1:200.
+- Elemente ragen nie über den Blattrand (Entscheidung 2026-10-12, QA-M7-01). Passt der gespeicherte Abstand auf
+  einem kleineren Format nicht, steht das Element am Blattrand; gespeichert bleibt der Abstand, bei einem größeren
+  Format steht es wieder an seiner Stelle. Die Seitenleiste weist darauf hin.
 - Auf der Zeichenfläche wird es in Planeinheiten gezeichnet (1 mm = n/1000 m).
-- **Verschieben:** Ziehen mit dem Auswahlwerkzeug (ein Klick wählt aus). Beim Loslassen wird die nächstgelegene Ecke
-  zum Anker. Der Abstand wird auf 1 mm gerundet und so begrenzt, dass das Element ganz auf dem Blatt bleibt.
+- **Verschieben** (Entscheidung 2026-10-12, QA-M7-01): Schriftfeld und Legende sind frei verschiebbar, Ziehen mit dem
+  Auswahlwerkzeug (ein Klick wählt aus). Beim Ziehen dienen die Blattecken als Fangpunkte: Eine Ecke des Elements
+  rastet in 8 Bildschirm-Pixeln an der Blattecke ein, bündig (0 mm) oder mit dem Standardrand von 10 mm;
+  Cmd/Strg schaltet den Fang aus. Beim Loslassen wird die nächstgelegene Ecke zur gewählten Ecke; gespeichert
+  werden Ecke und Abstand in mm (auf 1 mm gerundet), begrenzt auf das Blatt. Das Format von `project.json` ändert
+  sich dadurch nicht.
   - Pfeiltasten verschieben um 1 mm, mit Shift um 10 mm.
   - Jede Verschiebung ist ein Undo-Schritt.
 - Einschränkungen: Papier-Elemente kommen nicht in Auswahlrechteck oder Mehrfachauswahl und sind nicht kopierbar.
