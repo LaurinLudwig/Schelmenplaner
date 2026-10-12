@@ -46,6 +46,19 @@ QA-Befunde und sein Abschluss nach `docs/archiv/Mx.md`; erledigte Eingang-Eintr�
 - Tests in `tests/e2e/` nicht verändern, außer ein Test ist nachweislich falsch. Dann Laurin
   ausdrücklich sagen, welcher Test und warum.
 
+## Builds (GitHub Actions)
+- Workflow `.github/workflows/build.yml` läuft bei jedem Push auf `main` (und manuell über „Run workflow“):
+  zuerst `npm run check` und `npm run test:e2e -- --project=chromium` (Ubuntu), danach die Desktop-Builds
+  für macOS (Universal, `.dmg`) und Windows (`.msi` und `-setup.exe`).
+- Die Installer liegen als Artefakte am jeweiligen Lauf: GitHub → Reiter „Actions“ → Workflow „Build“ → Lauf
+  auswählen → unten „Artifacts“ (`schelmeplaner-macos-<commit>`, `schelmeplaner-windows-<commit>`, 30 Tage
+  aufbewahrt). Per Kommandozeile: `gh run list --workflow build.yml`, dann `gh run download <run-id>`.
+  Schlagen die E2E-Tests fehl, hängt dort `playwright-report` (Bericht und Traces).
+- Kein Code-Signing (die macOS-App ist nur ad hoc signiert), keine Veröffentlichung. Beim ersten Öffnen warnen
+  macOS (Systemeinstellungen → Datenschutz & Sicherheit → „Trotzdem öffnen“, oder
+  `xattr -dr com.apple.quarantine /Applications/Schelmeplaner.app`) und Windows SmartScreen („Weitere
+  Informationen“ → „Trotzdem ausführen“).
+
 ## Befehle
 | Befehl | Zweck |
 |---|---|

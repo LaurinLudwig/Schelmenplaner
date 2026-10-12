@@ -1,0 +1,86 @@
+# Baut bei jedem Push auf main die Desktop-App für Windows und macOS (Q-07).
+# Vorher laufen `npm run check` und die E2E-Tests (nur Chromium).
+# Kein Code-Signing, keine Veröffentlichung: Die Installer liegen als Artefakte am Workflow-Lauf.
+name: Build
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+concurrency:
+  group: build-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  check:
+    name: Prüfen (check, E2E Chromium)
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 26  # wie lokal (node -v)
+          cache: npm
+      - run: npm ci
+      - run: npm run check
+      - run: npx playwright install --with-deps chromium
+      - run: npm run test:e2e -- --project=chromium
+      - name: Playwright-Bericht bei Fehlern sichern
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report
+          path: |
+            playwright-report/
+            test-results/
+          retention-days: 14
+
+  build:
+    name: Build ${{ matrix.name }}
+    needs: check
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - name: macOS
+            os: macos-latest
+            artifact: macos
+            rust-targets: aarch64-apple-darwin,x86_64-apple-darwin
+            tauri-args: --target universal-apple-darwin --bundles dmg
+            artifact-paths: src-tauri/target/universal-apple-darwin/release/bundle/dmg/*.dmg
+          - name: Windows
+            os: windows-latest
+            artifact: windows
+            rust-targets: ''
+            tauri-args: --bundles msi,nsis
+            artifact-paths: |
+              src-tauri/target/release/bundle/msi/*.msi
+              src-tauri/target/release/bundle/nsis/*.exe
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 26  # wie lokal (node -v)
+          cache: npm
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: ${{ matrix.rust-targets }}
+      - uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: src-tauri -> target
+      - run: npm ci
+      - name: Tauri-Build
+        run: npm run tauri build -- ${{ matrix.tauri-args }}
+        env:
+          # Nur Ad-hoc-Signatur (ohne Zertifikat), damit macOS die unsignierte App nicht als „beschädigt“ ablehnt.
+          APPLE_SIGNING_IDENTITY: '-'
+      - uses: actions/upload-artifact@v4
+        with:
+          name: schelmeplaner-${{ matrix.artifact }}-${{ github.sha }}
+          path: ${{ matrix.artifact-paths }}
+          if-no-files-found: error
+          retention-days: 30
