@@ -979,7 +979,7 @@ test.describe('QA M4: weitere Grenzfälle', () => {
     const toggles = page.locator('.toolbar .tool.toggle');
     await page.mouse.move(5, 790);
     await toggles.nth(0).hover();
-    await expect(page.locator('.tooltip[role="tooltip"]')).toContainText(/⇧F|Shift\+F/);
+    await expect(page.locator('.tooltip[role="tooltip"]')).toContainText(/⇧F|(Shift|Umschalt)\+F/);
     await expect(page.locator('.tooltip[role="tooltip"]')).toContainText('Vorderkante');
     await page.keyboard.press('Shift+F');
     await page.keyboard.press('Shift+R');
