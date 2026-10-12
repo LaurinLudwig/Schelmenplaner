@@ -684,3 +684,7 @@ kbd {
 .renumber-table td.name { color: var(--muted); }
 .dialog.renumber .warn-chip { margin: 10px 16px 0; padding: 4px 8px; }
 .dialog.renumber .hint { padding: 8px 16px 12px; }
+.dialog.renumber .renumber-modes { display: grid; gap: 4px; padding: 10px 16px 0; color: var(--text); }
+.dialog.renumber .renumber-modes .check { align-items: flex-start; }
+.dialog.renumber .renumber-modes .check input { margin-top: 2px; }
+.dialog.renumber .renumber-modes .hint { padding: 0; }

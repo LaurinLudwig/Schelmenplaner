@@ -1,11 +1,18 @@
 import { create } from 'zustand';
-import { planRenumber, type RenumberPlan } from '../core/numbering';
+import { defaultRenumberMode, planRenumber, type RenumberMode, type RenumberPlan } from '../core/numbering';
 import { applyRenumber } from '../state/numbering';
 import { START_PAGE, useStore } from '../state/store';
 import { notify } from './notify';
 
-/** Neu nummerieren mit Vorschau (M5-06; Dialog: ui/shell/RenumberDialog.tsx). */
-export const useRenumber = create<{ plan: RenumberPlan | null }>()(() => ({ plan: null }));
+/**
+ * Neu nummerieren mit Vorschau (M5-06; Dialog: ui/shell/RenumberDialog.tsx). Beide Optionen („Alle neu
+ * nummerieren“, „Nur Stände ohne Nummer“) werden beim Öffnen berechnet; der Dialog zeigt die gewählte.
+ */
+interface RenumberState {
+  plans: Record<RenumberMode, RenumberPlan> | null;
+  mode: RenumberMode;
+}
+export const useRenumber = create<RenumberState>()(() => ({ plans: null, mode: 'all' }));
 
 /** Bei „pro Festplatz“ die aktive Page; im Modus „manuell“ nicht möglich. Bei „global“ immer (sofern es eine nicht-manuelle Page gibt). */
 export function canRenumber(): boolean {
@@ -18,20 +25,24 @@ export function canRenumber(): boolean {
 export function openRenumber() {
   const s = useStore.getState();
   if (s.ui.activePage === START_PAGE && s.project.settings.numbering.scope !== 'global') return;
-  const plan = planRenumber(s.project, s.ui.activePage);
-  if (!plan.pageIds.length) {
+  const pageId = s.ui.activePage;
+  const plans = { all: planRenumber(s.project, pageId, 'all'), missing: planRenumber(s.project, pageId, 'missing') };
+  if (!plans.all.pageIds.length) {
     notify('Im Modus „manuell“ wird nicht automatisch nummeriert.');
     return;
   }
-  if (!plan.changes.length) {
-    notify(plan.duplicates.size ? 'Alle Nummern sind schon aktuell. Es gibt aber doppelte Nummern unter den fixierten Ständen.' : 'Alle Nummern sind schon aktuell.');
+  if (!plans.all.changes.length && !plans.missing.changes.length) {
+    notify(plans.all.duplicates.size ? 'Alle Nummern sind schon aktuell. Es gibt aber doppelte Nummern unter den fixierten Ständen.' : 'Alle Nummern sind schon aktuell.');
     return;
   }
-  useRenumber.setState({ plan });
+  useRenumber.setState({ plans, mode: defaultRenumberMode(s.project, pageId) });
 }
 
+export const setRenumberMode = (mode: RenumberMode) => useRenumber.setState({ mode });
+
 export function closeRenumber(apply: boolean) {
-  const plan = useRenumber.getState().plan;
-  useRenumber.setState({ plan: null });
-  if (apply && plan) applyRenumber(plan);
+  const { plans, mode } = useRenumber.getState();
+  useRenumber.setState({ plans: null });
+  const plan = plans?.[mode];
+  if (apply && plan?.changes.length) applyRenumber(plan);
 }

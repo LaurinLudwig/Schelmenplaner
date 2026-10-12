@@ -1,0 +1,948 @@
+npm notice run schelmeplaner@0.1.0 npx
+npm notice run 'playwright' test tests/e2e/m1-pages.spec.ts tests/e2e/m1-layout.spec.ts --project=webkit --workers=1 --reporter=line
+
+Running 31 tests using 1 worker
+
+[1/31] [webkit] › tests/e2e/m1-layout.spec.ts:23:3 › M1 Layout und Bedienung › M1-10: Grundlayout: Tab-Leiste oben, Steuerungsleiste, Werkzeugleiste links, Zeichenfläche Mitte, Seitenleiste rechts
+[2/31] [webkit] › tests/e2e/m1-layout.spec.ts:42:3 › M1 Layout und Bedienung › M1-11: Werkzeugleiste nur aus Icons mit allen Werkzeugen der Spec
+[3/31] [webkit] › tests/e2e/m1-layout.spec.ts:53:3 › M1 Layout und Bedienung › M1-11/M1-23: Tooltip mit Name, Kurzbeschreibung und Shortcut
+[4/31] [webkit] › tests/e2e/m1-layout.spec.ts:67:3 › M1 Layout und Bedienung › M1-23: Tooltips an Buttons außerhalb der Werkzeugleiste (Tabs, +, Seitenleiste, Zoom)
+[5/31] [webkit] › tests/e2e/m1-layout.spec.ts:77:3 › M1 Layout und Bedienung › M1-23: Tooltip verschwindet beim Klicken und beim Verlassen
+[6/31] [webkit] › tests/e2e/m1-layout.spec.ts:88:3 › M1 Layout und Bedienung › M1-11: Aktives Werkzeug ist farblich hervorgehoben
+  1) [webkit] › tests/e2e/m1-layout.spec.ts:88:3 › M1 Layout und Bedienung › M1-11: Aktives Werkzeug ist farblich hervorgehoben 
+
+    Error: page.goto: Could not connect to the server.
+    Call log:
+      - navigating to "http://localhost:1420/", waiting until "load"
+
+
+       at helpers.ts:18
+
+      16 |
+      17 | export async function openApp(page: Page) {
+    > 18 |   await page.goto('/');
+         |              ^
+      19 |   await expect(page.locator('header.tabbar')).toBeVisible();
+      20 | }
+      21 |
+        at openApp (/Users/laurin/Desktop/Schelmeplaner/tests/e2e/helpers.ts:18:14)
+        at /Users/laurin/Desktop/Schelmeplaner/tests/e2e/m1-layout.spec.ts:89:11
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/m1-layout-M1-Layout-und-Be-ffb48--ist-farblich-hervorgehoben-webkit/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/m1-layout-M1-Layout-und-Be-ffb48--ist-farblich-hervorgehoben-webkit/error-context.md
+
+    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results/m1-layout-M1-Layout-und-Be-ffb48--ist-farblich-hervorgehoben-webkit/trace.zip
+    Usage:
+
+        npx playwright show-trace test-results/m1-layout-M1-Layout-und-Be-ffb48--ist-farblich-hervorgehoben-webkit/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+
+[7/31] [webkit] › tests/e2e/m1-layout.spec.ts:101:3 › M1 Layout und Bedienung › M1-12: Icons sind lokal gebündelt; keine Anfrage an fremde Server
+  2) [webkit] › tests/e2e/m1-layout.spec.ts:101:3 › M1 Layout und Bedienung › M1-12: Icons sind lokal gebündelt; keine Anfrage an fremde Server 
+
+    Error: page.goto: Could not connect to the server.
+    Call log:
+      - navigating to "http://localhost:1420/", waiting until "load"
+
+
+       at helpers.ts:18
+
+      16 |
+      17 | export async function openApp(page: Page) {
+    > 18 |   await page.goto('/');
+         |              ^
+      19 |   await expect(page.locator('header.tabbar')).toBeVisible();
+      20 | }
+      21 |
+        at openApp (/Users/laurin/Desktop/Schelmeplaner/tests/e2e/helpers.ts:18:14)
+        at /Users/laurin/Desktop/Schelmeplaner/tests/e2e/m1-layout.spec.ts:107:11
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/m1-layout-M1-Layout-und-Be-8f7e7-ne-Anfrage-an-fremde-Server-webkit/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/m1-layout-M1-Layout-und-Be-8f7e7-ne-Anfrage-an-fremde-Server-webkit/error-context.md
+
+    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results/m1-layout-M1-Layout-und-Be-8f7e7-ne-Anfrage-an-fremde-Server-webkit/trace.zip
+    Usage:
+
+        npx playwright show-trace test-results/m1-layout-M1-Layout-und-Be-8f7e7-ne-Anfrage-an-fremde-Server-webkit/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+
+[8/31] [webkit] › tests/e2e/m1-layout.spec.ts:118:3 › M1 Layout und Bedienung › M1-13: Dunkles Theme ist Standard, helles per Mod+Alt+T bzw. Menü; Einstellung bleibt nach Neuladen
+  3) [webkit] › tests/e2e/m1-layout.spec.ts:118:3 › M1 Layout und Bedienung › M1-13: Dunkles Theme ist Standard, helles per Mod+Alt+T bzw. Menü; Einstellung bleibt nach Neuladen 
+
+    Error: page.goto: Could not connect to the server.
+    Call log:
+      - navigating to "http://localhost:1420/", waiting until "load"
+
+
+       at helpers.ts:18
+
+      16 |
+      17 | export async function openApp(page: Page) {
+    > 18 |   await page.goto('/');
+         |              ^
+      19 |   await expect(page.locator('header.tabbar')).toBeVisible();
+      20 | }
+      21 |
+        at openApp (/Users/laurin/Desktop/Schelmeplaner/tests/e2e/helpers.ts:18:14)
+        at /Users/laurin/Desktop/Schelmeplaner/tests/e2e/m1-layout.spec.ts:119:11
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/m1-layout-M1-Layout-und-Be-8962c-ellung-bleibt-nach-Neuladen-webkit/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/m1-layout-M1-Layout-und-Be-8962c-ellung-bleibt-nach-Neuladen-webkit/error-context.md
+
+    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results/m1-layout-M1-Layout-und-Be-8962c-ellung-bleibt-nach-Neuladen-webkit/trace.zip
+    Usage:
+
+        npx playwright show-trace test-results/m1-layout-M1-Layout-und-Be-8962c-ellung-bleibt-nach-Neuladen-webkit/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+
+[9/31] [webkit] › tests/e2e/m1-layout.spec.ts:134:3 › M1 Layout und Bedienung › M1-13: Dunkles Theme ist neutrales Grau (kein Farbstich) und kompakte Schrift
+  4) [webkit] › tests/e2e/m1-layout.spec.ts:134:3 › M1 Layout und Bedienung › M1-13: Dunkles Theme ist neutrales Grau (kein Farbstich) und kompakte Schrift 
+
+    Error: page.goto: Could not connect to the server.
+    Call log:
+      - navigating to "http://localhost:1420/", waiting until "load"
+
+
+       at helpers.ts:18
+
+      16 |
+      17 | export async function openApp(page: Page) {
+    > 18 |   await page.goto('/');
+         |              ^
+      19 |   await expect(page.locator('header.tabbar')).toBeVisible();
+      20 | }
+      21 |
+        at openApp (/Users/laurin/Desktop/Schelmeplaner/tests/e2e/helpers.ts:18:14)
+        at /Users/laurin/Desktop/Schelmeplaner/tests/e2e/m1-layout.spec.ts:135:11
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/m1-layout-M1-Layout-und-Be-8ba66-bstich-und-kompakte-Schrift-webkit/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/m1-layout-M1-Layout-und-Be-8ba66-bstich-und-kompakte-Schrift-webkit/error-context.md
+
+    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results/m1-layout-M1-Layout-und-Be-8ba66-bstich-und-kompakte-Schrift-webkit/trace.zip
+    Usage:
+
+        npx playwright show-trace test-results/m1-layout-M1-Layout-und-Be-8ba66-bstich-und-kompakte-Schrift-webkit/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+
+[10/31] [webkit] › tests/e2e/m1-layout.spec.ts:144:3 › M1 Layout und Bedienung › M1-14: Seitenleiste per Button und Shift+Tab einklappbar; Tab blendet alle Panels aus
+  5) [webkit] › tests/e2e/m1-layout.spec.ts:144:3 › M1 Layout und Bedienung › M1-14: Seitenleiste per Button und Shift+Tab einklappbar; Tab blendet alle Panels aus 
+
+    Error: page.goto: Could not connect to the server.
+    Call log:
+      - navigating to "http://localhost:1420/", waiting until "load"
+
+
+       at helpers.ts:18
+
+      16 |
+      17 | export async function openApp(page: Page) {
+    > 18 |   await page.goto('/');
+         |              ^
+      19 |   await expect(page.locator('header.tabbar')).toBeVisible();
+      20 | }
+      21 |
+        at openApp (/Users/laurin/Desktop/Schelmeplaner/tests/e2e/helpers.ts:18:14)
+        at /Users/laurin/Desktop/Schelmeplaner/tests/e2e/m1-layout.spec.ts:145:11
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/m1-layout-M1-Layout-und-Be-65cca-Tab-blendet-alle-Panels-aus-webkit/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/m1-layout-M1-Layout-und-Be-65cca-Tab-blendet-alle-Panels-aus-webkit/error-context.md
+
+    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results/m1-layout-M1-Layout-und-Be-65cca-Tab-blendet-alle-Panels-aus-webkit/trace.zip
+    Usage:
+
+        npx playwright show-trace test-results/m1-layout-M1-Layout-und-Be-65cca-Tab-blendet-alle-Panels-aus-webkit/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+
+[11/31] [webkit] › tests/e2e/m1-layout.spec.ts:175:3 › M1 Layout und Bedienung › M1-14: Tab im Textfeld bleibt Tab (Panels bleiben sichtbar)
+  6) [webkit] › tests/e2e/m1-layout.spec.ts:175:3 › M1 Layout und Bedienung › M1-14: Tab im Textfeld bleibt Tab (Panels bleiben sichtbar) 
+
+    Error: page.goto: Could not connect to the server.
+    Call log:
+      - navigating to "http://localhost:1420/", waiting until "load"
+
+
+       at helpers.ts:18
+
+      16 |
+      17 | export async function openApp(page: Page) {
+    > 18 |   await page.goto('/');
+         |              ^
+      19 |   await expect(page.locator('header.tabbar')).toBeVisible();
+      20 | }
+      21 |
+        at openApp (/Users/laurin/Desktop/Schelmeplaner/tests/e2e/helpers.ts:18:14)
+        at /Users/laurin/Desktop/Schelmeplaner/tests/e2e/m1-layout.spec.ts:176:11
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/m1-layout-M1-Layout-und-Be-e120f-ab-Panels-bleiben-sichtbar--webkit/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/m1-layout-M1-Layout-und-Be-e120f-ab-Panels-bleiben-sichtbar--webkit/error-context.md
+
+    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results/m1-layout-M1-Layout-und-Be-e120f-ab-Panels-bleiben-sichtbar--webkit/trace.zip
+    Usage:
+
+        npx playwright show-trace test-results/m1-layout-M1-Layout-und-Be-e120f-ab-Panels-bleiben-sichtbar--webkit/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+
+[12/31] [webkit] › tests/e2e/m1-layout.spec.ts:182:3 › M1 Layout und Bedienung › M1-22: ? öffnet die Shortcut-Übersicht, Esc und Klick daneben schließen sie
+  7) [webkit] › tests/e2e/m1-layout.spec.ts:182:3 › M1 Layout und Bedienung › M1-22: ? öffnet die Shortcut-Übersicht, Esc und Klick daneben schließen sie 
+
+    Error: page.goto: Could not connect to the server.
+    Call log:
+      - navigating to "http://localhost:1420/", waiting until "load"
+
+
+       at helpers.ts:18
+
+      16 |
+      17 | export async function openApp(page: Page) {
+    > 18 |   await page.goto('/');
+         |              ^
+      19 |   await expect(page.locator('header.tabbar')).toBeVisible();
+      20 | }
+      21 |
+        at openApp (/Users/laurin/Desktop/Schelmeplaner/tests/e2e/helpers.ts:18:14)
+        at /Users/laurin/Desktop/Schelmeplaner/tests/e2e/m1-layout.spec.ts:183:11
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/m1-layout-M1-Layout-und-Be-e9854-Klick-daneben-schließen-sie-webkit/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/m1-layout-M1-Layout-und-Be-e9854-Klick-daneben-schließen-sie-webkit/error-context.md
+
+    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results/m1-layout-M1-Layout-und-Be-e9854-Klick-daneben-schließen-sie-webkit/trace.zip
+    Usage:
+
+        npx playwright show-trace test-results/m1-layout-M1-Layout-und-Be-e9854-Klick-daneben-schließen-sie-webkit/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+
+[13/31] [webkit] › tests/e2e/m1-layout.spec.ts:200:3 › M1 Layout und Bedienung › M1-22: Übersicht ist auch auf der Start-Page und über das Menü erreichbar
+  8) [webkit] › tests/e2e/m1-layout.spec.ts:200:3 › M1 Layout und Bedienung › M1-22: Übersicht ist auch auf der Start-Page und über das Menü erreichbar 
+
+    Error: page.goto: Could not connect to the server.
+    Call log:
+      - navigating to "http://localhost:1420/", waiting until "load"
+
+
+       at helpers.ts:18
+
+      16 |
+      17 | export async function openApp(page: Page) {
+    > 18 |   await page.goto('/');
+         |              ^
+      19 |   await expect(page.locator('header.tabbar')).toBeVisible();
+      20 | }
+      21 |
+        at openApp (/Users/laurin/Desktop/Schelmeplaner/tests/e2e/helpers.ts:18:14)
+        at /Users/laurin/Desktop/Schelmeplaner/tests/e2e/m1-layout.spec.ts:201:11
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/m1-layout-M1-Layout-und-Be-e5565-nd-über-das-Menü-erreichbar-webkit/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/m1-layout-M1-Layout-und-Be-e5565-nd-über-das-Menü-erreichbar-webkit/error-context.md
+
+    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results/m1-layout-M1-Layout-und-Be-e5565-nd-über-das-Menü-erreichbar-webkit/trace.zip
+    Usage:
+
+        npx playwright show-trace test-results/m1-layout-M1-Layout-und-Be-e5565-nd-über-das-Menü-erreichbar-webkit/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+
+[14/31] [webkit] › tests/e2e/m1-layout.spec.ts:211:3 › M1 Layout und Bedienung › M1-21: Shortcuts zeigen auf macOS Cmd-Symbole, sonst Strg
+  9) [webkit] › tests/e2e/m1-layout.spec.ts:211:3 › M1 Layout und Bedienung › M1-21: Shortcuts zeigen auf macOS Cmd-Symbole, sonst Strg 
+
+    Error: page.goto: Could not connect to the server.
+    Call log:
+      - navigating to "http://localhost:1420/", waiting until "load"
+
+
+       at helpers.ts:18
+
+      16 |
+      17 | export async function openApp(page: Page) {
+    > 18 |   await page.goto('/');
+         |              ^
+      19 |   await expect(page.locator('header.tabbar')).toBeVisible();
+      20 | }
+      21 |
+        at openApp (/Users/laurin/Desktop/Schelmeplaner/tests/e2e/helpers.ts:18:14)
+        at /Users/laurin/Desktop/Schelmeplaner/tests/e2e/m1-layout.spec.ts:212:11
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/m1-layout-M1-Layout-und-Be-70210-acOS-Cmd-Symbole-sonst-Strg-webkit/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/m1-layout-M1-Layout-und-Be-70210-acOS-Cmd-Symbole-sonst-Strg-webkit/error-context.md
+
+    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results/m1-layout-M1-Layout-und-Be-70210-acOS-Cmd-Symbole-sonst-Strg-webkit/trace.zip
+    Usage:
+
+        npx playwright show-trace test-results/m1-layout-M1-Layout-und-Be-70210-acOS-Cmd-Symbole-sonst-Strg-webkit/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+
+[15/31] [webkit] › tests/e2e/m1-layout.spec.ts:220:3 › M1 Layout und Bedienung › Menü enthält Datei- und Bearbeiten-Befehle; Rückgängig ist anfangs deaktiviert
+  10) [webkit] › tests/e2e/m1-layout.spec.ts:220:3 › M1 Layout und Bedienung › Menü enthält Datei- und Bearbeiten-Befehle; Rückgängig ist anfangs deaktiviert 
+
+    Error: page.goto: Could not connect to the server.
+    Call log:
+      - navigating to "http://localhost:1420/", waiting until "load"
+
+
+       at helpers.ts:18
+
+      16 |
+      17 | export async function openApp(page: Page) {
+    > 18 |   await page.goto('/');
+         |              ^
+      19 |   await expect(page.locator('header.tabbar')).toBeVisible();
+      20 | }
+      21 |
+        at openApp (/Users/laurin/Desktop/Schelmeplaner/tests/e2e/helpers.ts:18:14)
+        at /Users/laurin/Desktop/Schelmeplaner/tests/e2e/m1-layout.spec.ts:222:11
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/m1-layout-M1-Layout-und-Be-199d0-gig-ist-anfangs-deaktiviert-webkit/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/m1-layout-M1-Layout-und-Be-199d0-gig-ist-anfangs-deaktiviert-webkit/error-context.md
+
+    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results/m1-layout-M1-Layout-und-Be-199d0-gig-ist-anfangs-deaktiviert-webkit/trace.zip
+    Usage:
+
+        npx playwright show-trace test-results/m1-layout-M1-Layout-und-Be-199d0-gig-ist-anfangs-deaktiviert-webkit/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+
+[16/31] [webkit] › tests/e2e/m1-pages.spec.ts:7:3 › M1 Pages / Tab-Leiste › M1-03/M1-04: Start-Page ist ganz links, danach die Festplatz-Pages; Wechsel per Klick
+  11) [webkit] › tests/e2e/m1-pages.spec.ts:7:3 › M1 Pages / Tab-Leiste › M1-03/M1-04: Start-Page ist ganz links, danach die Festplatz-Pages; Wechsel per Klick 
+
+    Error: page.goto: Could not connect to the server.
+    Call log:
+      - navigating to "http://localhost:1420/", waiting until "load"
+
+
+       at helpers.ts:18
+
+      16 |
+      17 | export async function openApp(page: Page) {
+    > 18 |   await page.goto('/');
+         |              ^
+      19 |   await expect(page.locator('header.tabbar')).toBeVisible();
+      20 | }
+      21 |
+        at openApp (/Users/laurin/Desktop/Schelmeplaner/tests/e2e/helpers.ts:18:14)
+        at /Users/laurin/Desktop/Schelmeplaner/tests/e2e/m1-pages.spec.ts:9:11
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/m1-pages-M1-Pages-Tab-Leis-a4a7e-atz-Pages-Wechsel-per-Klick-webkit/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/m1-pages-M1-Pages-Tab-Leis-a4a7e-atz-Pages-Wechsel-per-Klick-webkit/error-context.md
+
+    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results/m1-pages-M1-Pages-Tab-Leis-a4a7e-atz-Pages-Wechsel-per-Klick-webkit/trace.zip
+    Usage:
+
+        npx playwright show-trace test-results/m1-pages-M1-Pages-Tab-Leis-a4a7e-atz-Pages-Wechsel-per-Klick-webkit/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+
+[17/31] [webkit] › tests/e2e/m1-pages.spec.ts:21:3 › M1 Pages / Tab-Leiste › M1-03: Start-Page hat kein Kontextmenü zum Löschen und lässt sich nicht umbenennen
+  12) [webkit] › tests/e2e/m1-pages.spec.ts:21:3 › M1 Pages / Tab-Leiste › M1-03: Start-Page hat kein Kontextmenü zum Löschen und lässt sich nicht umbenennen 
+
+    Error: page.goto: Could not connect to the server.
+    Call log:
+      - navigating to "http://localhost:1420/", waiting until "load"
+
+
+       at helpers.ts:18
+
+      16 |
+      17 | export async function openApp(page: Page) {
+    > 18 |   await page.goto('/');
+         |              ^
+      19 |   await expect(page.locator('header.tabbar')).toBeVisible();
+      20 | }
+      21 |
+        at openApp (/Users/laurin/Desktop/Schelmeplaner/tests/e2e/helpers.ts:18:14)
+        at /Users/laurin/Desktop/Schelmeplaner/tests/e2e/m1-pages.spec.ts:22:11
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/m1-pages-M1-Pages-Tab-Leis-9528f-lässt-sich-nicht-umbenennen-webkit/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/m1-pages-M1-Pages-Tab-Leis-9528f-lässt-sich-nicht-umbenennen-webkit/error-context.md
+
+    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results/m1-pages-M1-Pages-Tab-Leis-9528f-lässt-sich-nicht-umbenennen-webkit/trace.zip
+    Usage:
+
+        npx playwright show-trace test-results/m1-pages-M1-Pages-Tab-Leis-9528f-lässt-sich-nicht-umbenennen-webkit/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+
+[18/31] [webkit] › tests/e2e/m1-pages.spec.ts:35:3 › M1 Pages / Tab-Leiste › M1-05: „+“ legt eine neue Festplatz-Page an und aktiviert sie; Undo/Redo
+  13) [webkit] › tests/e2e/m1-pages.spec.ts:35:3 › M1 Pages / Tab-Leiste › M1-05: „+“ legt eine neue Festplatz-Page an und aktiviert sie; Undo/Redo 
+
+    Error: page.goto: Could not connect to the server.
+    Call log:
+      - navigating to "http://localhost:1420/", waiting until "load"
+
+
+       at helpers.ts:18
+
+      16 |
+      17 | export async function openApp(page: Page) {
+    > 18 |   await page.goto('/');
+         |              ^
+      19 |   await expect(page.locator('header.tabbar')).toBeVisible();
+      20 | }
+      21 |
+        at openApp (/Users/laurin/Desktop/Schelmeplaner/tests/e2e/helpers.ts:18:14)
+        at /Users/laurin/Desktop/Schelmeplaner/tests/e2e/m1-pages.spec.ts:36:11
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/m1-pages-M1-Pages-Tab-Leis-a0347-und-aktiviert-sie-Undo-Redo-webkit/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/m1-pages-M1-Pages-Tab-Leis-a0347-und-aktiviert-sie-Undo-Redo-webkit/error-context.md
+
+    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results/m1-pages-M1-Pages-Tab-Leis-a0347-und-aktiviert-sie-Undo-Redo-webkit/trace.zip
+    Usage:
+
+        npx playwright show-trace test-results/m1-pages-M1-Pages-Tab-Leis-a0347-und-aktiviert-sie-Undo-Redo-webkit/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+
+[19/31] [webkit] › tests/e2e/m1-pages.spec.ts:49:3 › M1 Pages / Tab-Leiste › M1-05: Shortcut Neuer Festplatz (Mod+Shift+N) und Start-Page-Karte
+  14) [webkit] › tests/e2e/m1-pages.spec.ts:49:3 › M1 Pages / Tab-Leiste › M1-05: Shortcut Neuer Festplatz (Mod+Shift+N) und Start-Page-Karte 
+
+    Error: page.goto: Could not connect to the server.
+    Call log:
+      - navigating to "http://localhost:1420/", waiting until "load"
+
+
+       at helpers.ts:18
+
+      16 |
+      17 | export async function openApp(page: Page) {
+    > 18 |   await page.goto('/');
+         |              ^
+      19 |   await expect(page.locator('header.tabbar')).toBeVisible();
+      20 | }
+      21 |
+        at openApp (/Users/laurin/Desktop/Schelmeplaner/tests/e2e/helpers.ts:18:14)
+        at /Users/laurin/Desktop/Schelmeplaner/tests/e2e/m1-pages.spec.ts:50:11
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/m1-pages-M1-Pages-Tab-Leis-06772-hift-N-und-Start-Page-Karte-webkit/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/m1-pages-M1-Pages-Tab-Leis-06772-hift-N-und-Start-Page-Karte-webkit/error-context.md
+
+    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results/m1-pages-M1-Pages-Tab-Leis-06772-hift-N-und-Start-Page-Karte-webkit/trace.zip
+    Usage:
+
+        npx playwright show-trace test-results/m1-pages-M1-Pages-Tab-Leis-06772-hift-N-und-Start-Page-Karte-webkit/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+
+[20/31] [webkit] › tests/e2e/m1-pages.spec.ts:58:3 › M1 Pages / Tab-Leiste › M1-06: Umbenennen per Doppelklick: Enter übernimmt, Esc bricht ab, leer wird ignoriert
+  15) [webkit] › tests/e2e/m1-pages.spec.ts:58:3 › M1 Pages / Tab-Leiste › M1-06: Umbenennen per Doppelklick: Enter übernimmt, Esc bricht ab, leer wird ignoriert 
+
+    Error: page.goto: Could not connect to the server.
+    Call log:
+      - navigating to "http://localhost:1420/", waiting until "load"
+
+
+       at helpers.ts:18
+
+      16 |
+      17 | export async function openApp(page: Page) {
+    > 18 |   await page.goto('/');
+         |              ^
+      19 |   await expect(page.locator('header.tabbar')).toBeVisible();
+      20 | }
+      21 |
+        at openApp (/Users/laurin/Desktop/Schelmeplaner/tests/e2e/helpers.ts:18:14)
+        at /Users/laurin/Desktop/Schelmeplaner/tests/e2e/m1-pages.spec.ts:59:11
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/m1-pages-M1-Pages-Tab-Leis-2be9a-icht-ab-leer-wird-ignoriert-webkit/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/m1-pages-M1-Pages-Tab-Leis-2be9a-icht-ab-leer-wird-ignoriert-webkit/error-context.md
+
+    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results/m1-pages-M1-Pages-Tab-Leis-2be9a-icht-ab-leer-wird-ignoriert-webkit/trace.zip
+    Usage:
+
+        npx playwright show-trace test-results/m1-pages-M1-Pages-Tab-Leis-2be9a-icht-ab-leer-wird-ignoriert-webkit/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+
+[21/31] [webkit] › tests/e2e/m1-pages.spec.ts:94:3 › M1 Pages / Tab-Leiste › M1-06: Umbenennen mit sehr langem Namen sprengt die Tab-Leiste nicht
+  16) [webkit] › tests/e2e/m1-pages.spec.ts:94:3 › M1 Pages / Tab-Leiste › M1-06: Umbenennen mit sehr langem Namen sprengt die Tab-Leiste nicht 
+
+    Error: page.goto: Could not connect to the server.
+    Call log:
+      - navigating to "http://localhost:1420/", waiting until "load"
+
+
+       at helpers.ts:18
+
+      16 |
+      17 | export async function openApp(page: Page) {
+    > 18 |   await page.goto('/');
+         |              ^
+      19 |   await expect(page.locator('header.tabbar')).toBeVisible();
+      20 | }
+      21 |
+        at openApp (/Users/laurin/Desktop/Schelmeplaner/tests/e2e/helpers.ts:18:14)
+        at /Users/laurin/Desktop/Schelmeplaner/tests/e2e/m1-pages.spec.ts:95:11
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/m1-pages-M1-Pages-Tab-Leis-82af5-prengt-die-Tab-Leiste-nicht-webkit/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/m1-pages-M1-Pages-Tab-Leis-82af5-prengt-die-Tab-Leiste-nicht-webkit/error-context.md
+
+    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results/m1-pages-M1-Pages-Tab-Leis-82af5-prengt-die-Tab-Leiste-nicht-webkit/trace.zip
+    Usage:
+
+        npx playwright show-trace test-results/m1-pages-M1-Pages-Tab-Leis-82af5-prengt-die-Tab-Leiste-nicht-webkit/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+
+[22/31] [webkit] › tests/e2e/m1-pages.spec.ts:106:3 › M1 Pages / Tab-Leiste › M1-06: F2 benennt die aktive Page um; Blur übernimmt
+  17) [webkit] › tests/e2e/m1-pages.spec.ts:106:3 › M1 Pages / Tab-Leiste › M1-06: F2 benennt die aktive Page um; Blur übernimmt 
+
+    Error: page.goto: Could not connect to the server.
+    Call log:
+      - navigating to "http://localhost:1420/", waiting until "load"
+
+
+       at helpers.ts:18
+
+      16 |
+      17 | export async function openApp(page: Page) {
+    > 18 |   await page.goto('/');
+         |              ^
+      19 |   await expect(page.locator('header.tabbar')).toBeVisible();
+      20 | }
+      21 |
+        at openApp (/Users/laurin/Desktop/Schelmeplaner/tests/e2e/helpers.ts:18:14)
+        at /Users/laurin/Desktop/Schelmeplaner/tests/e2e/m1-pages.spec.ts:107:11
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/m1-pages-M1-Pages-Tab-Leis-614db-tive-Page-um-Blur-übernimmt-webkit/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/m1-pages-M1-Pages-Tab-Leis-614db-tive-Page-um-Blur-übernimmt-webkit/error-context.md
+
+    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results/m1-pages-M1-Pages-Tab-Leis-614db-tive-Page-um-Blur-übernimmt-webkit/trace.zip
+    Usage:
+
+        npx playwright show-trace test-results/m1-pages-M1-Pages-Tab-Leis-614db-tive-Page-um-Blur-übernimmt-webkit/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+
+[23/31] [webkit] › tests/e2e/m1-pages.spec.ts:116:3 › M1 Pages / Tab-Leiste › M1-07: Kontextmenü Duplizieren und Löschen, beides rückgängig machbar
+  18) [webkit] › tests/e2e/m1-pages.spec.ts:116:3 › M1 Pages / Tab-Leiste › M1-07: Kontextmenü Duplizieren und Löschen, beides rückgängig machbar 
+
+    Error: page.goto: Could not connect to the server.
+    Call log:
+      - navigating to "http://localhost:1420/", waiting until "load"
+
+
+       at helpers.ts:18
+
+      16 |
+      17 | export async function openApp(page: Page) {
+    > 18 |   await page.goto('/');
+         |              ^
+      19 |   await expect(page.locator('header.tabbar')).toBeVisible();
+      20 | }
+      21 |
+        at openApp (/Users/laurin/Desktop/Schelmeplaner/tests/e2e/helpers.ts:18:14)
+        at /Users/laurin/Desktop/Schelmeplaner/tests/e2e/m1-pages.spec.ts:117:11
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/m1-pages-M1-Pages-Tab-Leis-1e2fc-n-beides-rückgängig-machbar-webkit/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/m1-pages-M1-Pages-Tab-Leis-1e2fc-n-beides-rückgängig-machbar-webkit/error-context.md
+
+    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results/m1-pages-M1-Pages-Tab-Leis-1e2fc-n-beides-rückgängig-machbar-webkit/trace.zip
+    Usage:
+
+        npx playwright show-trace test-results/m1-pages-M1-Pages-Tab-Leis-1e2fc-n-beides-rückgängig-machbar-webkit/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+
+[24/31] [webkit] › tests/e2e/m1-pages.spec.ts:140:3 › M1 Pages / Tab-Leiste › M1-07: Esc und Klick daneben schließen das Kontextmenü
+  19) [webkit] › tests/e2e/m1-pages.spec.ts:140:3 › M1 Pages / Tab-Leiste › M1-07: Esc und Klick daneben schließen das Kontextmenü 
+
+    Error: page.goto: Could not connect to the server.
+    Call log:
+      - navigating to "http://localhost:1420/", waiting until "load"
+
+
+       at helpers.ts:18
+
+      16 |
+      17 | export async function openApp(page: Page) {
+    > 18 |   await page.goto('/');
+         |              ^
+      19 |   await expect(page.locator('header.tabbar')).toBeVisible();
+      20 | }
+      21 |
+        at openApp (/Users/laurin/Desktop/Schelmeplaner/tests/e2e/helpers.ts:18:14)
+        at /Users/laurin/Desktop/Schelmeplaner/tests/e2e/m1-pages.spec.ts:141:11
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/m1-pages-M1-Pages-Tab-Leis-e34f4-n-schließen-das-Kontextmenü-webkit/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/m1-pages-M1-Pages-Tab-Leis-e34f4-n-schließen-das-Kontextmenü-webkit/error-context.md
+
+    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results/m1-pages-M1-Pages-Tab-Leis-e34f4-n-schließen-das-Kontextmenü-webkit/trace.zip
+    Usage:
+
+        npx playwright show-trace test-results/m1-pages-M1-Pages-Tab-Leis-e34f4-n-schließen-das-Kontextmenü-webkit/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+
+[25/31] [webkit] › tests/e2e/m1-pages.spec.ts:151:3 › M1 Pages / Tab-Leiste › M1-07: Letzte Festplatz-Page löschen → nur Start-Page bleibt, App bleibt bedienbar
+  20) [webkit] › tests/e2e/m1-pages.spec.ts:151:3 › M1 Pages / Tab-Leiste › M1-07: Letzte Festplatz-Page löschen → nur Start-Page bleibt, App bleibt bedienbar 
+
+    Error: page.goto: Could not connect to the server.
+    Call log:
+      - navigating to "http://localhost:1420/", waiting until "load"
+
+
+       at helpers.ts:18
+
+      16 |
+      17 | export async function openApp(page: Page) {
+    > 18 |   await page.goto('/');
+         |              ^
+      19 |   await expect(page.locator('header.tabbar')).toBeVisible();
+      20 | }
+      21 |
+        at openApp (/Users/laurin/Desktop/Schelmeplaner/tests/e2e/helpers.ts:18:14)
+        at /Users/laurin/Desktop/Schelmeplaner/tests/e2e/m1-pages.spec.ts:153:11
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/m1-pages-M1-Pages-Tab-Leis-86325-bleibt-App-bleibt-bedienbar-webkit/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/m1-pages-M1-Pages-Tab-Leis-86325-bleibt-App-bleibt-bedienbar-webkit/error-context.md
+
+    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results/m1-pages-M1-Pages-Tab-Leis-86325-bleibt-App-bleibt-bedienbar-webkit/trace.zip
+    Usage:
+
+        npx playwright show-trace test-results/m1-pages-M1-Pages-Tab-Leis-86325-bleibt-App-bleibt-bedienbar-webkit/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+
+[26/31] [webkit] › tests/e2e/m1-pages.spec.ts:167:3 › M1 Pages / Tab-Leiste › M1-08: Pages per Ziehen umsortieren, Undo stellt die Reihenfolge wieder her
+  21) [webkit] › tests/e2e/m1-pages.spec.ts:167:3 › M1 Pages / Tab-Leiste › M1-08: Pages per Ziehen umsortieren, Undo stellt die Reihenfolge wieder her 
+
+    Error: page.goto: Could not connect to the server.
+    Call log:
+      - navigating to "http://localhost:1420/", waiting until "load"
+
+
+       at helpers.ts:18
+
+      16 |
+      17 | export async function openApp(page: Page) {
+    > 18 |   await page.goto('/');
+         |              ^
+      19 |   await expect(page.locator('header.tabbar')).toBeVisible();
+      20 | }
+      21 |
+        at openApp (/Users/laurin/Desktop/Schelmeplaner/tests/e2e/helpers.ts:18:14)
+        at /Users/laurin/Desktop/Schelmeplaner/tests/e2e/m1-pages.spec.ts:168:11
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/m1-pages-M1-Pages-Tab-Leis-5be70--die-Reihenfolge-wieder-her-webkit/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/m1-pages-M1-Pages-Tab-Leis-5be70--die-Reihenfolge-wieder-her-webkit/error-context.md
+
+    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results/m1-pages-M1-Pages-Tab-Leis-5be70--die-Reihenfolge-wieder-her-webkit/trace.zip
+    Usage:
+
+        npx playwright show-trace test-results/m1-pages-M1-Pages-Tab-Leis-5be70--die-Reihenfolge-wieder-her-webkit/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+
+[27/31] [webkit] › tests/e2e/m1-pages.spec.ts:186:3 › M1 Pages / Tab-Leiste › M1-08: Start-Page lässt sich nicht verschieben, Page nicht vor die Start-Page ziehen
+  22) [webkit] › tests/e2e/m1-pages.spec.ts:186:3 › M1 Pages / Tab-Leiste › M1-08: Start-Page lässt sich nicht verschieben, Page nicht vor die Start-Page ziehen 
+
+    Error: page.goto: Could not connect to the server.
+    Call log:
+      - navigating to "http://localhost:1420/", waiting until "load"
+
+
+       at helpers.ts:18
+
+      16 |
+      17 | export async function openApp(page: Page) {
+    > 18 |   await page.goto('/');
+         |              ^
+      19 |   await expect(page.locator('header.tabbar')).toBeVisible();
+      20 | }
+      21 |
+        at openApp (/Users/laurin/Desktop/Schelmeplaner/tests/e2e/helpers.ts:18:14)
+        at /Users/laurin/Desktop/Schelmeplaner/tests/e2e/m1-pages.spec.ts:187:11
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/m1-pages-M1-Pages-Tab-Leis-84ecc-t-vor-die-Start-Page-ziehen-webkit/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/m1-pages-M1-Pages-Tab-Leis-84ecc-t-vor-die-Start-Page-ziehen-webkit/error-context.md
+
+    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results/m1-pages-M1-Pages-Tab-Leis-84ecc-t-vor-die-Start-Page-ziehen-webkit/trace.zip
+    Usage:
+
+        npx playwright show-trace test-results/m1-pages-M1-Pages-Tab-Leis-84ecc-t-vor-die-Start-Page-ziehen-webkit/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+
+[28/31] [webkit] › tests/e2e/m1-pages.spec.ts:205:3 › M1 Pages / Tab-Leiste › M1-08: Kurzer Klick (unter 5 px Bewegung) sortiert nicht um und erzeugt keinen Undo-Schritt
+  23) [webkit] › tests/e2e/m1-pages.spec.ts:205:3 › M1 Pages / Tab-Leiste › M1-08: Kurzer Klick (unter 5 px Bewegung) sortiert nicht um und erzeugt keinen Undo-Schritt 
+
+    Error: page.goto: Could not connect to the server.
+    Call log:
+      - navigating to "http://localhost:1420/", waiting until "load"
+
+
+       at helpers.ts:18
+
+      16 |
+      17 | export async function openApp(page: Page) {
+    > 18 |   await page.goto('/');
+         |              ^
+      19 |   await expect(page.locator('header.tabbar')).toBeVisible();
+      20 | }
+      21 |
+        at openApp (/Users/laurin/Desktop/Schelmeplaner/tests/e2e/helpers.ts:18:14)
+        at /Users/laurin/Desktop/Schelmeplaner/tests/e2e/m1-pages.spec.ts:206:11
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/m1-pages-M1-Pages-Tab-Leis-a0626-erzeugt-keinen-Undo-Schritt-webkit/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/m1-pages-M1-Pages-Tab-Leis-a0626-erzeugt-keinen-Undo-Schritt-webkit/error-context.md
+
+    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results/m1-pages-M1-Pages-Tab-Leis-a0626-erzeugt-keinen-Undo-Schritt-webkit/trace.zip
+    Usage:
+
+        npx playwright show-trace test-results/m1-pages-M1-Pages-Tab-Leis-a0626-erzeugt-keinen-Undo-Schritt-webkit/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+
+[29/31] [webkit] › tests/e2e/m1-pages.spec.ts:215:3 › M1 Pages / Tab-Leiste › M1-09: Pages per Shortcut durchschalten (Strg+Tab, Strg+Shift+Tab, Strg+Bild, Alt+Ziffer)
+  24) [webkit] › tests/e2e/m1-pages.spec.ts:215:3 › M1 Pages / Tab-Leiste › M1-09: Pages per Shortcut durchschalten (Strg+Tab, Strg+Shift+Tab, Strg+Bild, Alt+Ziffer) 
+
+    Error: page.goto: Could not connect to the server.
+    Call log:
+      - navigating to "http://localhost:1420/", waiting until "load"
+
+
+       at helpers.ts:18
+
+      16 |
+      17 | export async function openApp(page: Page) {
+    > 18 |   await page.goto('/');
+         |              ^
+      19 |   await expect(page.locator('header.tabbar')).toBeVisible();
+      20 | }
+      21 |
+        at openApp (/Users/laurin/Desktop/Schelmeplaner/tests/e2e/helpers.ts:18:14)
+        at /Users/laurin/Desktop/Schelmeplaner/tests/e2e/m1-pages.spec.ts:216:11
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/m1-pages-M1-Pages-Tab-Leis-cf964-t-Tab-Strg-Bild-Alt-Ziffer--webkit/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/m1-pages-M1-Pages-Tab-Leis-cf964-t-Tab-Strg-Bild-Alt-Ziffer--webkit/error-context.md
+
+    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results/m1-pages-M1-Pages-Tab-Leis-cf964-t-Tab-Strg-Bild-Alt-Ziffer--webkit/trace.zip
+    Usage:
+
+        npx playwright show-trace test-results/m1-pages-M1-Pages-Tab-Leis-cf964-t-Tab-Strg-Bild-Alt-Ziffer--webkit/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+
+[30/31] [webkit] › tests/e2e/m1-pages.spec.ts:241:3 › M1 Pages / Tab-Leiste › M1-07: Shortcuts Duplizieren (Mod+Alt+D) und Löschen (Mod+Alt+Backspace)
+  25) [webkit] › tests/e2e/m1-pages.spec.ts:241:3 › M1 Pages / Tab-Leiste › M1-07: Shortcuts Duplizieren (Mod+Alt+D) und Löschen (Mod+Alt+Backspace) 
+
+    Error: page.goto: Could not connect to the server.
+    Call log:
+      - navigating to "http://localhost:1420/", waiting until "load"
+
+
+       at helpers.ts:18
+
+      16 |
+      17 | export async function openApp(page: Page) {
+    > 18 |   await page.goto('/');
+         |              ^
+      19 |   await expect(page.locator('header.tabbar')).toBeVisible();
+      20 | }
+      21 |
+        at openApp (/Users/laurin/Desktop/Schelmeplaner/tests/e2e/helpers.ts:18:14)
+        at /Users/laurin/Desktop/Schelmeplaner/tests/e2e/m1-pages.spec.ts:242:11
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/m1-pages-M1-Pages-Tab-Leis-cdff1--Löschen-Mod-Alt-Backspace--webkit/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/m1-pages-M1-Pages-Tab-Leis-cdff1--Löschen-Mod-Alt-Backspace--webkit/error-context.md
+
+    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results/m1-pages-M1-Pages-Tab-Leis-cdff1--Löschen-Mod-Alt-Backspace--webkit/trace.zip
+    Usage:
+
+        npx playwright show-trace test-results/m1-pages-M1-Pages-Tab-Leis-cdff1--Löschen-Mod-Alt-Backspace--webkit/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+
+[31/31] [webkit] › tests/e2e/m1-pages.spec.ts:249:3 › M1 Pages / Tab-Leiste › Seitenwechsel ist kein Undo-Schritt
+  26) [webkit] › tests/e2e/m1-pages.spec.ts:249:3 › M1 Pages / Tab-Leiste › Seitenwechsel ist kein Undo-Schritt 
+
+    Error: page.goto: Could not connect to the server.
+    Call log:
+      - navigating to "http://localhost:1420/", waiting until "load"
+
+
+       at helpers.ts:18
+
+      16 |
+      17 | export async function openApp(page: Page) {
+    > 18 |   await page.goto('/');
+         |              ^
+      19 |   await expect(page.locator('header.tabbar')).toBeVisible();
+      20 | }
+      21 |
+        at openApp (/Users/laurin/Desktop/Schelmeplaner/tests/e2e/helpers.ts:18:14)
+        at /Users/laurin/Desktop/Schelmeplaner/tests/e2e/m1-pages.spec.ts:250:11
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/m1-pages-M1-Pages-Tab-Leis-a3f34-chsel-ist-kein-Undo-Schritt-webkit/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/m1-pages-M1-Pages-Tab-Leis-a3f34-chsel-ist-kein-Undo-Schritt-webkit/error-context.md
+
+    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results/m1-pages-M1-Pages-Tab-Leis-a3f34-chsel-ist-kein-Undo-Schritt-webkit/trace.zip
+    Usage:
+
+        npx playwright show-trace test-results/m1-pages-M1-Pages-Tab-Leis-a3f34-chsel-ist-kein-Undo-Schritt-webkit/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+
+  26 failed
+    [webkit] › tests/e2e/m1-layout.spec.ts:88:3 › M1 Layout und Bedienung › M1-11: Aktives Werkzeug ist farblich hervorgehoben 
+    [webkit] › tests/e2e/m1-layout.spec.ts:101:3 › M1 Layout und Bedienung › M1-12: Icons sind lokal gebündelt; keine Anfrage an fremde Server 
+    [webkit] › tests/e2e/m1-layout.spec.ts:118:3 › M1 Layout und Bedienung › M1-13: Dunkles Theme ist Standard, helles per Mod+Alt+T bzw. Menü; Einstellung bleibt nach Neuladen 
+    [webkit] › tests/e2e/m1-layout.spec.ts:134:3 › M1 Layout und Bedienung › M1-13: Dunkles Theme ist neutrales Grau (kein Farbstich) und kompakte Schrift 
+    [webkit] › tests/e2e/m1-layout.spec.ts:144:3 › M1 Layout und Bedienung › M1-14: Seitenleiste per Button und Shift+Tab einklappbar; Tab blendet alle Panels aus 
+    [webkit] › tests/e2e/m1-layout.spec.ts:175:3 › M1 Layout und Bedienung › M1-14: Tab im Textfeld bleibt Tab (Panels bleiben sichtbar) 
+    [webkit] › tests/e2e/m1-layout.spec.ts:182:3 › M1 Layout und Bedienung › M1-22: ? öffnet die Shortcut-Übersicht, Esc und Klick daneben schließen sie 
+    [webkit] › tests/e2e/m1-layout.spec.ts:200:3 › M1 Layout und Bedienung › M1-22: Übersicht ist auch auf der Start-Page und über das Menü erreichbar 
+    [webkit] › tests/e2e/m1-layout.spec.ts:211:3 › M1 Layout und Bedienung › M1-21: Shortcuts zeigen auf macOS Cmd-Symbole, sonst Strg 
+    [webkit] › tests/e2e/m1-layout.spec.ts:220:3 › M1 Layout und Bedienung › Menü enthält Datei- und Bearbeiten-Befehle; Rückgängig ist anfangs deaktiviert 
+    [webkit] › tests/e2e/m1-pages.spec.ts:7:3 › M1 Pages / Tab-Leiste › M1-03/M1-04: Start-Page ist ganz links, danach die Festplatz-Pages; Wechsel per Klick 
+    [webkit] › tests/e2e/m1-pages.spec.ts:21:3 › M1 Pages / Tab-Leiste › M1-03: Start-Page hat kein Kontextmenü zum Löschen und lässt sich nicht umbenennen 
+    [webkit] › tests/e2e/m1-pages.spec.ts:35:3 › M1 Pages / Tab-Leiste › M1-05: „+“ legt eine neue Festplatz-Page an und aktiviert sie; Undo/Redo 
+    [webkit] › tests/e2e/m1-pages.spec.ts:49:3 › M1 Pages / Tab-Leiste › M1-05: Shortcut Neuer Festplatz (Mod+Shift+N) und Start-Page-Karte 
+    [webkit] › tests/e2e/m1-pages.spec.ts:58:3 › M1 Pages / Tab-Leiste › M1-06: Umbenennen per Doppelklick: Enter übernimmt, Esc bricht ab, leer wird ignoriert 
+    [webkit] › tests/e2e/m1-pages.spec.ts:94:3 › M1 Pages / Tab-Leiste › M1-06: Umbenennen mit sehr langem Namen sprengt die Tab-Leiste nicht 
+    [webkit] › tests/e2e/m1-pages.spec.ts:106:3 › M1 Pages / Tab-Leiste › M1-06: F2 benennt die aktive Page um; Blur übernimmt 
+    [webkit] › tests/e2e/m1-pages.spec.ts:116:3 › M1 Pages / Tab-Leiste › M1-07: Kontextmenü Duplizieren und Löschen, beides rückgängig machbar 
+    [webkit] › tests/e2e/m1-pages.spec.ts:140:3 › M1 Pages / Tab-Leiste › M1-07: Esc und Klick daneben schließen das Kontextmenü 
+    [webkit] › tests/e2e/m1-pages.spec.ts:151:3 › M1 Pages / Tab-Leiste › M1-07: Letzte Festplatz-Page löschen → nur Start-Page bleibt, App bleibt bedienbar 
+    [webkit] › tests/e2e/m1-pages.spec.ts:167:3 › M1 Pages / Tab-Leiste › M1-08: Pages per Ziehen umsortieren, Undo stellt die Reihenfolge wieder her 
+    [webkit] › tests/e2e/m1-pages.spec.ts:186:3 › M1 Pages / Tab-Leiste › M1-08: Start-Page lässt sich nicht verschieben, Page nicht vor die Start-Page ziehen 
+    [webkit] › tests/e2e/m1-pages.spec.ts:205:3 › M1 Pages / Tab-Leiste › M1-08: Kurzer Klick (unter 5 px Bewegung) sortiert nicht um und erzeugt keinen Undo-Schritt 
+    [webkit] › tests/e2e/m1-pages.spec.ts:215:3 › M1 Pages / Tab-Leiste › M1-09: Pages per Shortcut durchschalten (Strg+Tab, Strg+Shift+Tab, Strg+Bild, Alt+Ziffer) 
+    [webkit] › tests/e2e/m1-pages.spec.ts:241:3 › M1 Pages / Tab-Leiste › M1-07: Shortcuts Duplizieren (Mod+Alt+D) und Löschen (Mod+Alt+Backspace) 
+    [webkit] › tests/e2e/m1-pages.spec.ts:249:3 › M1 Pages / Tab-Leiste › Seitenwechsel ist kein Undo-Schritt 
+  5 passed (23.5s)

@@ -1,7 +1,8 @@
+import * as fc from 'fast-check';
 import { describe, expect, it } from 'vitest';
 import { createPage, DEFAULT_SETTINGS } from './model/defaults';
 import type { Area, FestplatzPage, NumberingScope, Rect, Stand } from './model/types';
-import { cachedDuplicates, defaultClockwiseCenter, findDuplicates, formatNr, nrKey, orderClockwise, orderLeftToRight, orderStands, planRenumber, sameNr } from './numbering';
+import { cachedDuplicates, defaultClockwiseCenter, defaultRenumberMode, findDuplicates, formatNr, nrKey, nrNumber, orderClockwise, orderLeftToRight, orderStands, planRenumber, sameNr } from './numbering';
 import { createStand } from './objects';
 
 /**
@@ -32,6 +33,9 @@ describe('M5 Format und Vergleich', () => {
     expect(sameNr('12', '012')).toBe(true);
     expect(sameNr(' a-07 ', 'A-7')).toBe(true);
     expect(sameNr('A-10', 'A-1')).toBe(false);
+    // das Präfix gehört zur Nummer
+    expect(sameNr('A-12', 'A-012')).toBe(true);
+    expect(sameNr('A-12', 'B-12')).toBe(false);
     expect(sameNr('0', '00')).toBe(true);
     expect(sameNr('', '')).toBe(false);
     expect(nrKey('  ')).toBe('');
@@ -54,8 +58,20 @@ describe('M5 Reihenfolge links → rechts (über den ganzen Festplatz)', () => {
     expect(ids(orderStands(page('p', { areas: [G], stands: [st('in2', 40, -8), st('draussen', 25, 20), st('in1', 10, -8)] })))).toEqual(['in1', 'draussen', 'in2']);
   });
 
-  it('gleiche Lage (bis 0,01 m): der obere Stand zuerst', () => {
-    expect(ids(orderLeftToRight([st('r', 20, 0), st('lu', 0, 10), st('lo', 0.005, -10)]))).toEqual(['lo', 'lu', 'r']);
+  it('ohne Toleranz: auf 0,01 m gerundet; kleineres x zuerst, bei exakt gleichem x der obere, dann nach ID', () => {
+    // 0,01 m weiter rechts ist nicht „gleich“: links zuerst, auch wenn der andere weiter oben steht
+    expect(ids(orderLeftToRight([st('r', 20, 0), st('lu', 0, 10), st('lo', 0.01, -10)]))).toEqual(['lu', 'lo', 'r']);
+    // exakt gleiches x (nach Rundung auf 0,01 m): der obere zuerst
+    expect(ids(orderLeftToRight([st('lu', 0, 10), st('lo', 0.004, -10)]))).toEqual(['lo', 'lu']);
+    // exakt gleiche Position: nach ID
+    expect(ids(orderLeftToRight([st('b', 3, 3), st('a', 3, 3)]))).toEqual(['a', 'b']);
+  });
+
+  it('1-cm-Treppe aus QA-M5-01: jede Anlegereihenfolge ergibt unten, mitte, oben (links zuerst)', () => {
+    const stair = [st('unten', 0, 10), st('mitte', 0.01, 5), st('oben', 0.02, 0)];
+    for (const perm of [[0, 1, 2], [0, 2, 1], [1, 0, 2], [1, 2, 0], [2, 0, 1], [2, 1, 0]]) {
+      expect(ids(orderLeftToRight(perm.map((i) => stair[i]!)))).toEqual(['unten', 'mitte', 'oben']);
+    }
   });
 });
 
@@ -78,7 +94,7 @@ describe('M5 Reihenfolge im Uhrzeigersinn', () => {
     expect(ids(orderClockwise(all, cw(90), 90))).toEqual(['S', 'W', 'N', 'E']);
   });
 
-  it('gleicher Winkel: näher am Mittelpunkt zuerst; knapp vor dem Startstrahl zählt als Start', () => {
+  it('gleicher Winkel (auf 0,1° gerundet): näher am Mittelpunkt zuerst; knapp vor dem Startstrahl zählt als Start', () => {
     const near = st('near', 0, -5);
     const tiny = st('tiny', -0.001, -20);
     expect(ids(orderClockwise([N, E, near, tiny], cw(), 0))).toEqual(['near', 'N', 'tiny', 'E']);
@@ -93,6 +109,42 @@ describe('M5 Reihenfolge im Uhrzeigersinn', () => {
 
   it('Modus „manuell“ liefert keine Reihenfolge', () => {
     expect(orderStands(page('p', { numberingMode: 'manual', stands: all }))).toEqual([]);
+  });
+});
+
+describe('M5 Reihenfolge: unabhängig von der Anlegereihenfolge (Eigenschaften, QA-M5-01)', () => {
+  /** Stände auf einem engen Raster (1 cm), damit gleiche und fast gleiche Lagen häufig vorkommen. */
+  const standsArb = fc
+    .uniqueArray(fc.record({ x: fc.integer({ min: -30, max: 30 }), y: fc.integer({ min: -30, max: 30 }) }), { minLength: 1, maxLength: 25, selector: (p) => `${p.x}|${p.y}` })
+    .map((pts) => pts.map((p, i) => st(`s${i}`, p.x / 100, p.y / 100)));
+  /** 1-cm-Treppen: Spalten aus Ständen, die je 0,01 m nach rechts und nach oben versetzt sind. */
+  const stairArb = fc.integer({ min: 2, max: 12 }).map((n) => Array.from({ length: n }, (_, i) => st(`t${i}`, i * 0.01, 10 - i * 0.5)));
+  const permuted = <T,>(arb: fc.Arbitrary<T[]>) => arb.chain((list) => fc.shuffledSubarray(list, { minLength: list.length, maxLength: list.length }).map((perm) => [list, perm] as const));
+
+  it('links → rechts: jede Permutation ergibt dieselbe Reihenfolge', () => {
+    fc.assert(
+      fc.property(permuted(fc.oneof(standsArb, stairArb)), ([list, perm]) => {
+        expect(ids(orderLeftToRight(perm))).toEqual(ids(orderLeftToRight(list)));
+      }),
+      { numRuns: 500 },
+    );
+  });
+
+  it('Uhrzeigersinn: jede Permutation ergibt dieselbe Reihenfolge (auch dicht am Startstrahl und auf einem Strahl)', () => {
+    // Stände auf einem Strahl mit je 0,06° Versatz (Beispiel aus QA-M5-01) und dicht um den Mittelpunkt
+    const rayArb = fc.integer({ min: 2, max: 8 }).map((n) =>
+      Array.from({ length: n }, (_, i) => {
+        const a = (i * 0.06 * Math.PI) / 180;
+        return st(`r${i}`, Math.sin(a) * 20, -Math.cos(a) * 20);
+      }),
+    );
+    fc.assert(
+      fc.property(permuted(fc.oneof(standsArb, rayArb)), fc.integer({ min: 0, max: 359 }), fc.integer({ min: 0, max: 359 }), ([list, perm], startAngle, north) => {
+        const cw = { center: { x: 0, y: 0 }, startAngle };
+        expect(ids(orderClockwise(perm, cw, north))).toEqual(ids(orderClockwise(list, cw, north)));
+      }),
+      { numRuns: 500 },
+    );
   });
 });
 
@@ -174,6 +226,58 @@ describe('M5 Neu nummerieren', () => {
     const plan = planRenumber(project([page('p', { areas: [G], stands })]), 'p');
     expect(plan.changes.map((c) => c.next)).toEqual(['1']);
     expect([...plan.duplicates.keys()].toSorted()).toEqual(['p1', 'p2']);
+  });
+});
+
+describe('M5 Neu nummerieren: nur Stände ohne Nummer', () => {
+  const G = area('G');
+  const row = (pageId: string, nrList: string[], extra: (i: number) => Partial<Stand> = () => ({})) =>
+    nrList.map((nr, i) => st(`${pageId}${i + 1}`, 5 + i * 5, -1.5, { nr, ...extra(i) }));
+
+  it('Zahl einer Nummer ist die letzte Ziffernfolge', () => {
+    expect(nrNumber('A-012')).toBe(12);
+    expect(nrNumber('12a')).toBe(12);
+    expect(nrNumber('B')).toBeNull();
+    expect(nrNumber('')).toBeNull();
+  });
+
+  it('bestehende Nummern bleiben, Stände ohne Nummer bekommen fortlaufende Nummern ab der höchsten, in Modus-Reihenfolge', () => {
+    const p = page('p', { prefix: 'A-', areas: [G], stands: row('p', ['', 'A-07', '', 'A-03', '']) });
+    const plan = planRenumber(project([p], { digits: 2 }), 'p', 'missing');
+    expect(plan.mode).toBe('missing');
+    expect(plan.changes.map((c) => [c.standId, c.old, c.next])).toEqual([
+      ['p1', '', 'A-08'],
+      ['p3', '', 'A-09'],
+      ['p5', '', 'A-10'],
+    ]);
+    expect(plan.unchanged).toBe(2);
+  });
+
+  it('ohne vorhandene Nummern ab der Startnummer; fixiert und leer bleibt leer; vorhandene Nummern werden übersprungen', () => {
+    const p = page('p', { areas: [G], stands: row('p', ['', '', ''], (i) => (i === 1 ? { nrLocked: true } : {})) });
+    expect(planRenumber(project([p], { start: 100 }), 'p', 'missing').changes.map((c) => c.next)).toEqual(['100', '101']);
+    // „X5“ zählt als 5 → weiter mit 6; die vorhandene „7“ wird übersprungen
+    const q = page('q', { areas: [G], stands: row('q', ['X5', '', '7', '']) });
+    expect(planRenumber(project([q]), 'q', 'missing').changes.map((c) => c.next)).toEqual(['8', '9']);
+  });
+
+  it('global: höchste Nummer im ganzen Projekt (auch manuelle Pages), fortlaufend über die Pages in Tab-Reihenfolge', () => {
+    const p1 = page('p1', { prefix: 'A-', areas: [G], stands: row('a', ['A-2', ''] ) });
+    const man = page('man', { numberingMode: 'manual', stands: [st('m', 0, 0, { nr: '40' })] });
+    const p2 = page('p2', { prefix: 'B-', areas: [G], stands: row('b', ['', 'B-5']) });
+    const plan = planRenumber(project([p1, man, p2], { scope: 'global' }), 'p1', 'missing');
+    expect(plan.changes.map((c) => [c.standId, c.next])).toEqual([
+      ['a2', 'A-41'],
+      ['b1', 'B-42'],
+    ]);
+  });
+
+  it('Vorauswahl: „nur ohne Nummer“, sobald im Nummernkreis ein Stand eine Nummer hat', () => {
+    const empty = page('p1', { stands: row('a', ['', '']) });
+    const numbered = page('p2', { stands: row('b', ['', '3']) });
+    expect(defaultRenumberMode(project([empty, numbered]), 'p1')).toBe('all');
+    expect(defaultRenumberMode(project([empty, numbered]), 'p2')).toBe('missing');
+    expect(defaultRenumberMode(project([empty, numbered], { scope: 'global' }), 'p1')).toBe('missing');
   });
 });
 

@@ -43,7 +43,10 @@ Erledigte Einträge stehen in `docs/archiv/eingang-erledigt.md` bzw. im Archiv d
 - E-34 (Idee, aus M5) Mittelpunkt der Nummerierung im Uhrzeigersinn direkt auf der Zeichenfläche ziehen; bisher Klickmodus „Mittelpunkt setzen“ oder Felder X/Y. Das Werkzeug hat keinen eigenen Kurzbefehl und kein Icon in der Werkzeugleiste.
 - E-35 (Idee, aus M5, → M6) „Neu nummerieren“ auf der Start-Page für alle Festplätze, auch bei „pro Festplatz“. Bisher nur auf einer Festplatz-Page (bei „global“ betrifft es dort schon alle Pages).
 - E-36 (Idee, aus M5) Vorschau „Neu nummerieren“: Zeile anklicken hebt den Stand auf der Zeichenfläche hervor, bzw. alt → neu direkt auf dem Plan zeigen.
+- E-37 (Hinweis, aus QA M5) Der Windows-Installer heißt `Schelmeplaner_0.1.0_x64_en-US.msi`, die Installer-Sprache ist Englisch. Bei Bedarf auf Deutsch umstellen (`tauri.conf.json`, WiX-Sprache).
 - E-08 (Hinweis) Browser-Autosave nutzt localStorage (ca. 5 MB). Mit eingebetteten Hintergründen (M2) reicht das nicht; betrifft nur den Browser-Dev-Modus.
+- [x] [QA] QA-M5-03 (gering) Kurzbefehle mit Strg/Cmd+Alt (Neu nummerieren, Festplatz duplizieren, Festplatz löschen, Theme, Bildrate) greifen, während ein Textfeld den Fokus hat (`src/app/keyboard.ts:56`). Unter Windows ist AltGr = Strg+Alt: AltGr+D im Präfixfeld dupliziert den Festplatz. Kein Zeichenkonflikt mit deutschem Layout. Siehe `qa/M5.md`. **Erledigt 2026-10-12:** Solange ein Textfeld den Fokus hat, greift kein Kurzbefehl; AltGr-Regel in spec.md (Tastaturkürzel) und CLAUDE.md, geprüft von `src/ui/shortcuts/definitions.test.ts` (Entscheidung Laurin).
+- [x] [QA] QA-M5-04 (gering) `npm run test:perf` verwendet einen schon laufenden Dev-Server wieder (`reuseExistingServer`, aus `playwright.config.ts`); wird dieser beendet, scheitern die folgenden Lasttests mit „Could not connect to the server“ (Ursache der WebKit-Fehler im M5-Lauf). Vorschlag: `reuseExistingServer: false` in `playwright.perf.config.ts`. Siehe `qa/M5.md`. **Erledigt 2026-10-12:** wie vorgeschlagen; ein belegter Port bricht den Lasttest sofort ab.
 - [QA] QA-M1-11 (gering, Dokumentation/Prozess) Die Entwicklung hat QA-Artefakte geändert: Abschnitt „Behoben“ an `qa/M1.md` angehängt und die Erwartung des QA-Tests „M1-24: Zwei-Finger-Wischen“ umgedreht (`tests/e2e/m1-canvas.spec.ts:104-107`, begründet). Dazu Widersprüche: QA-M1-02 steht hier als „erledigt“, in `qa/M1.md` als „teilweise“; die Einträge QA-M1-03/-04 nennen noch `test.fail`, obwohl die Markierungen entfernt sind.
 
 ---
@@ -65,19 +68,20 @@ Aufgabenlisten, erledigte QA-Befunde und Abschlüsse: `docs/archiv/M1.md`, `docs
 
 ## M5 – Nummerierung, Strom
 Entscheidungen aus der Planung (2026-10-12) stehen in `spec.md` (§3, §5, §6, §10).
-- [x] M5-01 Nummerierung links → rechts über den ganzen Festplatz nach der x-Lage der Standmitte, unabhängig von den Grundflächen, bei gleicher Lage der obere zuerst (geändert 2026-10-12 auf Wunsch von Laurin; vorher je Grundfläche entlang der Vorderseite). Reihenfolge der Grundflächen per ↑/↓ im eigenen Bereich „Grundflächen“, nur noch für überlappende Grundflächen (§4, §5)
-- [x] M5-02 Nummerierung im Uhrzeigersinn um einen pro Festplatz gesetzten Mittelpunkt (Klick oder X/Y), Startrichtung relativ zu Norden, Fadenkreuz mit Strahl auf der Zeichenfläche (§5)
-- [x] M5-03 Manueller Nummerierungsmodus: Automatik lässt die Page aus, bei „global“ gelten ihre Nummern als belegt (§5)
-- [x] M5-04 Format: Präfix pro Festplatz, Startnummer und Stellenzahl projektweit (z. B. „A-01“); Nummernkreis global durchgehend (Tab-Reihenfolge) oder pro Festplatz (§5)
-- [x] M5-05 Fixierte Nummern (Schloss, auch bei Mehrfachauswahl): Automatik überspringt Stand und Nummer im selben Nummernkreis (§5)
-- [x] M5-06 Neu nummerieren nur per Button/Kurzbefehl (Cmd/Strg+Alt+N) mit Vorschau alt → neu, Übernehmen ist ein Undo-Schritt; neue Stände bleiben ohne Nummer, Anzeige „n Stände ohne Nummer“ (§5)
-- [x] M5-07 Optionales Stromlimit pro Festplatz in kW; es zählen alle Stände der Page (§6)
-- [x] M5-08 Strombalken im Seitenleisten-Bereich „Strom“ (immer sichtbar; grün, gelb ab 90 %, rot über Limit) (§6)
-- [x] M5-09 Überschreitung: Blitz-Symbol am Page-Tab, Hinweis beim Überschreiten; Blockieren optional (Strom-Feld, Einfügen, Duplizieren, Alt+Ziehen; Senkungen erlaubt) (§6)
-- [x] M5-10 Warnung „doppelte Nummer“ je Nummernkreis (auch nach „Festplatz duplizieren“, aus E-25), projektweit abschaltbar, pro Stand ignorierbar, im Warnzähler am Tab (§3, §5)
-- [x] M5-11 Anzahl und kW je Anschlussart im Bereich „Strom“ (§6)
-- [x] M5-12 Strom-Berechnung UI-unabhängig in `src/core/` inklusive Projektsumme, Grundlage für M6-01 (§6, §7)
-- [x] M5-13 Formatversion 3: Stellenzahl, Warnung „doppelte Nummer“ (Einstellung und Häkchen am Stand), geprüfter Mittelpunkt; Migration 2 → 3 mit echter M4-Datei (§10)
+- [x] M5-01 Nummerierung links → rechts über den ganzen Festplatz nach der x-Lage der Standmitte, unabhängig von den Grundflächen, bei gleicher Lage der obere zuerst (geändert 2026-10-12 auf Wunsch von Laurin; vorher je Grundfläche entlang der Vorderseite). Reihenfolge der Grundflächen per ↑/↓ im eigenen Bereich „Grundflächen“, nur noch für überlappende Grundflächen (§4, §5) (QA M5: Nacharbeit, QA-M5-01 in `qa/M5.md`) **Erledigt 2026-10-12:** Vergleich ohne Toleranz auf 0,01 m gerundet (x, dann y, dann ID), Eigenschaftstest mit zufälligen Permutationen inkl. 1-cm-Treppe.
+- [x] M5-02 Nummerierung im Uhrzeigersinn um einen pro Festplatz gesetzten Mittelpunkt (Klick oder X/Y), Startrichtung relativ zu Norden, Fadenkreuz mit Strahl auf der Zeichenfläche (§5) (QA M5: Nacharbeit, QA-M5-01 in `qa/M5.md`) **Erledigt 2026-10-12:** Winkel auf 0,1° und Abstand auf 0,01 m gerundet ohne Toleranz, Eigenschaftstest mit Permutationen.
+- [x] M5-03 Manueller Nummerierungsmodus: Automatik lässt die Page aus, bei „global“ gelten ihre Nummern als belegt (§5) (QA ✓ M5)
+- [x] M5-04 Format: Präfix pro Festplatz, Startnummer und Stellenzahl projektweit (z. B. „A-01“); Nummernkreis global durchgehend (Tab-Reihenfolge) oder pro Festplatz (§5) (QA ✓ M5)
+- [x] M5-05 Fixierte Nummern (Schloss, auch bei Mehrfachauswahl): Automatik überspringt Stand und Nummer im selben Nummernkreis (§5) (QA ✓ M5)
+- [x] M5-06 Neu nummerieren nur per Button/Kurzbefehl (Cmd/Strg+Alt+N) mit Vorschau alt → neu, Übernehmen ist ein Undo-Schritt; neue Stände bleiben ohne Nummer, Anzeige „n Stände ohne Nummer“ (§5) (QA ✓ M5)
+- [x] M5-07 Optionales Stromlimit pro Festplatz in kW; es zählen alle Stände der Page (§6) (QA ✓ M5)
+- [x] M5-08 Strombalken im Seitenleisten-Bereich „Strom“ (immer sichtbar; grün, gelb ab 90 %, rot über Limit) (§6) (QA M5: Nacharbeit, QA-M5-02 in `qa/M5.md`) **Erledigt 2026-10-12:** Stufen auf 0,001 kW gerundet verglichen, Prozent abgerundet bzw. mit Nachkommastelle über dem Limit (`powerPercentLabel`).
+- [x] M5-09 Überschreitung: Blitz-Symbol am Page-Tab, Hinweis beim Überschreiten; Blockieren optional (Strom-Feld, Einfügen, Duplizieren, Alt+Ziehen; Senkungen erlaubt) (§6) (QA ✓ M5)
+- [x] M5-10 Warnung „doppelte Nummer“ je Nummernkreis (auch nach „Festplatz duplizieren“, aus E-25), projektweit abschaltbar, pro Stand ignorierbar, im Warnzähler am Tab (§3, §5) (QA ✓ M5)
+- [x] M5-11 Anzahl und kW je Anschlussart im Bereich „Strom“ (§6) (QA ✓ M5)
+- [x] M5-12 Strom-Berechnung UI-unabhängig in `src/core/` inklusive Projektsumme, Grundlage für M6-01 (§6, §7) (QA ✓ M5)
+- [x] M5-14 Neu nummerieren mit zwei Optionen: „Alle neu nummerieren“ und „Nur Stände ohne Nummer“ (fortlaufend ab der höchsten vergebenen Nummer im Nummernkreis); Vorauswahl „nur ohne Nummer“, sobald Nummern existieren; beide mit Vorschau, je ein Undo-Schritt (§5, Entscheidung Laurin 2026-10-12 aus der QA M5)
+- [x] M5-13 Formatversion 3: Stellenzahl, Warnung „doppelte Nummer“ (Einstellung und Häkchen am Stand), geprüfter Mittelpunkt; Migration 2 → 3 mit echter M4-Datei (§10) (QA ✓ M5)
 
 ## M6 – Start-Page: Statistik, Listen, Tabelle, Einstellungen
 - [ ] M6-01 Kennzahlen global und pro Festplatz: Anzahl Geschäfte, Summe Frontmeter, belegte Fläche, Stromsumme vs. Limit inkl. Strombalken (§6, §7)
@@ -168,7 +172,9 @@ abgebildet. E-25 ist in M5-10 aufgegangen.
   - Fadenkreuz mit Startstrahl auf der Zeichenfläche im Modus „Uhrzeigersinn“.
   - Zahlenfeld: Ein abgewiesener Wert springt zurück; optional leer erlaubt.
 - **Tests:**
-  - Unit-Tests: `numbering.test.ts` (21), `power.test.ts` (8), Migration 2 → 3 (2); zusammen 231.
+  - Unit-Tests: `numbering.test.ts` (29, davon 2 Eigenschaftstests mit je 500 zufälligen Permutationen),
+    `power.test.ts` (9), Migration 2 → 3 (2), Kurzbefehl-Regeln (`definitions.test.ts`, 2); zusammen 244 (Stand nach
+    der QA-Nacharbeit).
   - E2E: `m5-numbering.spec.ts` (8) und `m5-power.spec.ts` (3), je Chromium und WebKit.
   - Komplette Suite grün in beiden Browsern, nach Anpassung von 4 überholten Tests (siehe Abweichungen).
 - **Lasttests** (`npm run test:perf`, 8/8 grün, ohne Stromsparmodus): M4-21 WebKit-Median Zoomen 57,8,
@@ -191,7 +197,7 @@ abgebildet. E-25 ist in M5-10 aufgegangen.
   - `m3-qa.spec.ts:47`: `BASE` hat das neue Feld.
 - **Doppelte Nummer** wird auf der Zeichenfläche wie „außerhalb“ markiert (orange Kontur und Warndreieck). Die
   Seitenleiste nennt die Art.
-- **Hinweis beim Überschreiten** ohne Blockieren nur beim ersten Überschreiten (vorher ≤ Limit), damit weitere
+- **Hinweis beim Überschreiten** (inzwischen in spec.md §6 festgelegt, Entscheidung Laurin) ohne Blockieren nur beim ersten Überschreiten (vorher ≤ Limit), damit weitere
   Änderungen über dem Limit nicht jedes Mal einen Hinweis zeigen. Das Blitz-Symbol bleibt sichtbar.
 - **Blockieren:** Ein abgewiesener Wert erscheint als Dialog „Stromlimit überschritten“ (nicht nur als kurzer
   Hinweis). Das Feld zeigt danach wieder den alten Wert.
@@ -199,8 +205,6 @@ abgebildet. E-25 ist in M5-10 aufgegangen.
 ### Bekannte Bugs und Einschränkungen
 - Einfügen trotz Abweisung zählt den Versatz weiter (E-33).
 - Der Mittelpunkt lässt sich nicht ziehen (E-34).
-- Bei gleich weit entfernten Ständen auf demselben Winkel bzw. derselben Lage entscheiden Toleranzen
-  (0,1° bzw. 0,01 m) und danach die interne ID. Das ist stabil, aber für den Nutzer nicht sichtbar begründet.
 
 ### Manuell testen (Desktop-App)
 - [ ] Festplatz mit mehreren Grundflächen übereinander: neu nummerieren, die Nummern laufen quer über alle Flächen von
@@ -230,3 +234,34 @@ abgebildet. E-25 ist in M5-10 aufgegangen.
   die Datei ist neu erzeugt, und `src/core/fixtures.test.ts` prüft zusätzlich, dass Laden das ganze Projekt
   unverändert lässt. Der Lasttest, der die Datei nutzt (`m3-qa-perf.spec.ts`), ist danach in beiden Browsern grün.
   `format-v1-m3.schelme` und `format-v2-m4.schelme` sind absichtlich ältere Versionen (Migrationstests).
+
+### QA-Nacharbeit M5 (2026-10-12)
+Befunde aus `qa/M5.md` und die Entscheidungen von Laurin; Details im Abschnitt „Behoben“ des QA-Berichts.
+- **QA-M5-01 (Reihenfolge nicht transitiv):** keine Toleranz mehr. Links → rechts vergleicht die auf 0,01 m
+  gerundete Standmitte (x, dann y, dann ID). Im Uhrzeigersinn werden Winkel auf 0,1° und Abstand auf 0,01 m
+  gerundet. Eigenschaftstests mit zufälligen Permutationen (inkl. 1-cm-Treppe und 0,06°-Strahl). spec.md §5.
+- **QA-M5-02 (90 % und Prozent):** Stufen auf 0,001 kW gerundet; die Prozentzahl wird abgerundet, über dem Limit mit
+  Nachkommastelle bzw. „über 100 %“. Die Prüfung beim Blockieren vergleicht ebenso. spec.md §6.
+- **QA-M5-03 (Kurzbefehle im Textfeld):** Solange ein Textfeld den Fokus hat, greift kein Kurzbefehl (auch nicht
+  Speichern). AltGr-Regel in spec.md und CLAUDE.md; ein Unit-Test prüft alle Kurzbefehle. Bestehende Kurzbefehle
+  geprüft: Strg/Cmd+Alt nur mit N, D, T, F und Rücktaste, keine davon erzeugt per AltGr ein Zeichen.
+- **QA-M5-04 (Lasttest mit fremdem Server):** `reuseExistingServer: false` in `playwright.perf.config.ts`.
+- **Neu (M5-14):** „Alle neu nummerieren“ / „Nur Stände ohne Nummer“ im Dialog, spec.md §5.
+- **Hinweis ohne Blockieren** nur beim Wechsel von „im Limit“ auf „über dem Limit“: in spec.md §6 eingetragen
+  (war schon so umgesetzt).
+- **Abgleich mit der Freigabe zum M5-Plan:** Duplikat-Vergleich mit Präfix („A-12“ = „A-012“, „A-12“ ≠ „B-12“)
+  war umgesetzt und von der QA geprüft; jetzt zusätzlich in spec.md §3 ausdrücklich und als Unit-Test. Die getrennte
+  Reihenfolge der Grundflächen ist durch „quer über den Festplatz“ erledigt (Bereich „Grundflächen“). Sonst fehlt
+  nichts.
+- **Geänderte QA-Tests** (`tests/e2e/m5-qa.spec.ts`, durch Laurins Entscheidungen erzwungen, vermerkt in
+  `qa/M5.md`): Helfer `renumber` und zwei Tests wählen „Alle neu nummerieren“; zwei Tests erwarten die neue
+  Gleichstand-Regel; die vier `test.fail` sind entfernt.
+- **Prüfläufe:**
+  - `npm run check` grün (244 Unit-Tests).
+  - `npm run test:e2e` in beiden Browsern: 583 grün, 7 übersprungen (bekannte browserspezifische Skips).
+  - `npm run test:perf`: 7/8 im Komplettlauf; M3-23 Chromium fiel mit Einzelbildern bis 733 ms durch, während die
+    Systemlast extrem hoch war (Mittel über 15 Minuten 87). Bei normaler Last einzeln wiederholt: 60 Bilder/s,
+    längstes Bild 17 ms. M4-21 WebKit-Median: Zoomen 58,0, Verschieben 58,0, Lesegröße 56,4, Ziehen 58,5, längstes
+    Bild 61 ms.
+  - In derselben Hochlastphase scheiterte in einem ersten E2E-Lauf „M1-16: Mittlere Maustaste“ in WebKit, auch auf
+    dem committeten Stand. Bei normaler Last grün (3/3, danach die ganze Suite).

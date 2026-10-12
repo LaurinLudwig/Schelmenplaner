@@ -2,6 +2,7 @@
  * Strom (M5, spec.md §6): Summe je Festplatz und Projekt, Stand gegen das Limit, Summen je
  * Anschlussart, Prüfung fürs Blockieren. Es zählen alle Stände der Page, auch außerhalb von Grundflächen.
  */
+import { fmt } from './format';
 import type { Connection, FestplatzPage, Id, Project, Stand } from './model/types';
 
 /** Ab diesem Anteil am Limit ist der Balken gelb. */
@@ -29,10 +30,28 @@ const roundKw = (kw: number) => Math.round(kw * 1000) / 1000;
 
 export const sumPower = (stands: readonly Pick<Stand, 'powerKw'>[]) => roundKw(stands.reduce((n, s) => n + s.powerKw, 0));
 
+/** kW in ganzen Watt (auf 0,001 kW gerundet): Vergleiche ohne Gleitkomma-Reste (QA-M5-02). */
+const watts = (kw: number) => Math.round(kw * 1000);
+
+/** Stufe auf 0,001 kW gerundet verglichen: 11,7 von 13 kW sind genau 90 % (gelb). */
 export function powerLevel(sumKw: number, limitKw: number | null): PowerLevel {
   if (limitKw === null) return 'none';
-  if (sumKw > limitKw) return 'over';
-  return sumKw >= limitKw * POWER_WARN_RATIO ? 'warn' : 'ok';
+  const s = watts(sumKw);
+  const l = watts(limitKw);
+  if (s > l) return 'over';
+  return s * 10 >= l * (POWER_WARN_RATIO * 10) ? 'warn' : 'ok';
+}
+
+/**
+ * Prozentangabe passend zur Farbstufe (spec.md §6): abgerundet (89,9 % → „89 %“); über dem Limit mit einer
+ * Nachkommastelle, wenn die ganze Zahl 100 wäre (100,1 % → „100,1 %“), knapp darüber „über 100 %“. Ohne Limit leer.
+ */
+export function powerPercentLabel(sumKw: number, limitKw: number | null): string {
+  if (limitKw === null || watts(limitKw) <= 0) return '';
+  const tenths = Math.floor((watts(sumKw) * 1000) / watts(limitKw));
+  const whole = Math.floor(tenths / 10);
+  if (powerLevel(sumKw, limitKw) !== 'over' || whole > 100) return `${whole} %`;
+  return tenths > 1000 ? `${fmt(tenths / 10, 1)} %` : 'über 100 %';
 }
 
 export function pagePower(page: Pick<FestplatzPage, 'stands' | 'powerLimitKw'>): PowerSummary {
@@ -79,7 +98,8 @@ export function checkPowerChange(before: readonly FestplatzPage[], after: readon
     if (!prev || p.powerLimitKw === null || prev.stands === p.stands) continue;
     const a = sumPower(prev.stands);
     const b = sumPower(p.stands);
-    if (b > a && b > p.powerLimitKw) out.push({ pageId: p.id, pageName: p.name, before: a, after: b, limitKw: p.powerLimitKw, blocked: p.blockOverLimit, crossed: a <= p.powerLimitKw });
+    const limit = watts(p.powerLimitKw);
+    if (watts(b) > watts(a) && watts(b) > limit) out.push({ pageId: p.id, pageName: p.name, before: a, after: b, limitKw: p.powerLimitKw, blocked: p.blockOverLimit, crossed: watts(a) <= limit });
   }
   return out;
 }

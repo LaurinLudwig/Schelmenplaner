@@ -32,11 +32,11 @@ export function setInteractionKeyHandler(handler: InteractionKeyHandler): () => 
 /**
  * Der einzige globale Tastatur-Handler. Reihenfolge, fest im Code statt über die Anmeldung von
  * Listenern: 1. offene Dialoge behandeln ihre Tasten selbst; 2. die laufende Interaktion;
- * 3. die Kurzbefehle aus der zentralen Konfiguration.
+ * 3. die Kurzbefehle aus der zentralen Konfiguration (nicht, solange ein Textfeld den Fokus hat).
  */
 export function handleKeyDown(e: KeyboardEvent) {
   if (e.defaultPrevented || e.isComposing) return;
-  if (useDialogs.getState().queue.length || usePagePicker.getState().request || useRenumber.getState().plan) return;
+  if (useDialogs.getState().queue.length || usePagePicker.getState().request || useRenumber.getState().plans) return;
   const inText = isTextField(e.target);
   if (!inText && interaction?.(e)) {
     e.preventDefault();
@@ -45,9 +45,14 @@ export function handleKeyDown(e: KeyboardEvent) {
   for (const { id, combo } of compiled) {
     const cmd = COMMANDS[id];
     if (!cmd || !matches(combo, e, IS_MAC)) continue;
-    // In Textfeldern nur Kombinationen mit Strg/Cmd (Speichern usw.), aber keine Bearbeiten-Befehle:
-    // Undo, Kopieren, Einfügen, Alles auswählen usw. gehören dem Feld.
-    if (inText && (!(combo.mod || combo.ctrl) || id.startsWith('edit.'))) return;
+    // Solange ein Textfeld den Fokus hat, greift kein Kurzbefehl (spec.md Tastaturkürzel, QA-M5-03): Unter
+    // Windows ist AltGr = Strg+Alt, ein Tippfehler im Feld darf z. B. keinen Festplatz duplizieren. Undo,
+    // Kopieren usw. gehören dem Feld. Nur Kombinationen mit Strg/Cmd ohne Alt werden abgefangen, damit der
+    // Browser im Dev-Modus z. B. bei Cmd+S keinen eigenen Dialog öffnet; AltGr-Zeichen bleiben unberührt.
+    if (inText) {
+      if ((combo.mod || combo.ctrl) && !combo.alt && !id.startsWith('edit.')) e.preventDefault();
+      return;
+    }
     const ran = runCommand(id, e);
     // Kombinationen mit Strg/Cmd immer abfangen (sonst z. B. Lesezeichen im Browser); einfache Tasten
     // wie Esc, Pfeile oder Entf nur, wenn der Befehl wirklich lief.

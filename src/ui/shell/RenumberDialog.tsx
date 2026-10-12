@@ -1,18 +1,27 @@
 import { useEffect, useRef } from 'react';
-import { closeRenumber, useRenumber } from '../../app/renumber';
+import { closeRenumber, setRenumberMode, useRenumber } from '../../app/renumber';
+import type { RenumberMode } from '../../core/numbering';
 import { useStore } from '../../state/store';
 
+const MODES: { id: RenumberMode; label: string; desc: string }[] = [
+  { id: 'missing', label: 'Nur Stände ohne Nummer', desc: 'Bestehende Nummern bleiben; neue Nummern ab der höchsten vergebenen.' },
+  { id: 'all', label: 'Alle neu nummerieren', desc: 'Alle nicht fixierten Stände in der Reihenfolge des Modus.' },
+];
+
 /**
- * Vorschau „Neu nummerieren“ (M5-06): alt → neu für alle betroffenen Stände, dazu fixierte und
- * unveränderte. Übernehmen ist ein Undo-Schritt; Esc oder Klick daneben bricht ab.
+ * Vorschau „Neu nummerieren“ (M5-06): zwei Optionen, je alt → neu für alle betroffenen Stände, dazu fixierte
+ * und unveränderte. Übernehmen ist ein Undo-Schritt; Esc oder Klick daneben bricht ab.
  */
 export function RenumberDialog() {
-  const plan = useRenumber((s) => s.plan);
+  const plans = useRenumber((s) => s.plans);
+  const mode = useRenumber((s) => s.mode);
+  const plan = plans?.[mode] ?? null;
   const pages = useStore((s) => s.project.pages);
   const applyRef = useRef<HTMLButtonElement>(null);
 
+  const open = !!plans;
   useEffect(() => {
-    if (!plan) return;
+    if (!open) return;
     applyRef.current?.focus();
     const onKey = (e: KeyboardEvent) => {
       if (e.key === 'Escape') {
@@ -23,7 +32,7 @@ export function RenumberDialog() {
     };
     window.addEventListener('keydown', onKey, true);
     return () => window.removeEventListener('keydown', onKey, true);
-  }, [plan]);
+  }, [open]);
 
   if (!plan) return null;
   const pageById = new Map(pages.map((p) => [p.id, p]));
@@ -35,8 +44,19 @@ export function RenumberDialog() {
     <div className="backdrop" onPointerDown={(e) => e.target === e.currentTarget && closeRenumber(false)}>
       <div className="dialog renumber" role="dialog" aria-modal="true" aria-labelledby="rn-title">
         <h2 id="rn-title">Neu nummerieren</h2>
+        <div className="renumber-modes" role="radiogroup" aria-label="Umfang">
+          {MODES.map((m) => (
+            <label key={m.id} className="check">
+              <input type="radio" name="renumber-mode" checked={mode === m.id} onChange={() => setRenumberMode(m.id)} />
+              <span>
+                {m.label}
+                <span className="hint"> · {m.desc}</span>
+              </span>
+            </label>
+          ))}
+        </div>
         <p data-testid="renumber-summary">
-          {scope}: {n} {n === 1 ? 'Nummer ändert' : 'Nummern ändern'} sich
+          {scope}: {n === 0 ? 'keine Nummer ändert sich' : `${n} ${n === 1 ? 'Nummer ändert' : 'Nummern ändern'} sich`}
           {plan.fixed > 0 && `, ${plan.fixed} fixiert`}
           {plan.unchanged > 0 && `, ${plan.unchanged} unverändert`}.
         </p>
@@ -74,7 +94,7 @@ export function RenumberDialog() {
           <button type="button" className="btn" onClick={() => closeRenumber(false)}>
             Abbrechen
           </button>
-          <button ref={applyRef} type="button" className="btn primary" onClick={() => closeRenumber(true)}>
+          <button ref={applyRef} type="button" className="btn primary" disabled={n === 0} onClick={() => closeRenumber(true)}>
             Übernehmen
           </button>
         </div>

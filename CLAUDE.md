@@ -15,6 +15,10 @@ QA-Befunde und sein Abschluss nach `docs/archiv/Mx.md`; erledigte Eingang-Eintr�
   schreiben (umgesetzt, nicht umgesetzt/verschoben, Abweichungen, bekannte Bugs, offene Fragen).
 - `src/core/` bleibt frei von React-, DOM- und Tauri-Importen und ist mit Vitest getestet. Erzwungen durch den Linter (Override in `.oxlintrc.json`) und eine eigene Typprüfung ohne DOM (`src/core/tsconfig.json`; erlaubte plattformneutrale Funktionen nur über `src/core/env.d.ts`).
 - Zahlen: Eingabefelder mit `fmtInput` (ohne Tausenderpunkt) und `parseNum`; reine Anzeigen mit `fmt`.
+- Kurzbefehle (spec.md, Tastaturkürzel): keine Strg+Alt-Kombinationen (macOS Cmd+Alt) mit Tasten, die auf deutschen
+  Tastaturen per AltGr ein Zeichen erzeugen (u. a. Q, E, M, 2, 3, 7, 8, 9, 0, ß, +, <); unter Windows ist AltGr =
+  Strg+Alt. Kurzbefehle greifen nicht, solange ein Textfeld den Fokus hat. Geprüft von
+  `src/ui/shortcuts/definitions.test.ts`.
 - Fehlermeldungen für den Nutzer nur auf Deutsch: `UserError` für fertige Meldungen, sonst `userMessage(e, fallback)`.
 - Betriebssystem-Zugriffe (Dateien, Dialoge, Fenster) laufen ausschließlich über `src/platform/`
   (`platform` aus `src/platform/index.ts`). Nur `src/platform/tauri.ts` importiert `@tauri-apps/*`;

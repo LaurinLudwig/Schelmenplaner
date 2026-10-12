@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { createPage } from './model/defaults';
 import type { Connection, FestplatzPage } from './model/types';
 import { createStand } from './objects';
-import { checkPowerChange, pagePower, powerLevel, projectPower } from './power';
+import { checkPowerChange, pagePower, powerLevel, powerPercentLabel, projectPower } from './power';
 
 /** M5: Strom (spec.md §6). */
 
@@ -21,6 +21,23 @@ describe('M5 Strom', () => {
     expect(powerLevel(100, 100)).toBe('warn');
     expect(powerLevel(100.1, 100)).toBe('over');
     expect(powerLevel(500, null)).toBe('none');
+  });
+
+  it('Grenze 90 % ohne Gleitkomma-Reste (QA-M5-02): 11,7 von 13 kW und 0,99 von 1,1 kW sind gelb', () => {
+    expect(powerLevel(11.7, 13)).toBe('warn');
+    expect(powerLevel(0.99, 1.1)).toBe('warn');
+    expect(powerLevel(11.699, 13)).toBe('ok');
+    expect(powerLevel(0.1 + 0.2, 0.3)).toBe('warn');
+  });
+
+  it('Prozentangabe passt zur Farbe: abgerundet, über dem Limit mit Nachkommastelle bzw. „über 100 %“', () => {
+    expect(powerPercentLabel(89.9, 100)).toBe('89 %');
+    expect(powerPercentLabel(11.7, 13)).toBe('90 %');
+    expect(powerPercentLabel(100, 100)).toBe('100 %');
+    expect(powerPercentLabel(100.1, 100)).toBe('100,1 %');
+    expect(powerPercentLabel(100.04, 100)).toBe('über 100 %');
+    expect(powerPercentLabel(150, 100)).toBe('150 %');
+    expect(powerPercentLabel(5, null)).toBe('');
   });
 
   it('Summe aller Stände der Page, ohne Gleitkomma-Reste, mit Anteil am Limit', () => {

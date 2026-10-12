@@ -1,7 +1,7 @@
 import { fmt } from '../../core/format';
 import { CONNECTION_LABEL } from '../../core/label';
 import type { FestplatzPage } from '../../core/model/types';
-import { CONNECTION_KEYS, pagePower, POWER_LIMIT } from '../../core/power';
+import { CONNECTION_KEYS, pagePower, POWER_LIMIT, powerPercentLabel } from '../../core/power';
 import { setBlockOverLimit, setPowerLimit } from '../../state/pageSettings';
 import { NumberField } from './NumberField';
 
@@ -13,7 +13,7 @@ const LEVEL_TEXT = { ok: '', warn: 'ab 90 % des Limits', over: 'Limit überschri
  */
 export function PowerPanel({ page }: { page: FestplatzPage }) {
   const p = pagePower(page);
-  const pct = p.ratio === null ? null : Math.round(p.ratio * 100);
+  const pct = powerPercentLabel(p.sumKw, p.limitKw);
   return (
     <section className="panel" aria-label="Strom">
       <div className="panel-head">
@@ -37,7 +37,7 @@ export function PowerPanel({ page }: { page: FestplatzPage }) {
               <span style={{ width: `${Math.min(100, (p.ratio ?? 0) * 100)}%` }} />
             </div>
             <span className="power-text">
-              {fmt(p.sumKw)} / {fmt(p.limitKw)} kW ({pct} %){LEVEL_TEXT[p.level] && ` · ${LEVEL_TEXT[p.level]}`}
+              {fmt(p.sumKw)} / {fmt(p.limitKw)} kW ({pct}){LEVEL_TEXT[p.level] && ` · ${LEVEL_TEXT[p.level]}`}
             </span>
           </div>
         )}

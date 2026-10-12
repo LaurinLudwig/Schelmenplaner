@@ -38,6 +38,7 @@ async function w2s(page: Page, p: { x: number; y: number }) {
 
 const panel = (page: Page) => page.getByRole('region', { name: 'Nummerierung' });
 const dialog = (page: Page) => page.getByRole('dialog', { name: 'Neu nummerieren' });
+const option = (page: Page, name: 'Alle neu nummerieren' | 'Nur Stände ohne Nummer') => dialog(page).getByRole('radio', { name: new RegExp(`^${name}`) });
 
 async function fill(page: Page, label: string, value: string) {
   const f = panel(page).getByLabel(label, { exact: true });
@@ -56,6 +57,7 @@ test.describe('M5: Nummerierung', () => {
 
     await panel(page).getByRole('button', { name: /Neu nummerieren/ }).click();
     await expect(dialog(page)).toBeVisible();
+    await option(page, 'Alle neu nummerieren').check();
     await expect(dialog(page).getByTestId('renumber-summary')).toContainText('3 Nummern ändern sich');
     await expect(dialog(page).getByTestId('renumber-row')).toHaveText([/–\s*→\s*A-01/, /7\s*→\s*A-02/, /–\s*→\s*A-03/]);
     const n0 = await pastLen(page);
@@ -69,6 +71,45 @@ test.describe('M5: Nummerierung', () => {
 
     await page.keyboard.press(`${MOD}+Z`);
     expect(await nrs(page)).toEqual({ a: '', b: '7', c: '' });
+  });
+
+  test('M5-06: „Nur Stände ohne Nummer“ ist vorausgewählt, sobald Nummern existieren; beide Optionen mit Vorschau, je ein Undo-Schritt', async ({ page }) => {
+    await openApp(page);
+    await seed(page, { areas: [G], stands: [{ id: 'a', cx: -15, cy: -1.5 }, { id: 'b', cx: -5, cy: -1.5, nr: '7' }, { id: 'c', cx: 5, cy: -1.5 }, { id: 'd', cx: 15, cy: -1.5, nr: '2' }] });
+    await page.keyboard.press(`${MOD}+Alt+N`);
+    await expect(option(page, 'Nur Stände ohne Nummer')).toBeChecked();
+    await expect(dialog(page).getByTestId('renumber-row')).toHaveText([/–\s*→\s*8/, /–\s*→\s*9/]);
+    await expect(dialog(page).getByTestId('renumber-summary')).toContainText('2 Nummern ändern sich, 2 unverändert');
+    // umschalten zeigt die andere Vorschau
+    await option(page, 'Alle neu nummerieren').check();
+    await expect(dialog(page).getByTestId('renumber-row')).toHaveCount(4);
+    await option(page, 'Nur Stände ohne Nummer').check();
+    const n0 = await pastLen(page);
+    await dialog(page).getByRole('button', { name: 'Übernehmen' }).click();
+    expect(await nrs(page)).toEqual({ a: '8', b: '7', c: '9', d: '2' });
+    expect(await pastLen(page)).toBe(n0 + 1);
+    expect(await lastLabel(page)).toBe('Neu nummerieren');
+
+    // alle haben eine Nummer: „nur ohne Nummer“ ändert nichts, Übernehmen ist aus; „alle“ geht weiter
+    await page.keyboard.press(`${MOD}+Alt+N`);
+    await expect(option(page, 'Nur Stände ohne Nummer')).toBeChecked();
+    await expect(dialog(page).getByTestId('renumber-summary')).toContainText('keine Nummer ändert sich');
+    await expect(dialog(page).getByRole('button', { name: 'Übernehmen' })).toBeDisabled();
+    await option(page, 'Alle neu nummerieren').check();
+    await dialog(page).getByRole('button', { name: 'Übernehmen' }).click();
+    expect(await nrs(page)).toEqual({ a: '1', b: '2', c: '3', d: '4' });
+    expect(await pastLen(page)).toBe(n0 + 2);
+  });
+
+  test('QA-M5-03: Kurzbefehle greifen nicht, solange ein Textfeld den Fokus hat (auch nicht Speichern)', async ({ page }) => {
+    await openApp(page);
+    await seed(page, { stands: [{ id: 'a', cx: 0, cy: 0 }] });
+    const prefix = panel(page).getByLabel('Präfix dieses Festplatzes', { exact: true });
+    await prefix.focus();
+    for (const k of [`${MOD}+Alt+N`, `${MOD}+Alt+D`, `${MOD}+S`, `${MOD}+Shift+N`]) await page.keyboard.press(k);
+    await expect(dialog(page)).toHaveCount(0);
+    expect(await store(page, 's.project.pages.length')).toBe(1);
+    await expect(prefix).toBeFocused();
   });
 
   test('M5-06: Kurzbefehl öffnet die Vorschau, Esc bricht ohne Änderung ab; ohne Änderungen nur ein Hinweis', async ({ page }) => {
@@ -138,6 +179,7 @@ test.describe('M5: Nummerierung', () => {
     await page.getByRole('region', { name: 'Norden' }).getByLabel('Nordrichtung').fill('90');
     await page.getByRole('region', { name: 'Norden' }).getByLabel('Nordrichtung').press('Enter');
     await page.keyboard.press(`${MOD}+Alt+N`);
+    await option(page, 'Alle neu nummerieren').check();
     await dialog(page).getByRole('button', { name: 'Übernehmen' }).click();
     expect(await nrs(page)).toEqual({ S: '1', W: '2', N: '3', E: '4' });
   });

@@ -104,7 +104,8 @@ Freiflächen-Logik wurde bereits erfolgreich getestet (prototype/freiflaechen.ht
     Grundflächen ist nicht außerhalb.
   - Überlappung (rot, Vorrang vor orange): zwei Stände dringen mehr als 0,01 m ineinander ein.
   - Doppelte Nummer (orange, Entscheidung 2026-10-12): zwei Stände im selben Nummernkreis (§5) haben dieselbe
-    Platznummer („12“ = „012“, Groß-/Kleinschreibung und Leerzeichen am Rand egal). Leere Nummern sind nie doppelt.
+    Platznummer („12“ = „012“, Groß-/Kleinschreibung und Leerzeichen am Rand egal). Das Präfix gehört zur Nummer:
+    „A-12“ = „A-012“, aber „A-12“ ≠ „B-12“. Leere Nummern sind nie doppelt.
     Die Seitenleiste nennt die anderen Stände mit dieser Nummer (auch auf anderen Pages).
   - Jede Art ist projektweit abschaltbar und pro Stand ignorierbar („außerhalb ignorieren“,
     „Überlappung ignorieren“, „doppelte Nummer ignorieren“, wirkt nur auf den eigenen Stand); alles rückgängig
@@ -165,15 +166,24 @@ Entscheidungen 2026-10-12 (M5-Planung).
 - Modi pro Festplatz: links → rechts über den Festplatz, Uhrzeigersinn um einen Mittelpunkt, manuell.
 - **Links → rechts** (geändert 2026-10-12, Laurin): Alle Stände der Page werden von links nach rechts durchlaufen,
   unabhängig von den Grundflächen. Maßgeblich ist die Mitte des Stands auf dem Plan (x-Achse der Zeichenfläche,
-  unabhängig von der Nordrichtung). Gleiche Lage (bis 0,01 m): der obere Stand zuerst. Stände außerhalb von
+  unabhängig von der Nordrichtung). Stände außerhalb von
   Grundflächen zählen genauso mit. Die Reihenfolge der Grundflächen spielt für die Nummerierung keine Rolle mehr;
   sie entscheidet nur noch, welche Grundfläche bei Überlappung gewinnt (§4), und ist im Seitenleisten-Bereich
   „Grundflächen“ mit ↑/↓ änderbar (Undo-Schritt).
+  Reihenfolge ohne Toleranz (Entscheidung 2026-10-12, QA-M5-01; eine Toleranz „bis 0,01 m gleich“ ist nicht
+  transitiv und machte das Ergebnis von der Anlegereihenfolge abhängig):
+  - Verglichen wird die Standmitte, gerundet auf 0,01 m (die gespeicherte Genauigkeit).
+  - Kleineres x zuerst.
+  - Bei exakt gleichem x: kleineres y zuerst (weiter oben auf der Zeichenfläche).
+  - Bei exakt gleicher Position: nach ID (der Fall ist ohnehin eine Überlappung mit Warnung).
+  Das Ergebnis hängt nur vom Plan ab, nicht von der Reihenfolge, in der die Stände angelegt wurden.
 - **Uhrzeigersinn:** um einen pro Festplatz gesetzten Mittelpunkt (Klick auf die Zeichenfläche nach „Mittelpunkt
   setzen“ oder Felder X/Y; beim ersten Umschalten die Mitte aller Grundflächen und Stände). Startrichtung in Grad
   im Uhrzeigersinn relativ zum Norden des Plans (Nordrichtung der Page), Standard 0° = Norden. Sortiert wird nach
-  dem Winkel der Standmitte ab der Startrichtung, bei gleichem Winkel (bis 0,1°) der Stand näher am Mittelpunkt
-  zuerst. Es zählen alle Stände der Page. Mittelpunkt und Startrichtung sind auf der Zeichenfläche als Fadenkreuz
+  dem Winkel der Standmitte ab der Startrichtung, ebenfalls ohne Toleranz (QA-M5-01): Standmitte auf 0,01 m
+  gerundet, Winkel auf 0,1° gerundet (359,95° und mehr zählt als 0°); bei gleichem gerundetem Winkel der Stand mit
+  dem kleineren, auf 0,01 m gerundeten Abstand zum Mittelpunkt zuerst, danach nach ID. Es zählen alle Stände der
+  Page. Mittelpunkt und Startrichtung sind auf der Zeichenfläche als Fadenkreuz
   mit Strahl sichtbar, solange der Modus aktiv ist (nicht im PDF).
 - **Manuell:** Die Automatik lässt die Page aus.
 - **Format:** Präfix der Page + Zahl, aufgefüllt auf die Stellenzahl (z. B. Präfix „A-“, 2 Stellen → „A-01“).
@@ -187,18 +197,30 @@ Entscheidungen 2026-10-12 (M5-Planung).
 - **Neue Stände** und Kopien bekommen keine Nummer, bis neu nummeriert wird. Der Bereich „Nummerierung“ zeigt die
   Zahl der Stände ohne Nummer.
 - **Neu nummerieren** nur per Button bzw. Kurzbefehl, damit vergebene Nummern nicht unbemerkt springen. Bei „pro
-  Festplatz“ betrifft es die aktive Page, bei „global“ alle Pages außer den manuellen. Eine Vorschau zeigt alt → neu
-  für alle betroffenen Stände und die Zahl der fixierten und unveränderten; Übernehmen ist ein Undo-Schritt.
+  Festplatz“ betrifft es die aktive Page, bei „global“ alle Pages außer den manuellen. Der Dialog bietet zwei
+  Optionen (Entscheidung 2026-10-12), beide mit Vorschau alt → neu und der Zahl der fixierten und unveränderten
+  Stände, beide ein Undo-Schritt:
+  - „Alle neu nummerieren“: alle nicht fixierten Stände der betroffenen Pages in der Reihenfolge des Modus.
+  - „Nur Stände ohne Nummer“: Bestehende Nummern bleiben unverändert. Stände ohne Nummer bekommen fortlaufende
+    Nummern ab der höchsten vergebenen Nummer im Nummernkreis (Zahl = letzte Ziffernfolge einer Nummer, z. B.
+    „A-012“ → 12; mindestens die Startnummer), in der Reihenfolge des gewählten Modus. Nummern, die im Nummernkreis
+    schon vorkommen, werden übersprungen.
+  - Vorausgewählt ist „Nur Stände ohne Nummer“, sobald im Nummernkreis schon irgendein Stand eine Nummer hat, sonst
+    „Alle neu nummerieren“.
   Doppelte Nummern, die danach bleiben (z. B. zwischen fixierten Ständen), nennt die Vorschau.
 
 ### 6. Strom
 Entscheidungen 2026-10-12 (M5-Planung).
 - Optionales Stromlimit pro Festplatz in kW. Es zählen alle Stände der Page, auch außerhalb von Grundflächen.
-- Laufende Summe als Balken (grün / gelb ab 90 % / rot über Limit) mit „84 / 100 kW (84 %)“, auf der Festplatz-Page
+- Laufende Summe als Balken (grün / gelb ab 90 % / rot über Limit) mit „84 / 100 kW (84 %)“. Verglichen wird auf
+  0,001 kW gerundet (11,7 von 13 kW sind genau 90 %, also gelb). Die Prozentzahl wird abgerundet, damit sie zur
+  Farbe passt (89,9 % zeigt „89 %“); über dem Limit erscheint sie mit einer Nachkommastelle, wenn die ganze Zahl
+  100 wäre (100,1 %), bei weniger als 0,1 % darüber „über 100 %“. Anzeige auf der Festplatz-Page
   im Seitenleisten-Bereich „Strom“ (immer sichtbar, auch bei Auswahl), auf der Start-Page in M6. Ohne Limit nur
   die Summe. Dazu Anzahl und kW je Anschlussart (230 V, CEE 16 A, CEE 32 A, ohne Angabe).
 - Überschreitung: eigenes Blitz-Symbol am Page-Tab (getrennt vom Warnzähler der Stände). Ohne Blockieren erscheint
-  ein Hinweis, wenn eine Änderung das Limit überschreitet.
+  ein Hinweis nur, wenn eine Änderung die Summe von „im Limit“ auf „über dem Limit“ bringt (Entscheidung 2026-10-12).
+  Solange das Limit überschritten bleibt, reichen roter Balken und Blitz-Symbol.
 - Blockieren (pro Festplatz einschaltbar): Eine Änderung, die die Summe der Page erhöht und danach über dem Limit
   liegt, wird mit deutscher Meldung abgewiesen (Strom-Feld, Einfügen, Duplizieren, Alt+Ziehen). Senkungen sind
   immer erlaubt. Nicht blockiert werden Rückgängig/Wiederholen, Öffnen, ein Limit unter der aktuellen Summe und das
@@ -283,6 +305,9 @@ Entscheidungen 2026-10-12 (M5-Planung).
   anpassen). Auf macOS Cmd statt Strg.
 - Alle Shortcuts zentral in einer Konfiguration definiert; eine Übersicht ist per `?` abrufbar. Sie
   nennt auch die Tasten beim Ziehen (Shift, Alt, Cmd/Strg).
+- AltGr (Entscheidung 2026-10-12, QA-M5-03): Unter Windows ist AltGr = Strg+Alt. Deshalb keine Kurzbefehle mit
+  Strg+Alt (macOS Cmd+Alt) auf Tasten, die auf deutschen Tastaturen per AltGr ein Zeichen erzeugen (u. a. Q @, E €,
+  M µ, 2 ², 3 ³, 7 {, 8 [, 9 ], 0 }, ß \, + ~, < |). Kurzbefehle greifen nicht, solange ein Textfeld den Fokus hat.
 
 ### Allgemein
 - Ebenen (Hintergrund, Grundflächen, Freiflächen, Geschäfte, Infrastruktur, Beschriftung)

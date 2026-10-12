@@ -1,0 +1,227 @@
+npm notice run schelmeplaner@0.1.0 npx
+npm notice run 'playwright' test tests/e2e/m5-qa.spec.ts tests/e2e/zz-tmp-ohne-fail.spec.ts --project=chromium --reporter=line
+[WebServer] npm notice run schelmeplaner@0.1.0 predev
+
+[WebServer] npm notice run node scripts/copy-pdfjs-assets.mjs
+
+[WebServer] npm notice run schelmeplaner@0.1.0 dev
+
+[WebServer] npm notice run vite
+
+
+Running 50 tests using 5 workers
+
+[1/50] [chromium] › tests/e2e/m5-qa.spec.ts:104:3 › QA M5: Nummerierung links → rechts (§5) › quer über den Festplatz nach der Standmitte: gedrehte Stände und Grundflächen, Stände außerhalb, Gleichstand bis 0,01 m → oberer zuerst
+[2/50] [chromium] › tests/e2e/m5-qa.spec.ts:175:3 › QA M5: Nummerierung im Uhrzeigersinn (§5) › Mittelpunkt per Klick, per Feldern; Esc bricht „Mittelpunkt setzen“ ab
+[3/50] [chromium] › tests/e2e/m5-qa.spec.ts:156:3 › QA M5: Nummerierung im Uhrzeigersinn (§5) › Erstes Umschalten: Mittelpunkt = Mitte aller Grundflächen und Stände; Fadenkreuz nur in diesem Modus
+[4/50] [chromium] › tests/e2e/m5-qa.spec.ts:130:8 › QA M5: Nummerierung links → rechts (§5) › QA-M5-01: Reihenfolge hängt nicht von der Anlegereihenfolge ab (Spalte mit je 0,01 m Versatz)
+[5/50] [chromium] › tests/e2e/m5-qa.spec.ts:123:3 › QA M5: Nummerierung links → rechts (§5) › Gleichstand genau 0,01 m → oberer zuerst; 0,02 m Abstand ist kein Gleichstand (links zuerst)
+[6/50] [chromium] › tests/e2e/m5-qa.spec.ts:202:3 › QA M5: Nummerierung im Uhrzeigersinn (§5) › Startrichtung relativ zu Norden; 0° = Norden; Nordrichtung dreht mit; gleicher Winkel → näher am Mittelpunkt zuerst
+[7/50] [chromium] › tests/e2e/m5-qa.spec.ts:226:3 › QA M5: Nummernkreis, Format, Fixieren (§5) › global: Reihenfolge der Tabs, manuelle Page übersprungen und ihre Nummern belegt; pro Festplatz beginnt jede Page neu
+[8/50] [chromium] › tests/e2e/m5-qa.spec.ts:256:3 › QA M5: Nummernkreis, Format, Fixieren (§5) › Format: Präfix, Startnummer 0, Stellen 1–4 (Grenzen), leeres Präfix
+[9/50] [chromium] › tests/e2e/m5-qa.spec.ts:283:3 › QA M5: Nummernkreis, Format, Fixieren (§5) › Fixieren bei Mehrfachauswahl; fixiert und leer bleibt leer; fixierte „A-012“ sperrt „A-12“
+[10/50] [chromium] › tests/e2e/m5-qa.spec.ts:319:3 › QA M5: Nummernkreis, Format, Fixieren (§5) › Vorschau stimmt mit dem Ergebnis überein; Übernehmen ist ein Undo-Schritt, Redo stellt alles wieder her
+[11/50] [chromium] › tests/e2e/m5-qa.spec.ts:350:3 › QA M5: Doppelte Nummern (§3, §5) › Vergleich mit Präfix: „A-12“ = „a-012 “, „A-12“ ≠ „B-12“; leere nie doppelt; Zähler am Tab
+[12/50] [chromium] › tests/e2e/m5-qa.spec.ts:371:3 › QA M5: Doppelte Nummern (§3, §5) › pro Nummernkreis: pro Festplatz keine Warnung über Pages hinweg; Page duplizieren bei „global“ bzw. „pro Festplatz“
+[13/50] [chromium] › tests/e2e/m5-qa.spec.ts:393:3 › QA M5: Doppelte Nummern (§3, §5) › Vorschau nennt verbleibende Duplikate zwischen fixierten Ständen
+[14/50] [chromium] › tests/e2e/m5-qa.spec.ts:416:3 › QA M5: Strom (§6) › Stufen genau an der Grenze (Limit 100 kW)
+[15/50] [chromium] › tests/e2e/m5-qa.spec.ts:443:8 › QA M5: Strom (§6) › QA-M5-02: genau 90 % ist gelb, auch wenn 0,9 × Limit Gleitkomma-Reste hat (11,7 von 13 kW)
+[16/50] [chromium] › tests/e2e/m5-qa.spec.ts:451:8 › QA M5: Strom (§6) › QA-M5-02: Prozentangabe passt zur Farbstufe (89,9 % grün zeigt nicht „90 %“, 100,1 % rot zeigt nicht „100 %“)
+[17/50] [chromium] › tests/e2e/m5-qa.spec.ts:459:3 › QA M5: Strom (§6) › Summen je Anschlussart, Blitz-Symbol am Tab mit Tooltip, getrennt vom Warnzähler
+[18/50] [chromium] › tests/e2e/m5-qa.spec.ts:478:3 › QA M5: Strom (§6) › Blockieren: Strom-Feld einzeln und bei Mehrfachauswahl; Senkungen, Undo/Redo und Limit unter Summe bleiben erlaubt
+[19/50] [chromium] › tests/e2e/m5-qa.spec.ts:528:3 › QA M5: Strom (§6) › Blockieren: Einfügen auf derselben und auf einer anderen Page, Duplizieren, Alt+Ziehen
+[20/50] [chromium] › tests/e2e/m5-qa.spec.ts:584:5 › QA M5: Dateiformat Version 3 (§10) › echte Datei Version 1 (format-v1-m3.schelme) öffnen, Felder aus M5 ergänzt, Speichern schreibt Version 3
+[21/50] [chromium] › tests/e2e/m5-qa.spec.ts:584:5 › QA M5: Dateiformat Version 3 (§10) › echte Datei Version 2 (format-v2-m4.schelme) öffnen, Felder aus M5 ergänzt, Speichern schreibt Version 3
+[22/50] [chromium] › tests/e2e/m5-qa.spec.ts:610:3 › QA M5: Dateiformat Version 3 (§10) › M5-Einstellungen überstehen Speichern und Öffnen
+[23/50] [chromium] › tests/e2e/m5-qa.spec.ts:659:3 › QA M5: Tastenkürzel, AltGr (Windows, deutsches Layout) › AltGr-Zeichen (Strg+Alt) im Präfix- und Namensfeld lösen keinen Kurzbefehl aus und werden nicht verhindert (Windows-Emulation)
+[24/50] [chromium] › tests/e2e/m5-qa.spec.ts:692:3 › QA M5: Tastenkürzel, AltGr (Windows, deutsches Layout) › Einbuchstabige Kurzbefehle und Alt+Ziffer greifen nicht im Textfeld (macOS: Option+5 = „[“)
+[25/50] [chromium] › tests/e2e/m5-qa.spec.ts:709:8 › QA M5: Tastenkürzel, AltGr (Windows, deutsches Layout) › QA-M5-03: Kurzbefehle mit Strg/Cmd+Alt (Neu nummerieren, Festplatz duplizieren) greifen nicht, solange ein Textfeld den Fokus hat
+[26/50] [chromium] › tests/e2e/zz-tmp-ohne-fail.spec.ts:104:3 › QA M5: Nummerierung links → rechts (§5) › quer über den Festplatz nach der Standmitte: gedrehte Stände und Grundflächen, Stände außerhalb, Gleichstand bis 0,01 m → oberer zuerst
+[27/50] [chromium] › tests/e2e/zz-tmp-ohne-fail.spec.ts:123:3 › QA M5: Nummerierung links → rechts (§5) › Gleichstand genau 0,01 m → oberer zuerst; 0,02 m Abstand ist kein Gleichstand (links zuerst)
+[28/50] [chromium] › tests/e2e/zz-tmp-ohne-fail.spec.ts:130:3 › QA M5: Nummerierung links → rechts (§5) › QA-M5-01: Reihenfolge hängt nicht von der Anlegereihenfolge ab (Spalte mit je 0,01 m Versatz)
+[29/50] [chromium] › tests/e2e/zz-tmp-ohne-fail.spec.ts:156:3 › QA M5: Nummerierung im Uhrzeigersinn (§5) › Erstes Umschalten: Mittelpunkt = Mitte aller Grundflächen und Stände; Fadenkreuz nur in diesem Modus
+[30/50] [chromium] › tests/e2e/zz-tmp-ohne-fail.spec.ts:175:3 › QA M5: Nummerierung im Uhrzeigersinn (§5) › Mittelpunkt per Klick, per Feldern; Esc bricht „Mittelpunkt setzen“ ab
+[31/50] [chromium] › tests/e2e/zz-tmp-ohne-fail.spec.ts:202:3 › QA M5: Nummerierung im Uhrzeigersinn (§5) › Startrichtung relativ zu Norden; 0° = Norden; Nordrichtung dreht mit; gleicher Winkel → näher am Mittelpunkt zuerst
+[32/50] [chromium] › tests/e2e/zz-tmp-ohne-fail.spec.ts:226:3 › QA M5: Nummernkreis, Format, Fixieren (§5) › global: Reihenfolge der Tabs, manuelle Page übersprungen und ihre Nummern belegt; pro Festplatz beginnt jede Page neu
+[33/50] [chromium] › tests/e2e/zz-tmp-ohne-fail.spec.ts:256:3 › QA M5: Nummernkreis, Format, Fixieren (§5) › Format: Präfix, Startnummer 0, Stellen 1–4 (Grenzen), leeres Präfix
+  1) [chromium] › tests/e2e/zz-tmp-ohne-fail.spec.ts:130:3 › QA M5: Nummerierung links → rechts (§5) › QA-M5-01: Reihenfolge hängt nicht von der Anlegereihenfolge ab (Spalte mit je 0,01 m Versatz) 
+
+    Error: expect(received).toEqual(expected) // deep equality
+
+    - Expected  - 1
+    + Received  + 1
+
+      Array [
+    -   "b",
+        "a",
+        "c",
+    +   "b",
+      ]
+
+      141 |     const first = await run(['a', 'b', 'c']);
+      142 |     const second = await run(['a', 'c', 'b']);
+    > 143 |     expect(second).toEqual(first);
+          |                    ^
+      144 |   });
+      145 | });
+      146 |
+        at /Users/laurin/Desktop/Schelmeplaner/tests/e2e/zz-tmp-ohne-fail.spec.ts:143:20
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/zz-tmp-ohne-fail-QA-M5-Num-116b0-alte-mit-je-0-01-m-Versatz--chromium/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/zz-tmp-ohne-fail-QA-M5-Num-116b0-alte-mit-je-0-01-m-Versatz--chromium/error-context.md
+
+    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results/zz-tmp-ohne-fail-QA-M5-Num-116b0-alte-mit-je-0-01-m-Versatz--chromium/trace.zip
+    Usage:
+
+        npx playwright show-trace test-results/zz-tmp-ohne-fail-QA-M5-Num-116b0-alte-mit-je-0-01-m-Versatz--chromium/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+
+[34/50] [chromium] › tests/e2e/zz-tmp-ohne-fail.spec.ts:283:3 › QA M5: Nummernkreis, Format, Fixieren (§5) › Fixieren bei Mehrfachauswahl; fixiert und leer bleibt leer; fixierte „A-012“ sperrt „A-12“
+[35/50] [chromium] › tests/e2e/zz-tmp-ohne-fail.spec.ts:350:3 › QA M5: Doppelte Nummern (§3, §5) › Vergleich mit Präfix: „A-12“ = „a-012 “, „A-12“ ≠ „B-12“; leere nie doppelt; Zähler am Tab
+[36/50] [chromium] › tests/e2e/zz-tmp-ohne-fail.spec.ts:319:3 › QA M5: Nummernkreis, Format, Fixieren (§5) › Vorschau stimmt mit dem Ergebnis überein; Übernehmen ist ein Undo-Schritt, Redo stellt alles wieder her
+[37/50] [chromium] › tests/e2e/zz-tmp-ohne-fail.spec.ts:371:3 › QA M5: Doppelte Nummern (§3, §5) › pro Nummernkreis: pro Festplatz keine Warnung über Pages hinweg; Page duplizieren bei „global“ bzw. „pro Festplatz“
+[38/50] [chromium] › tests/e2e/zz-tmp-ohne-fail.spec.ts:393:3 › QA M5: Doppelte Nummern (§3, §5) › Vorschau nennt verbleibende Duplikate zwischen fixierten Ständen
+[39/50] [chromium] › tests/e2e/zz-tmp-ohne-fail.spec.ts:416:3 › QA M5: Strom (§6) › Stufen genau an der Grenze (Limit 100 kW)
+[40/50] [chromium] › tests/e2e/zz-tmp-ohne-fail.spec.ts:443:3 › QA M5: Strom (§6) › QA-M5-02: genau 90 % ist gelb, auch wenn 0,9 × Limit Gleitkomma-Reste hat (11,7 von 13 kW)
+[41/50] [chromium] › tests/e2e/zz-tmp-ohne-fail.spec.ts:451:3 › QA M5: Strom (§6) › QA-M5-02: Prozentangabe passt zur Farbstufe (89,9 % grün zeigt nicht „90 %“, 100,1 % rot zeigt nicht „100 %“)
+[42/50] [chromium] › tests/e2e/zz-tmp-ohne-fail.spec.ts:459:3 › QA M5: Strom (§6) › Summen je Anschlussart, Blitz-Symbol am Tab mit Tooltip, getrennt vom Warnzähler
+[43/50] [chromium] › tests/e2e/zz-tmp-ohne-fail.spec.ts:478:3 › QA M5: Strom (§6) › Blockieren: Strom-Feld einzeln und bei Mehrfachauswahl; Senkungen, Undo/Redo und Limit unter Summe bleiben erlaubt
+[44/50] [chromium] › tests/e2e/zz-tmp-ohne-fail.spec.ts:528:3 › QA M5: Strom (§6) › Blockieren: Einfügen auf derselben und auf einer anderen Page, Duplizieren, Alt+Ziehen
+[45/50] [chromium] › tests/e2e/zz-tmp-ohne-fail.spec.ts:584:5 › QA M5: Dateiformat Version 3 (§10) › echte Datei Version 1 (format-v1-m3.schelme) öffnen, Felder aus M5 ergänzt, Speichern schreibt Version 3
+[46/50] [chromium] › tests/e2e/zz-tmp-ohne-fail.spec.ts:584:5 › QA M5: Dateiformat Version 3 (§10) › echte Datei Version 2 (format-v2-m4.schelme) öffnen, Felder aus M5 ergänzt, Speichern schreibt Version 3
+  2) [chromium] › tests/e2e/zz-tmp-ohne-fail.spec.ts:443:3 › QA M5: Strom (§6) › QA-M5-02: genau 90 % ist gelb, auch wenn 0,9 × Limit Gleitkomma-Reste hat (11,7 von 13 kW) 
+
+    Error: expect(locator).toHaveAttribute(expected) failed
+
+    Locator:  getByRole('region', { name: 'Strom' }).getByTestId('power-meter')
+    Expected: "warn"
+    Received: "ok"
+    Timeout:  1000ms
+
+    Call log:
+      - Expect "toHaveAttribute" getByRole('region', { name: 'Strom' }).getByTestId('power-meter') with timeout 1000ms
+      - waiting for getByRole('region', { name: 'Strom' }).getByTestId('power-meter')
+        11 × locator resolved to <div data-level="ok" class="power-meter" data-testid="power-meter">…</div>
+           - unexpected value "ok"
+
+
+      446 |     await setLimit(page, '13');
+      447 |     await expect(meter(page)).toContainText('11,7 / 13 kW (90 %)');
+    > 448 |     await expect(meter(page)).toHaveAttribute('data-level', 'warn', { timeout: 1000 });
+          |                               ^
+      449 |   });
+      450 |
+      451 |   test('QA-M5-02: Prozentangabe passt zur Farbstufe (89,9 % grün zeigt nicht „90 %“, 100,1 % rot zeigt nicht „100 %“)', async ({ page }) => {
+        at /Users/laurin/Desktop/Schelmeplaner/tests/e2e/zz-tmp-ohne-fail.spec.ts:448:31
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/zz-tmp-ohne-fail-QA-M5-Str-13c3a-a-Reste-hat-11-7-von-13-kW--chromium/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/zz-tmp-ohne-fail-QA-M5-Str-13c3a-a-Reste-hat-11-7-von-13-kW--chromium/error-context.md
+
+    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results/zz-tmp-ohne-fail-QA-M5-Str-13c3a-a-Reste-hat-11-7-von-13-kW--chromium/trace.zip
+    Usage:
+
+        npx playwright show-trace test-results/zz-tmp-ohne-fail-QA-M5-Str-13c3a-a-Reste-hat-11-7-von-13-kW--chromium/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+
+[47/50] [chromium] › tests/e2e/zz-tmp-ohne-fail.spec.ts:659:3 › QA M5: Tastenkürzel, AltGr (Windows, deutsches Layout) › AltGr-Zeichen (Strg+Alt) im Präfix- und Namensfeld lösen keinen Kurzbefehl aus und werden nicht verhindert (Windows-Emulation)
+[48/50] [chromium] › tests/e2e/zz-tmp-ohne-fail.spec.ts:692:3 › QA M5: Tastenkürzel, AltGr (Windows, deutsches Layout) › Einbuchstabige Kurzbefehle und Alt+Ziffer greifen nicht im Textfeld (macOS: Option+5 = „[“)
+[49/50] [chromium] › tests/e2e/zz-tmp-ohne-fail.spec.ts:709:3 › QA M5: Tastenkürzel, AltGr (Windows, deutsches Layout) › QA-M5-03: Kurzbefehle mit Strg/Cmd+Alt (Neu nummerieren, Festplatz duplizieren) greifen nicht, solange ein Textfeld den Fokus hat
+  3) [chromium] › tests/e2e/zz-tmp-ohne-fail.spec.ts:451:3 › QA M5: Strom (§6) › QA-M5-02: Prozentangabe passt zur Farbstufe (89,9 % grün zeigt nicht „90 %“, 100,1 % rot zeigt nicht „100 %“) 
+
+    Error: expect(locator).not.toContainText(expected) failed
+
+    Locator: getByRole('region', { name: 'Strom' }).getByTestId('power-meter')
+    Expected substring: not "(90 %)"
+    Received string: "89,9 / 100 kW (90 %)"
+    Timeout: 1000ms
+
+    Call log:
+      - Expect "not toContainText" getByRole('region', { name: 'Strom' }).getByTestId('power-meter') with timeout 1000ms
+      - waiting for getByRole('region', { name: 'Strom' }).getByTestId('power-meter')
+        11 × locator resolved to <div data-level="ok" class="power-meter" data-testid="power-meter">…</div>
+           - unexpected value "89,9 / 100 kW (90 %)"
+
+
+      454 |     await setLimit(page, '100');
+      455 |     await expect(meter(page)).toHaveAttribute('data-level', 'ok');
+    > 456 |     await expect(meter(page)).not.toContainText('(90 %)', { timeout: 1000 });
+          |                                   ^
+      457 |   });
+      458 |
+      459 |   test('Summen je Anschlussart, Blitz-Symbol am Tab mit Tooltip, getrennt vom Warnzähler', async ({ page }) => {
+        at /Users/laurin/Desktop/Schelmeplaner/tests/e2e/zz-tmp-ohne-fail.spec.ts:456:35
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/zz-tmp-ohne-fail-QA-M5-Str-fe50c-0-1-rot-zeigt-nicht-„100-“--chromium/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/zz-tmp-ohne-fail-QA-M5-Str-fe50c-0-1-rot-zeigt-nicht-„100-“--chromium/error-context.md
+
+    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results/zz-tmp-ohne-fail-QA-M5-Str-fe50c-0-1-rot-zeigt-nicht-„100-“--chromium/trace.zip
+    Usage:
+
+        npx playwright show-trace test-results/zz-tmp-ohne-fail-QA-M5-Str-fe50c-0-1-rot-zeigt-nicht-„100-“--chromium/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+
+[50/50] [chromium] › tests/e2e/zz-tmp-ohne-fail.spec.ts:610:3 › QA M5: Dateiformat Version 3 (§10) › M5-Einstellungen überstehen Speichern und Öffnen
+  4) [chromium] › tests/e2e/zz-tmp-ohne-fail.spec.ts:709:3 › QA M5: Tastenkürzel, AltGr (Windows, deutsches Layout) › QA-M5-03: Kurzbefehle mit Strg/Cmd+Alt (Neu nummerieren, Festplatz duplizieren) greifen nicht, solange ein Textfeld den Fokus hat 
+
+    Error: expect(locator).toHaveCount(expected) failed
+
+    Locator:  getByRole('dialog', { name: 'Neu nummerieren' })
+    Expected: 0
+    Received: 1
+    Timeout:  1000ms
+
+    Call log:
+      - Expect "toHaveCount" getByRole('dialog', { name: 'Neu nummerieren' }) with timeout 1000ms
+      - waiting for getByRole('dialog', { name: 'Neu nummerieren' })
+        11 × locator resolved to 1 element
+           - unexpected value "1"
+
+
+      714 |     await page.keyboard.press(`${MOD}+Alt+N`);
+      715 |     await page.keyboard.press(`${MOD}+Alt+D`);
+    > 716 |     await expect(dialog(page)).toHaveCount(0, { timeout: 1000 });
+          |                                ^
+      717 |     await expect(page.getByRole('tab')).toHaveCount(2, { timeout: 1000 });
+      718 |   });
+      719 | });
+        at /Users/laurin/Desktop/Schelmeplaner/tests/e2e/zz-tmp-ohne-fail.spec.ts:716:32
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/zz-tmp-ohne-fail-QA-M5-Tas-4e9f8--ein-Textfeld-den-Fokus-hat-chromium/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/zz-tmp-ohne-fail-QA-M5-Tas-4e9f8--ein-Textfeld-den-Fokus-hat-chromium/error-context.md
+
+    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results/zz-tmp-ohne-fail-QA-M5-Tas-4e9f8--ein-Textfeld-den-Fokus-hat-chromium/trace.zip
+    Usage:
+
+        npx playwright show-trace test-results/zz-tmp-ohne-fail-QA-M5-Tas-4e9f8--ein-Textfeld-den-Fokus-hat-chromium/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+
+  4 failed
+    [chromium] › tests/e2e/zz-tmp-ohne-fail.spec.ts:130:3 › QA M5: Nummerierung links → rechts (§5) › QA-M5-01: Reihenfolge hängt nicht von der Anlegereihenfolge ab (Spalte mit je 0,01 m Versatz) 
+    [chromium] › tests/e2e/zz-tmp-ohne-fail.spec.ts:443:3 › QA M5: Strom (§6) › QA-M5-02: genau 90 % ist gelb, auch wenn 0,9 × Limit Gleitkomma-Reste hat (11,7 von 13 kW) 
+    [chromium] › tests/e2e/zz-tmp-ohne-fail.spec.ts:451:3 › QA M5: Strom (§6) › QA-M5-02: Prozentangabe passt zur Farbstufe (89,9 % grün zeigt nicht „90 %“, 100,1 % rot zeigt nicht „100 %“) 
+    [chromium] › tests/e2e/zz-tmp-ohne-fail.spec.ts:709:3 › QA M5: Tastenkürzel, AltGr (Windows, deutsches Layout) › QA-M5-03: Kurzbefehle mit Strg/Cmd+Alt (Neu nummerieren, Festplatz duplizieren) greifen nicht, solange ein Textfeld den Fokus hat 
+  46 passed (11.0s)

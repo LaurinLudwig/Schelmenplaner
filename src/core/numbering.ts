@@ -5,12 +5,13 @@
  * - Links → rechts: alle Stände der Page nach der x-Koordinate ihrer Mitte, unabhängig von den Grundflächen.
  * - Uhrzeigersinn: nach dem Winkel der Standmitte um den Mittelpunkt, ab der Startrichtung (relativ
  *   zum Norden der Page).
+ * - Ohne Toleranz (QA-M5-01): Verglichen werden auf 0,01 m bzw. 0,1° gerundete Werte als ganze Zahlen. Eine
+ *   Toleranz „bis 0,01 m gleich“ wäre nicht transitiv, das Ergebnis hinge dann von der Anlegereihenfolge ab.
  * - Nummernkreis „pro Festplatz“ oder „global“ (Pages in Tab-Reihenfolge, manuelle ausgelassen).
  * - Fixierte Nummern werden übersprungen und nie an einen anderen Stand desselben Nummernkreises vergeben.
  */
 import { rectGeo } from './geometry/polygon';
 import { normAngle } from './geometry/rect';
-import { ANGLE_TOL, TOL } from './geometry/tolerance';
 import type { ClockwiseSettings, FestplatzPage, Id, NumberingScope, Project, Stand, Vec } from './model/types';
 
 /** Grenzen der Einstellungen. */
@@ -37,18 +38,19 @@ export const sameNr = (a: string, b: string) => nrKey(a) !== '' && nrKey(a) === 
 
 // ---------- Reihenfolge ----------
 
-const center = (r: Stand): Vec => ({ x: r.cx, y: r.cy });
-
-/** Vergleich mit Toleranz: gleich, wenn höchstens `tol` auseinander. */
-const cmpTol = (a: number, b: number, tol: number) => (Math.abs(a - b) <= tol + 1e-9 ? 0 : a - b);
+/** Auf 0,01 m gerundet, in Zentimetern (ganze Zahl). */
+const cm = (v: number) => Math.round(v * 100);
 const byId = (a: Stand, b: Stand) => (a.id < b.id ? -1 : a.id > b.id ? 1 : 0);
 
 /**
- * Links → rechts über den ganzen Festplatz, unabhängig von den Grundflächen (Laurin, 2026-10-12): nach der
- * x-Koordinate der Standmitte, bei gleicher Lage (bis TOL) der obere Stand zuerst.
+ * Links → rechts über den ganzen Festplatz, unabhängig von den Grundflächen (spec.md §5): Standmitte auf
+ * 0,01 m gerundet; kleineres x zuerst, bei exakt gleichem x kleineres y (weiter oben), dann nach ID.
  */
 export function orderLeftToRight(stands: readonly Stand[]): Stand[] {
-  return stands.toSorted((a, b) => cmpTol(a.cx, b.cx, TOL) || cmpTol(a.cy, b.cy, TOL) || byId(a, b));
+  return stands
+    .map((s) => ({ s, x: cm(s.cx), y: cm(s.cy) }))
+    .toSorted((p, q) => p.x - q.x || p.y - q.y || byId(p.s, q.s))
+    .map((k) => k.s);
 }
 
 /** Winkel von `p` um `c` in Grad im Uhrzeigersinn ab „oben“ auf dem Bildschirm (y nach unten). */
@@ -57,16 +59,21 @@ const screenAngle = (c: Vec, p: Vec) => normAngle((Math.atan2(p.x - c.x, c.y - p
 /** Richtung des Startstrahls auf dem Bildschirm (Grad im Uhrzeigersinn ab oben). */
 export const clockwiseStartDirection = (cw: ClockwiseSettings, northAngle: number) => normAngle(northAngle + cw.startAngle);
 
-/** Im Uhrzeigersinn um den Mittelpunkt, ab der Startrichtung (relativ zum Norden der Page). */
+/**
+ * Im Uhrzeigersinn um den Mittelpunkt, ab der Startrichtung (relativ zum Norden der Page). Standmitte und
+ * Mittelpunkt auf 0,01 m gerundet, Winkel auf 0,1° (359,95° und mehr = 0°); bei gleichem Winkel der kleinere
+ * Abstand (auf 0,01 m gerundet), dann nach ID.
+ */
 export function orderClockwise(stands: readonly Stand[], cw: ClockwiseSettings, northAngle: number): Stand[] {
   const start = clockwiseStartDirection(cw, northAngle);
+  const c = { x: cm(cw.center.x) / 100, y: cm(cw.center.y) / 100 };
   const keyed = stands.map((s) => {
-    const dist = Math.hypot(s.cx - cw.center.x, s.cy - cw.center.y);
-    let rel = dist > 1e-9 ? normAngle(screenAngle(cw.center, center(s)) - start) : 0;
-    if (360 - rel <= ANGLE_TOL) rel = 0;
-    return { s, rel, dist };
+    const p = { x: cm(s.cx) / 100, y: cm(s.cy) / 100 };
+    const dist = cm(Math.hypot(p.x - c.x, p.y - c.y));
+    const tenths = dist > 0 ? Math.round(normAngle(screenAngle(c, p) - start) * 10) % 3600 : 0;
+    return { s, tenths, dist };
   });
-  keyed.sort((p, q) => cmpTol(p.rel, q.rel, ANGLE_TOL) || cmpTol(p.dist, q.dist, TOL) || byId(p.s, q.s));
+  keyed.sort((p, q) => p.tenths - q.tenths || p.dist - q.dist || byId(p.s, q.s));
   return keyed.map((k) => k.s);
 }
 
@@ -149,8 +156,12 @@ export interface NrChange extends NrRef {
   next: string;
 }
 
+/** „Alle neu nummerieren“ oder „Nur Stände ohne Nummer“ (spec.md §5). */
+export type RenumberMode = 'all' | 'missing';
+
 export interface RenumberPlan {
   scope: NumberingScope;
+  mode: RenumberMode;
   /** Betroffene Pages in Tab-Reihenfolge. */
   pageIds: Id[];
   /** Stände, deren Nummer sich ändert, in Nummerierungsreihenfolge. */
@@ -163,34 +174,65 @@ export interface RenumberPlan {
   duplicates: Map<Id, NrRef[]>;
 }
 
+/** Pages des Nummernkreises der Page `pageId` (bei „global“ alle) und die davon neu zu nummerierenden. */
+function circleOf(project: Pick<Project, 'pages' | 'settings'>, pageId: Id) {
+  const global = project.settings.numbering.scope === 'global';
+  const circle = global ? project.pages : project.pages.filter((p) => p.id === pageId);
+  return { circle, targets: circle.filter((p) => p.numberingMode !== 'manual') };
+}
+
+/** Zahl einer Nummer: die letzte Ziffernfolge („A-012“ → 12, „12a“ → 12), ohne Ziffern null. */
+export function nrNumber(nr: string): number | null {
+  const m = /(\d+)\D*$/.exec(nr.trim());
+  return m ? Number(m[1]) : null;
+}
+
+/** Vorauswahl im Dialog: „Nur Stände ohne Nummer“, sobald im Nummernkreis schon ein Stand eine Nummer hat. */
+export function defaultRenumberMode(project: Pick<Project, 'pages' | 'settings'>, pageId: Id): RenumberMode {
+  return circleOf(project, pageId).circle.some((p) => p.stands.some((s) => s.nr.trim())) ? 'missing' : 'all';
+}
+
 /**
  * Plan für „Neu nummerieren“: bei „pro Festplatz“ die Page `pageId`, bei „global“ alle Pages außer den
- * manuellen. Fixierte Nummern im selben Nummernkreis (bei „global“ auch alle Nummern manueller Pages)
- * werden nie vergeben.
+ * manuellen.
+ * - `all`: alle nicht fixierten Stände in der Reihenfolge des Modus. Fixierte Nummern im selben Nummernkreis
+ *   (bei „global“ auch alle Nummern manueller Pages) werden nie vergeben.
+ * - `missing`: nur Stände ohne Nummer, fortlaufend ab der höchsten vergebenen Nummer im Nummernkreis
+ *   (mindestens der Startnummer); Nummern, die im Nummernkreis schon vorkommen, werden übersprungen.
  */
-export function planRenumber(project: Pick<Project, 'pages' | 'settings'>, pageId: Id): RenumberPlan {
+export function planRenumber(project: Pick<Project, 'pages' | 'settings'>, pageId: Id, mode: RenumberMode = 'all'): RenumberPlan {
   const { scope, start, digits } = project.settings.numbering;
-  const targets = scope === 'global' ? project.pages.filter((p) => p.numberingMode !== 'manual') : project.pages.filter((p) => p.id === pageId && p.numberingMode !== 'manual');
+  const { circle, targets } = circleOf(project, pageId);
   const changes: NrChange[] = [];
   const override = new Map<Id, string>();
   let fixed = 0;
   let unchanged = 0;
 
-  const reservedOf = (pages: readonly FestplatzPage[]) => {
+  const keysOf = (pages: readonly FestplatzPage[], all: boolean) => {
     const keys = new Set<string>();
-    for (const p of pages) for (const s of p.stands) if (s.nrLocked || p.numberingMode === 'manual') keys.add(nrKey(s.nr));
+    for (const p of pages) for (const s of p.stands) if (all || s.nrLocked || p.numberingMode === 'manual') keys.add(nrKey(s.nr));
     keys.delete('');
     return keys;
   };
-  const globalReserved = scope === 'global' ? reservedOf(project.pages) : null;
+  const missing = mode === 'missing';
+  const globalReserved = scope === 'global' ? keysOf(circle, missing) : null;
+  const highest = (pages: readonly FestplatzPage[]) => {
+    let max = start - 1;
+    for (const p of pages) for (const s of p.stands) max = Math.max(max, nrNumber(s.nr) ?? -Infinity);
+    return max + 1;
+  };
 
-  let counter = start;
+  let counter = missing ? highest(circle) : start;
   for (const page of targets) {
-    if (scope === 'perPage') counter = start;
-    const reserved = globalReserved ?? reservedOf([page]);
+    if (scope === 'perPage') counter = missing ? highest([page]) : start;
+    const reserved = globalReserved ?? keysOf([page], missing);
     for (const s of orderStands(page)) {
       if (s.nrLocked) {
         fixed++;
+        continue;
+      }
+      if (missing && s.nr.trim()) {
+        unchanged++;
         continue;
       }
       let next = formatNr(page.prefix, counter++, digits);
@@ -202,5 +244,5 @@ export function planRenumber(project: Pick<Project, 'pages' | 'settings'>, pageI
       }
     }
   }
-  return { scope, pageIds: targets.map((p) => p.id), changes, fixed, unchanged, duplicates: findDuplicates(project.pages, scope, override) };
+  return { scope, mode, pageIds: targets.map((p) => p.id), changes, fixed, unchanged, duplicates: findDuplicates(project.pages, scope, override) };
 }
