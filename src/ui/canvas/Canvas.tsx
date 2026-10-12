@@ -6,7 +6,7 @@ import { createFreeSpaceCache, pageFreeSpaces } from '../../core/freeSpace';
 import { fmt } from '../../core/format';
 import type { FestplatzPage, Rect, Vec, View } from '../../core/model/types';
 import { findSnap, rectSnapSource } from '../../core/snap';
-import { defaultView, screenToWorld, worldToScreen, zoomAt, type Bounds } from '../../core/viewport';
+import { defaultView, fitBounds, focusBounds, screenToWorld, worldToScreen, zoomAt, type Bounds } from '../../core/viewport';
 import { cachedDuplicates } from '../../core/numbering';
 import { cachedPageWarnings } from '../../core/warnings';
 import { useStore } from '../../state/store';
@@ -60,6 +60,8 @@ const NO_SELECTION: ReadonlySet<string> = new Set();
  * Verschieben bleibt ohne Neuzeichnen scharf.
  */
 const SETTLE_MS = 150;
+/** Dauer der Hervorhebung nach einem Sprung von der Start-Page (M6-09). */
+const FLASH_MS = 1600;
 /** Rand der zwischengespeicherten Ebenen je Seite, in Bildschirmbreiten (Platz für Verschieben ohne Neuzeichnen). */
 const LAYER_MARGIN = 0.5;
 /**
@@ -241,6 +243,25 @@ export function Canvas({ page: storedPage }: { page: FestplatzPage }) {
     ro.observe(el);
     return () => ro.disconnect();
   }, [setUi]);
+
+  // Sprung von der Start-Page (M6-09): auf das Ziel zoomen, sobald die Größe der Zeichenfläche bekannt ist
+  // (von der Start-Page aus ist `ui.viewport` evtl. veraltet), dann das Ziel kurz aufleuchten lassen
+  const focus = useStore((s) => s.ui.focus);
+  const [flash, setFlash] = useState<{ polys: Vec[][]; id: number } | null>(null);
+  useLayoutEffect(() => {
+    const el = svgRef.current;
+    if (!focus || focus.pageId !== storedPage.id || !el) return;
+    const w = el.clientWidth;
+    const h = el.clientHeight;
+    setView(storedPage.id, fitBounds(focusBounds(focus.bounds), w, h, 60));
+    setFlash({ polys: focus.flash, id: Date.now() });
+    setUi({ focus: null, viewport: { w, h } });
+  }, [focus, storedPage.id, setView, setUi]);
+  useEffect(() => {
+    if (!flash) return;
+    const t = setTimeout(() => setFlash(null), FLASH_MS);
+    return () => clearTimeout(t);
+  }, [flash]);
 
   // Leertaste = temporäre Hand, Alt = Zoom-Werkzeug verkleinert
   useEffect(() => {
@@ -445,6 +466,13 @@ export function Canvas({ page: storedPage }: { page: FestplatzPage }) {
       </WorldLayer>
       <svg className="canvas-layer canvas-overlay" aria-hidden="true">
         <ClockwiseMarker page={storedPage} toScreen={ctx.toScreen} />
+        {flash && (
+          <g key={flash.id} className="jump-flash" data-testid="jump-flash">
+            {flash.polys.map((poly, i) => (
+              <polygon key={i} points={poly.map((p) => ctx.toScreen(p)).map((p) => `${p.x},${p.y}`).join(' ')} />
+            ))}
+          </g>
+        )}
         {activeTool?.overlay}
       </svg>
       {activeTool?.panel && <div className="tool-panel-host">{activeTool.panel}</div>}

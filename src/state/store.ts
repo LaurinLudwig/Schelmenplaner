@@ -3,7 +3,8 @@ import { create } from 'zustand';
 import type { Preview } from '../core/derive';
 import type { Assets, ProjectBundle } from '../core/fileFormat';
 import { createProject } from '../core/model/defaults';
-import type { Id, Project, View } from '../core/model/types';
+import type { Id, Project, Vec, View } from '../core/model/types';
+import type { Bounds } from '../core/viewport';
 import * as H from './history';
 
 export const START_PAGE = 'start';
@@ -32,6 +33,18 @@ export interface UiState {
   fpsVisible: boolean;
   /** Größe der Zeichenfläche in px (für Zoom-Befehle ohne Mausposition). */
   viewport: { w: number; h: number };
+  /**
+   * Sprung von der Start-Page (M6-09): Die Zeichenfläche der Page zoomt auf `bounds`, sobald sie ihre Größe kennt,
+   * hebt `flash` kurz hervor und setzt das Feld zurück.
+   */
+  focus: FocusRequest | null;
+}
+
+export interface FocusRequest {
+  pageId: Id;
+  bounds: Bounds;
+  /** Umrisse in Weltkoordinaten, die kurz aufleuchten. */
+  flash: Vec[][];
 }
 
 export interface AppState {
@@ -163,6 +176,7 @@ export const useStore = create<AppState>()((set, get) => {
       invertPan: loadPref(INVERT_PAN_KEY) === '1',
       fpsVisible: false,
       viewport: { w: 0, h: 0 },
+      focus: null,
     },
     preview: null,
     viewLive: false,

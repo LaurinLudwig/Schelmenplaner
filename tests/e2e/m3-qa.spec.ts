@@ -2,7 +2,7 @@ import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { expect, test, type Page } from '@playwright/test';
 import { strFromU8, unzipSync } from 'fflate';
-import { artifact, canvasBox, collectErrors, MOD, openApp, origin, scale } from './helpers';
+import { artifact, canvasBox, collectErrors, MOD, openApp, origin, scale, openSettings, backToPage } from './helpers';
 
 /**
  * QA M3: unabhängige Prüfung von Grundflächen, Geschäften, Seiten-/Steuerungsleiste, Beschriftung,
@@ -648,6 +648,7 @@ test.describe('QA M3-08: Kategorien löschen und rückgängig', () => {
     const fillOf = (id: string) => page.locator(`.stand[data-id="${id}"]`).getAttribute('fill');
     expect(await fillOf('s1')).toBe('#e57373');
     const n0 = await pastLen(page);
+    await openSettings(page); // M6-07: Kategorien in den Projekteinstellungen
     const del = page.getByRole('button', { name: 'Kategorie „Imbiss & <Grill>“ löschen' });
     await del.click();
     const dlg = page.getByRole('alertdialog');
@@ -661,6 +662,7 @@ test.describe('QA M3-08: Kategorien löschen und rückgängig', () => {
     let p = (await st(page)).project;
     expect(p.categories.map((c: any) => c.id)).toEqual(['c2']);
     expect(p.pages.flatMap((x: any) => x.stands).map((s: any) => s.categoryId)).toEqual([null, null, 'c2', null]);
+    await backToPage(page);
     expect(await fillOf('s1')).toBe('#a7adb3');
     expect(await fillOf('s2')).toBe('#ffffff');
     expect(await pastLen(page)).toBe(n0 + 1);
@@ -672,6 +674,7 @@ test.describe('QA M3-08: Kategorien löschen und rückgängig', () => {
     await page.keyboard.press(`${MOD}+Shift+z`);
     expect((await st(page)).project.categories).toHaveLength(1);
     // Unbenutzte Kategorie: ohne Rückfrage
+    await openSettings(page);
     await page.getByRole('button', { name: 'Kategorie „Andere“ löschen' }).click();
     await expect(page.getByRole('alertdialog')).toHaveCount(1);
     expect(errors).toEqual([]);
@@ -680,6 +683,7 @@ test.describe('QA M3-08: Kategorien löschen und rückgängig', () => {
   test('Kategorie umbenennen auf leeren Namen: Feld zeigt danach wieder den gültigen Namen', async ({ page }) => {
     await openApp(page);
     await seed(page, { categories: [{ id: 'c1', name: 'Imbiss', color: '#e57373' }] });
+    await openSettings(page); // M6-07
     await fill(page, 'cat-name-c1', '   ');
     expect((await st(page)).project.categories[0].name).toBe('Imbiss');
     await expect(page.locator('#cat-name-c1')).toHaveValue('Imbiss');
@@ -694,11 +698,13 @@ test.describe('QA M3-08: Kategorien löschen und rückgängig', () => {
         { id: 's2', cx: 10, cy: 0, w: 4, d: 3, categoryId: 'c1', color: '#ffffff' },
       ],
     });
+    await openSettings(page); // M6-07
     await page.evaluate(() => {
       const el = document.querySelector('#cat-color-c1') as HTMLInputElement;
       el.value = '#123456';
       el.dispatchEvent(new Event('change', { bubbles: true }));
     });
+    await backToPage(page);
     await expect(page.locator('.stand[data-id="s1"]')).toHaveAttribute('fill', '#123456');
     await expect(page.locator('.stand[data-id="s2"]')).toHaveAttribute('fill', '#ffffff');
   });
@@ -706,9 +712,12 @@ test.describe('QA M3-08: Kategorien löschen und rückgängig', () => {
 
 // ---------------------------------------------------------------------------------------------
 test.describe('QA M3-09: Beschriftungsvorlage – Grenzfälle', () => {
+  // M6-07: Vorlage in den Projekteinstellungen, danach zurück auf die Page
   const setTemplate = async (page: Page, t: string) => {
+    await openSettings(page);
     await page.locator('#label-template').fill(t);
     await page.locator('#label-template').press(`${MOD}+Enter`);
+    await backToPage(page);
   };
   const lines = (page: Page, id: string) => page.locator(`.stand-label[data-id="${id}"] tspan`).allTextContents();
 
@@ -771,6 +780,7 @@ test.describe('QA M3-09: Beschriftungsvorlage – Grenzfälle', () => {
     await openApp(page);
     await seed(page, { stands: [{ id: 's1', cx: 0, cy: 0, w: 3, d: 3, nr: '1' }] });
     const n0 = await pastLen(page);
+    await openSettings(page); // M6-07
     for (const v of ['0', '-1', '100', 'x']) {
       await fill(page, 'label-size', v);
       await expect(page.locator('#label-size')).toHaveAttribute('aria-invalid', 'true');
@@ -779,6 +789,7 @@ test.describe('QA M3-09: Beschriftungsvorlage – Grenzfälle', () => {
     expect(await pastLen(page)).toBe(n0);
     await fill(page, 'label-size', '2');
     expect((await st(page)).project.settings.labelFontSize).toBe(2);
+    await backToPage(page);
     await expect(page.locator('.layer-labels')).toHaveAttribute('font-size', '200');
     await page.locator('svg.canvas').click({ position: { x: 5, y: 5 } });
     await page.keyboard.press(`${MOD}+z`);
@@ -845,6 +856,7 @@ test.describe('QA M3-01/M3-18: Speichern und Neuladen', () => {
     });
     await page.getByRole('button', { name: 'Festplatz-Tab hinzufügen' }).click();
     await seed(page, { stands: [{ id: 's3', cx: 5, cy: 5, w: 2, d: 2, rot: 45 }] });
+    await openSettings(page); // M6-07
     await page.locator('#label-template').fill('{nr} {name}\n{kategorie}');
     await page.locator('#label-template').press(`${MOD}+Enter`);
     await page.keyboard.press('Alt+1');

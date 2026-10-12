@@ -11,7 +11,7 @@ import { NativeColor } from './ColorField';
 import { NumberField } from './NumberField';
 import { TextField } from './TextField';
 
-/** Projektweite Beschriftung (bis M6 hier, danach zusätzlich in den Projekteinstellungen). */
+/** Projektweite Beschriftung (Projekteinstellungen der Start-Page, M6-05; bis M5 in der Seitenleiste). */
 export function LabelPanel() {
   const template = useStore((s) => s.project.settings.labelTemplate);
   const fontSize = useStore((s) => s.project.settings.labelFontSize);
@@ -33,7 +33,7 @@ export function LabelPanel() {
   );
 }
 
-/** Freiflächen und Warnungen (projektweit, bis M6 hier; M4-03, M4-09, M4-10, M5-10). */
+/** Freiflächen und Warnungen (projektweit, Projekteinstellungen; M4-03, M4-09, M4-10, M5-10, M6-07). */
 export function FreeSpacePanel() {
   const minWidth = useStore((s) => s.project.settings.minFreeWidth);
   const warnOutside = useStore((s) => s.project.settings.warnOutside);
@@ -67,7 +67,7 @@ export function FreeSpacePanel() {
   );
 }
 
-/** Kategorien (projektweit): anlegen, umbenennen, umfärben, löschen. */
+/** Kategorien (projektweit, Projekteinstellungen): anlegen, umbenennen, umfärben, löschen; mit Zahl der Geschäfte. */
 export function CategoryPanel() {
   const categories = useStore((s) => s.project.categories);
   return (
@@ -105,10 +105,14 @@ async function confirmDeleteCategory(cat: Category) {
 }
 
 function CategoryRow({ cat }: { cat: Category }) {
+  const used = useStore((s) => categoryUsage(s.project, cat.id));
   return (
     <div className="cat-row" data-testid="category-row">
       <NativeColor id={`cat-color-${cat.id}`} value={cat.color} label={`Farbe von „${cat.name}“`} onCommit={(color) => updateCategory(cat.id, { color })} />
       <TextField id={`cat-name-${cat.id}`} className="grow" label="Name" value={cat.name} onCommit={(name) => name.trim() && updateCategory(cat.id, { name: name.trim() })} />
+      <span className="cat-usage" data-testid="category-usage" {...tip({ label: `${used} ${used === 1 ? 'Geschäft' : 'Geschäfte'} mit dieser Kategorie`, side: 'top' })}>
+        {used}
+      </span>
       <button type="button" className="icon-btn" onClick={() => void confirmDeleteCategory(cat)} {...tip({ label: `Kategorie „${cat.name}“ löschen`, side: 'top' })}>
         <Icon name="delete" size={16} />
       </button>

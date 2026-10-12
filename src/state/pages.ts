@@ -24,6 +24,16 @@ export function renamePage(id: Id, name: string) {
   });
 }
 
+/** Projektname (Projekteinstellungen, M6-05); leer wird abgewiesen (false). */
+export function setProjectName(name: string): boolean {
+  const trimmed = name.trim();
+  if (!trimmed) return false;
+  useStore.getState().change('Projekt umbenennen', (p) => {
+    if (p.name !== trimmed) p.name = trimmed;
+  });
+  return true;
+}
+
 export function duplicatePage(id: Id) {
   const s = useStore.getState();
   const index = s.project.pages.findIndex((x) => x.id === id);

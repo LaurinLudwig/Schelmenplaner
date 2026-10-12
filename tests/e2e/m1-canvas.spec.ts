@@ -1,5 +1,5 @@
 import { expect, test } from '@playwright/test';
-import { canvas, canvasBox, dispatchWheel, MOD, openApp, origin, pageTabs, scale } from './helpers';
+import { canvas, canvasBox, dispatchWheel, MOD, openApp, origin, pageTabs, scale, pointerOnCanvas } from './helpers';
 
 /** M1-15, M1-16, M1-17, M1-24: Zoom, Pan, Werkzeuge, Trackpad. */
 
@@ -180,12 +180,13 @@ test.describe('M1 Zeichenfläche: Zoom und Pan', () => {
   test('M1-16: Mittlere Maustaste verschiebt immer', async ({ page }) => {
     await openApp(page);
     const box = await canvasBox(page);
+    // E-39: erst drücken, wenn die Zeichenfläche den Zeiger bekommt; Ergebnis abwarten statt sofort lesen
+    await pointerOnCanvas(page, box.x + 300, box.y + 300);
     const o0 = await origin(page);
-    await page.mouse.move(box.x + 300, box.y + 300);
     await page.mouse.down({ button: 'middle' });
     await page.mouse.move(box.x + 330, box.y + 300, { steps: 3 });
     await page.mouse.up({ button: 'middle' });
-    expect((await origin(page)).x - o0.x).toBeCloseTo(30, 0);
+    await expect.poll(async () => (await origin(page)).x - o0.x).toBeCloseTo(30, 0);
   });
 
   test('M1-17: Zoom-Werkzeug (Z): Klick vergrößert ×2, Alt+Klick verkleinert', async ({ page }) => {

@@ -96,3 +96,32 @@ export async function dispatchWheel(
  * .gitignore; versionierte Belege der QA-Berichte liegen unter qa/screenshots/.
  */
 export const artifact = (name: string) => `test-artifacts/screenshots/${name}`;
+
+/**
+ * M6-07: Projektweite Einstellungen (Beschriftung, Mindestbreite, Warnungsschalter, Kategorien, Nummernkreis) stehen
+ * seit M6 in den Projekteinstellungen der Start-Page statt in der Seitenleiste.
+ */
+export async function openSettings(page: Page) {
+  await tabbar(page).getByRole('tab', { name: 'Start-Page' }).click();
+  await page.getByRole('tab', { name: 'Einstellungen' }).click();
+}
+
+/** Zurück auf die Festplatz-Page Nummer `n` (1 = erster Festplatz). */
+export async function backToPage(page: Page, n = 1) {
+  await pageTabs(page).nth(n).click();
+}
+
+/**
+ * Bewegt die Maus an (x, y) und wartet, bis die Zeichenfläche den Zeiger tatsächlich bekommt (die Statusleiste
+ * zeigt Koordinaten; sie kommen nur über pointermove auf der Zeichenfläche). Erst dann ist sicher, dass ein
+ * folgender Tastendruck dort landet und nicht z. B. am <html>-Element, solange die Seite noch nicht so weit ist
+ * (E-39: WebKit unter Last).
+ */
+export async function pointerOnCanvas(page: Page, x: number, y: number) {
+  const coords = page.locator('.statusbar span').first();
+  await expect(async () => {
+    await page.mouse.move(x - 1, y);
+    await page.mouse.move(x, y);
+    await expect(coords).not.toContainText('–', { timeout: 200 });
+  }).toPass({ timeout: 10_000 });
+}

@@ -40,6 +40,15 @@ import i_bolt from '@material-symbols/svg-400/outlined/bolt.svg?raw';
 import i_up from '@material-symbols/svg-400/outlined/keyboard_arrow_up.svg?raw';
 import i_down from '@material-symbols/svg-400/outlined/keyboard_arrow_down.svg?raw';
 import i_center from '@material-symbols/svg-400/outlined/my_location.svg?raw';
+import i_jump from '@material-symbols/svg-400/outlined/zoom_in_map.svg?raw';
+import i_warning from '@material-symbols/svg-400/outlined/warning.svg?raw';
+import i_filter from '@material-symbols/svg-400/outlined/filter_list.svg?raw';
+import i_columns from '@material-symbols/svg-400/outlined/view_column.svg?raw';
+import i_download from '@material-symbols/svg-400/outlined/download.svg?raw';
+import i_search from '@material-symbols/svg-400/outlined/search.svg?raw';
+import i_sortUp from '@material-symbols/svg-400/outlined/arrow_upward.svg?raw';
+import i_sortDown from '@material-symbols/svg-400/outlined/arrow_downward.svg?raw';
+import i_refresh from '@material-symbols/svg-400/outlined/refresh.svg?raw';
 
 const RAW = {
   select: i_select,
@@ -83,6 +92,15 @@ const RAW = {
   up: i_up,
   down: i_down,
   center: i_center,
+  jump: i_jump,
+  warning: i_warning,
+  filter: i_filter,
+  columns: i_columns,
+  download: i_download,
+  search: i_search,
+  sortUp: i_sortUp,
+  sortDown: i_sortDown,
+  refresh: i_refresh,
 };
 
 export type IconName = keyof typeof RAW;

@@ -1,4 +1,5 @@
 import { normAngle, rectCorners, roundRect } from '../../core/geometry/rect';
+import { openProjectSettings } from '../../app/startPageNav';
 import { CONNECTION_LABEL } from '../../core/label';
 import type { Area, Connection, EdgeIndex, FestplatzPage, Stand } from '../../core/model/types';
 import { LIMITS } from '../../core/objects';
@@ -257,7 +258,15 @@ function StandFields({ pageId, stands }: { pageId: string; stands: Stand[] }) {
             </option>
           ))}
         </select>
-        {!categories.length && <p className="hint">Kategorien legst du im Bereich „Kategorien“ an.</p>}
+        {!categories.length && (
+          <p className="hint">
+            Kategorien legst du in den{' '}
+            <button type="button" className="link-btn" onClick={() => openProjectSettings()}>
+              Projekteinstellungen
+            </button>{' '}
+            an.
+          </p>
+        )}
       </div>
       <ColorField
         id="st-color"

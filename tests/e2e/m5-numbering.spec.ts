@@ -1,5 +1,5 @@
 import { expect, test, type Page } from '@playwright/test';
-import { canvasBox, hoverTooltip, MOD, openApp, origin, scale } from './helpers';
+import { canvasBox, hoverTooltip, MOD, openApp, origin, scale, openSettings, backToPage } from './helpers';
 
 /**
  * M5: Standnummern (spec.md §3, §5).
@@ -52,8 +52,10 @@ test.describe('M5: Nummerierung', () => {
     await seed(page, { areas: [G], stands: [{ id: 'c', cx: 15, cy: -1.5 }, { id: 'a', cx: -15, cy: -1.5 }, { id: 'b', cx: 0, cy: -1.5, nr: '7' }] });
     await expect(panel(page).getByTestId('nr-status')).toHaveText('3 Stände, 2 ohne Nummer');
     await fill(page, 'Präfix dieses Festplatzes', 'A-');
+    await openSettings(page); // M6-07: Nummernkreis in den Projekteinstellungen
     await fill(page, 'Stellen', '2');
     await expect(panel(page).getByTestId('nr-example')).toHaveText('Beispiel: A-01, A-02 …');
+    await backToPage(page);
 
     await panel(page).getByRole('button', { name: /Neu nummerieren/ }).click();
     await expect(dialog(page)).toBeVisible();
@@ -238,7 +240,9 @@ test.describe('M5: Nummerierung', () => {
   test('M5-04/10: global durchgehend; kopierte Page erzeugt doppelte Nummern (Warnzähler, Hinweis, ignorieren)', async ({ page }) => {
     await openApp(page);
     await seed(page, { areas: [G], stands: [{ id: 'a', cx: -15, cy: -1.5, name: 'Crêpes' }, { id: 'b', cx: 5, cy: -1.5 }] });
+    await openSettings(page); // M6-07
     await panel(page).getByLabel('Zählung').selectOption('global');
+    await backToPage(page);
     await page.keyboard.press(`${MOD}+Alt+N`);
     await dialog(page).getByRole('button', { name: 'Übernehmen' }).click();
     await expect(page.getByTestId('warn-badge')).toHaveCount(0);
@@ -260,6 +264,7 @@ test.describe('M5: Nummerierung', () => {
 
     // pro Festplatz: keine Duplikate über Pages hinweg
     await page.keyboard.press('Escape');
+    await openSettings(page);
     await panel(page).getByLabel('Zählung').selectOption('perPage');
     await expect(badges).toHaveCount(0);
     // projektweit abschaltbar

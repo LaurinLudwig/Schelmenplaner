@@ -1,5 +1,5 @@
 import { expect, test, type Page } from '@playwright/test';
-import { canvasBox, collectErrors, MOD, openApp, origin, scale } from './helpers';
+import { canvasBox, collectErrors, MOD, openApp, origin, scale, openSettings, backToPage } from './helpers';
 
 /**
  * QA M4: Freiflächen, Fang, Warnungen, Dateiformat (spec.md §3, §4, §10, Allgemein).
@@ -240,6 +240,7 @@ test.describe('QA M4-01/05/13: Freiflächen-Fälle aus spec.md §4 in der Oberfl
     await seed(page, { areas: [G], stands: [inG('s1', 20, 28), inG('s2', 28.4, 31)] });
     const field = page.locator('#free-min-width');
     await expect(freeLabels(page)).toHaveText(['Frei 20 × 10 m', 'Frei 19 × 10 m']);
+    await openSettings(page); // M6-07: Mindestbreite in den Projekteinstellungen
     const minW = () => page.evaluate(() => (window as any).__schelmeStore.getState().project.settings.minFreeWidth);
     // Ungültig (außerhalb 0,05–100, leer, Text): Feld rot, Wert bleibt, kein Undo-Schritt
     const n0 = await pastLen(page);
@@ -261,18 +262,23 @@ test.describe('QA M4-01/05/13: Freiflächen-Fälle aus spec.md §4 in der Oberfl
     }
     await field.fill('100');
     await field.press('Enter');
+    await backToPage(page);
     await expect(page.locator('.free-space')).toHaveCount(0);
+    await openSettings(page);
     await field.fill('0.3');
     await field.press('Enter');
     await expect(field).toHaveValue('0,3');
+    await backToPage(page);
     await expect(freeLabels(page)).toHaveText(['Frei 20 × 10 m', 'Frei 0,4 × 10 m', 'Frei 19 × 10 m']);
     await page.keyboard.press('Escape');
     await page.locator('svg.canvas').click({ position: { x: 5, y: 5 } });
     await page.keyboard.press(`${MOD}+z`);
-    await expect(field).toHaveValue('100');
     await expect(page.locator('.free-space')).toHaveCount(0);
+    await openSettings(page);
+    await expect(field).toHaveValue('100');
     await page.keyboard.press(`${MOD}+Shift+z`);
     await expect(field).toHaveValue('0,3');
+    await backToPage(page);
     await expectConsistent(page);
   });
 
@@ -734,7 +740,9 @@ test.describe('QA M4-09/10/13/18: Warnungen und Zähler', () => {
       ],
     });
     // Warnung „außerhalb“ abschalten, damit nur Überlappung zählt
+    await openSettings(page); // M6-07: Warnungsschalter in den Projekteinstellungen
     await page.getByLabel('Warnung, wenn ein Geschäft außerhalb der Grundflächen steht').uncheck();
+    await backToPage(page);
     await expect(page.locator('.stand[data-warning]')).toHaveCount(0);
     await expectBadge(page, '');
     await page.evaluate(() => {
@@ -838,11 +846,14 @@ test.describe('QA M4-09/10/13/18: Warnungen und Zähler', () => {
     await page.keyboard.press(`${MOD}+z`);
     // projektweit
     await page.keyboard.press('Escape');
+    await openSettings(page); // M6-07
     await page.getByLabel('Warnung, wenn ein Geschäft außerhalb der Grundflächen steht').uncheck();
+    await backToPage(page);
     await expectBadge(page, '');
     expect(await lastLabel(page)).toContain('ausschalten');
     await page.keyboard.press(`${MOD}+z`);
     await expectBadge(page, '2');
+    await openSettings(page);
     await expect(page.getByLabel('Warnung, wenn ein Geschäft außerhalb der Grundflächen steht')).toBeChecked();
   });
 

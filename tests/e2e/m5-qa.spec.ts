@@ -1,5 +1,5 @@
 import { expect, test, type Page } from '@playwright/test';
-import { canvasBox, collectErrors, hoverTooltip, MOD, openApp, origin, scale } from './helpers';
+import { canvasBox, collectErrors, hoverTooltip, MOD, openApp, origin, scale, openSettings, backToPage } from './helpers';
 
 /**
  * QA M5: Standnummern und Strom (spec.md §3, §5, §6, §10, Tastaturkürzel). Siehe qa/M5.md.
@@ -265,15 +265,20 @@ test.describe('QA M5: Nummernkreis, Format, Fixieren (§5)', () => {
     await openApp(page);
     await seed(page, { stands: [{ id: 'a', cx: 0, cy: 0 }, { id: 'b', cx: 5, cy: 0 }] });
     await fillIn(nrPanel(page), 'Präfix dieses Festplatzes', 'A-');
+    await openSettings(page); // M6-07: Nummernkreis in den Projekteinstellungen
     await fillIn(nrPanel(page), 'Stellen', '2');
+    await backToPage(page);
     await renumber(page);
     expect(await nrs(page)).toEqual({ a: 'A-01', b: 'A-02' });
+    await openSettings(page);
     await fillIn(nrPanel(page), 'Startnummer', '0');
     await fillIn(nrPanel(page), 'Stellen', '4');
     await expect(nrPanel(page).getByTestId('nr-example')).toHaveText('Beispiel: A-0000, A-0001 …');
+    await backToPage(page);
     await renumber(page);
     expect(await nrs(page)).toEqual({ a: 'A-0000', b: 'A-0001' });
     // außerhalb der Grenzen: Stellen bleiben 1–4, Startnummer ≥ 0
+    await openSettings(page);
     await fillIn(nrPanel(page), 'Stellen', '9');
     expect(await store(page, 's.project.settings.numbering.digits')).toBeLessThanOrEqual(4);
     await fillIn(nrPanel(page), 'Stellen', '0');
@@ -281,9 +286,12 @@ test.describe('QA M5: Nummernkreis, Format, Fixieren (§5)', () => {
     await fillIn(nrPanel(page), 'Startnummer', '-5');
     expect(await store(page, 's.project.settings.numbering.start')).toBeGreaterThanOrEqual(0);
     // leeres Präfix
+    await backToPage(page);
     await fillIn(nrPanel(page), 'Präfix dieses Festplatzes', '');
+    await openSettings(page);
     await fillIn(nrPanel(page), 'Stellen', '1');
     await fillIn(nrPanel(page), 'Startnummer', '1');
+    await backToPage(page);
     await renumber(page);
     expect(await nrs(page)).toEqual({ a: '1', b: '2' });
   });
@@ -394,6 +402,7 @@ test.describe('QA M5: Doppelte Nummern (§3, §5)', () => {
     expect(await pastLen(page)).toBe(n0 + 1);
     await expect(page.getByTestId('warn-badge')).toHaveText(['2', '1']);
     await page.keyboard.press('Escape');
+    await openSettings(page); // M6-07: Warnungsschalter in den Projekteinstellungen
     await page.getByLabel('Warnung bei doppelten Platznummern').uncheck();
     await expect(page.getByTestId('warn-badge')).toHaveCount(0);
     await page.keyboard.press(`${MOD}+Z`);
@@ -621,7 +630,9 @@ test.describe('QA M5: Dateiformat Version 3 (§10)', () => {
   test('M5-Einstellungen überstehen Speichern und Öffnen', async ({ page }) => {
     await openApp(page);
     await seed(page, { stands: [{ id: 'a', cx: 0, cy: 0, nr: 'A-7', nrLocked: true, powerKw: 4, suppressDuplicateWarning: true }] });
+    await openSettings(page); // M6-07
     await fillIn(nrPanel(page), 'Stellen', '3');
+    await backToPage(page);
     await fillIn(nrPanel(page), 'Präfix dieses Festplatzes', 'A-');
     await nrPanel(page).getByLabel('Modus').selectOption('clockwise');
     await fillIn(nrPanel(page), 'Start', '45');

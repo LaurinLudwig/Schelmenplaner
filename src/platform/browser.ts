@@ -77,6 +77,16 @@ export const browserPlatform: Platform = {
     return { path: null, name };
   },
 
+  async saveFile(bytes, suggestedName, _filter, mime) {
+    const url = URL.createObjectURL(new Blob([bytes as Uint8Array<ArrayBuffer>], { type: mime }));
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = suggestedName;
+    a.click();
+    setTimeout(() => URL.revokeObjectURL(url), 1000);
+    return { path: null, name: suggestedName };
+  },
+
   async writeAutosave(_projectPath, bytes, slot = 'current') {
     const time = Date.now();
     try {

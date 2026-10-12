@@ -8,6 +8,9 @@ import { notify } from './notify';
 import { canRenumber, openRenumber } from './renumber';
 import { newProject, openProject, saveProject } from './fileActions';
 import { fitView, visibleBounds, zoomBy } from './view';
+import { exportCurrentList } from './exportCsv';
+import { openStartTab } from './startPageNav';
+import { useStartPage } from '../state/startPage';
 
 /**
  * Befehle, die über Shortcuts, Menüs und Buttons ausgelöst werden. Der Schlüssel entspricht
@@ -23,6 +26,7 @@ export interface Command {
 
 const s = () => useStore.getState();
 const onDrawingPage = () => s().ui.activePage !== START_PAGE;
+const onStartPage = () => s().ui.activePage === START_PAGE;
 const activePage = () => s().project.pages.find((p) => p.id === s().ui.activePage) ?? null;
 const hasBackground = () => !!activePage()?.background;
 const setTool = (tool: ToolId) => () => s().setUi({ tool });
@@ -116,8 +120,22 @@ export const COMMANDS: Record<string, Command> = {
   'page.duplicate': { run: () => duplicatePage(s().ui.activePage), enabled: onDrawingPage },
   'page.delete': { run: () => void confirmDeletePage(s().ui.activePage), enabled: onDrawingPage },
 
-  'ui.panels': { run: () => s().setUi({ panelsHidden: !s().ui.panelsHidden }) },
+  'start.stands': { run: () => openStartTab('stands'), enabled: onStartPage },
+  'start.free': { run: () => openStartTab('free'), enabled: onStartPage },
+  'start.settings': { run: () => openStartTab('settings'), enabled: onStartPage },
+  'start.search': {
+    run: () => {
+      openStartTab('stands');
+      useStartPage.getState().set({ focusSearch: useStartPage.getState().focusSearch + 1 });
+    },
+    enabled: onStartPage,
+  },
+  'start.exportCsv': { run: () => void exportCurrentList(), enabled: () => onStartPage() && useStartPage.getState().tab !== 'settings' },
+
+  // Auf der Start-Page springt Tab zwischen Bedienelementen (M6-08); Panels gibt es dort nicht
+  'ui.panels': { run: () => s().setUi({ panelsHidden: !s().ui.panelsHidden }), enabled: onDrawingPage },
   'ui.sidebar': {
+    enabled: onDrawingPage,
     run: () => {
       const ui = s().ui;
       // Bei ausgeblendeten Panels holt Shift+Tab die Seitenleiste zurück.

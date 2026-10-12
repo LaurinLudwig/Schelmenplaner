@@ -1,7 +1,7 @@
 import { readFileSync } from 'node:fs';
 import { expect, test, type Page } from '@playwright/test';
 import { strFromU8, unzipSync } from 'fflate';
-import { canvasBox, collectErrors, MOD, openApp, origin, scale } from './helpers';
+import { canvasBox, collectErrors, MOD, openApp, origin, scale, openSettings, backToPage } from './helpers';
 
 /**
  * M3: Grundflächen, Geschäfte, Seitenleiste, Steuerungsleiste, Beschriftung, Mehrfachauswahl,
@@ -303,10 +303,12 @@ test.describe('M3: Steuerungs- und Seitenleiste', () => {
   test('M3-09: Beschriftungsvorlage und Schriftgröße sind projektweit', async ({ page }) => {
     await openApp(page);
     await seed(page, { stands: [{ id: 's1', cx: 0, cy: 0, w: 4, d: 3, nr: '3', name: 'X', powerKw: 16 }] });
+    await openSettings(page); // M6-07: Beschriftung in den Projekteinstellungen
     await page.locator('#label-template').fill('{nr} · {name}\n{strom} kW\n{anschluss}');
     await page.locator('#label-template').press(`${MOD}+Enter`);
-    await expect(page.locator('.stand-label[data-id="s1"] tspan')).toHaveText(['3 · X', '16 kW']);
     await fillField(page, 'label-size', '1,2');
+    await backToPage(page);
+    await expect(page.locator('.stand-label[data-id="s1"] tspan')).toHaveText(['3 · X', '16 kW']);
     expect((await store(page)).project.settings.labelFontSize).toBe(1.2);
   });
 
@@ -315,10 +317,12 @@ test.describe('M3: Steuerungs- und Seitenleiste', () => {
     await seed(page, { stands: [{ id: 's1', cx: 0, cy: 0, w: 4, d: 3 }] });
     const fill = () => page.locator('.stand[data-id="s1"]').getAttribute('fill');
     expect(await fill()).toBe('#a7adb3');
+    await openSettings(page); // M6-07: Kategorien in den Projekteinstellungen
     await page.getByRole('button', { name: 'Kategorie anlegen' }).click();
     const cat = (await store(page)).project.categories[0];
     await page.locator(`#cat-name-${cat.id}`).fill('Imbiss');
     await page.locator(`#cat-name-${cat.id}`).press('Enter');
+    await backToPage(page);
     await page.mouse.click(...(Object.values(await w2s(page, { x: 0, y: 0 })) as [number, number]));
     await page.locator('#st-cat').selectOption({ label: 'Imbiss' });
     expect(await fill()).toBe(cat.color);
@@ -328,9 +332,11 @@ test.describe('M3: Steuerungs- und Seitenleiste', () => {
     expect(await fill()).toBe(cat.color);
     // Löschen: Rückfrage, Stand verliert die Kategorie
     await page.keyboard.press('Escape');
+    await openSettings(page);
     await page.getByRole('button', { name: 'Kategorie „Imbiss“ löschen' }).click();
     await expect(page.getByRole('alertdialog')).toContainText('1 Geschäft');
     await page.getByRole('alertdialog').getByRole('button', { name: 'Löschen' }).click();
+    await backToPage(page);
     expect(await fill()).toBe('#a7adb3');
     expect((await activePage(page)).stands[0].categoryId).toBeNull();
     await page.keyboard.press(`${MOD}+z`);
@@ -445,6 +451,7 @@ test.describe('M3: Ebenen, Messen, Speichern', () => {
     await page.keyboard.press('g');
     await drag(page, await w2s(page, { x: 0.04, y: 0.02 }), await w2s(page, { x: 3.33, y: 2.71 }));
     await page.keyboard.press('v');
+    await openSettings(page); // M6-07
     await page.getByRole('button', { name: 'Kategorie anlegen' }).click();
     const download = page.waitForEvent('download');
     await page.keyboard.press(`${MOD}+s`);

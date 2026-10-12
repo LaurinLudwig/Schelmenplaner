@@ -1,7 +1,8 @@
 import { runCommand } from '../../app/commands';
-import type { FestplatzPage, NumberingMode, NumberingScope } from '../../core/model/types';
-import { defaultClockwiseCenter, formatNr, NUMBERING_LIMITS } from '../../core/numbering';
-import { setClockwiseCenter, setClockwiseStart, setNumberingDigits, setNumberingMode, setNumberingScope, setNumberingStart, setPrefix } from '../../state/numbering';
+import type { FestplatzPage, NumberingMode } from '../../core/model/types';
+import { defaultClockwiseCenter, formatNr } from '../../core/numbering';
+import { setClockwiseCenter, setClockwiseStart, setNumberingMode, setPrefix } from '../../state/numbering';
+import { openProjectSettings } from '../../app/startPageNav';
 import { useStore } from '../../state/store';
 import { Icon } from '../icons/Icon';
 import { keyLabel, tip } from '../shortcuts/tip';
@@ -16,7 +17,8 @@ const MODES: { id: NumberingMode; label: string }[] = [
 
 /**
  * Nummerierung der Festplatz-Page (M5, spec.md §5): Modus, Präfix, im Uhrzeigersinn Mittelpunkt und
- * Startrichtung, projektweit Nummernkreis, Startnummer und Stellen; Neu nummerieren.
+ * Startrichtung; Neu nummerieren. Den projektweiten Nummernkreis zeigt sie nur an (Einstellung seit M6 in den
+ * Projekteinstellungen der Start-Page).
  */
 export function NumberingPanel({ page }: { page: FestplatzPage }) {
   const numbering = useStore((s) => s.project.settings.numbering);
@@ -57,24 +59,13 @@ export function NumberingPanel({ page }: { page: FestplatzPage }) {
           </>
         )}
 
-        <div className="subhead">
-          Nummernkreis <span className="panel-badge muted">projektweit</span>
-        </div>
-        <div className="field">
-          <label htmlFor="nr-scope">Zählung</label>
-          <select id="nr-scope" value={numbering.scope} onChange={(e) => setNumberingScope(e.target.value as NumberingScope)}>
-            <option value="perPage">pro Festplatz</option>
-            <option value="global">global durchgehend (Reihenfolge der Tabs)</option>
-          </select>
-        </div>
-        <div className="fields-2">
-          <NumberField id="nr-start-number" label="Startnummer" value={numbering.start} step={1} digits={0} min={NUMBERING_LIMITS.start.min} max={NUMBERING_LIMITS.start.max} onCommit={setNumberingStart} />
-          <NumberField id="nr-digits" label="Stellen" value={numbering.digits} step={1} digits={0} min={NUMBERING_LIMITS.digits.min} max={NUMBERING_LIMITS.digits.max} onCommit={setNumberingDigits} />
-        </div>
-        <p className="hint" data-testid="nr-example">
-          Beispiel: {formatNr(page.prefix, numbering.start, numbering.digits)}, {formatNr(page.prefix, numbering.start + 1, numbering.digits)} …
+        <p className="hint" data-testid="nr-circle">
+          Nummernkreis: {numbering.scope === 'global' ? 'global durchgehend' : 'pro Festplatz'}, ab {numbering.start}, {numbering.digits} {numbering.digits === 1 ? 'Stelle' : 'Stellen'} (Beispiel{' '}
+          {formatNr(page.prefix, numbering.start, numbering.digits)}).{' '}
+          <button type="button" className="link-btn" onClick={() => openProjectSettings()}>
+            Projekteinstellungen
+          </button>
         </p>
-
         <p className="hint" data-testid="nr-status">
           {page.stands.length} {page.stands.length === 1 ? 'Stand' : 'Stände'}
           {unnumbered > 0 && `, ${unnumbered} ohne Nummer`}

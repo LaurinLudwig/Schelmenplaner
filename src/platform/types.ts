@@ -42,6 +42,11 @@ export interface Platform {
    * heruntergeladen (Browser). null = abgebrochen.
    */
   writeProjectFile(bytes: Uint8Array, path: string | null, suggestedName: string): Promise<SavedFile | null>;
+  /**
+   * Exportdatei schreiben (z. B. CSV, M6-06): fragt nach dem Ziel (Desktop) bzw. lädt herunter (Browser).
+   * `suggestedName` mit Endung. null = abgebrochen.
+   */
+  saveFile(bytes: Uint8Array, suggestedName: string, filter: FileFilter, mime: string): Promise<SavedFile | null>;
 
   /**
    * Sicherung schreiben; `projectPath` null = unbenanntes Projekt. `slot` „current“ ist die

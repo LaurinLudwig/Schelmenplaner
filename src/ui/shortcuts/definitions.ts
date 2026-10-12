@@ -2,7 +2,7 @@
  * Zentrale Shortcut-Konfiguration. Werkzeugleiste, Tooltips, Menüs und die Übersicht (?)
  * lesen ihre Tasten ausschließlich von hier. Neue Funktionen tragen sich hier ein.
  */
-export type ShortcutGroup = 'Datei' | 'Bearbeiten' | 'Beim Ziehen' | 'Werkzeuge' | 'Ansicht' | 'Pages' | 'Fenster';
+export type ShortcutGroup = 'Datei' | 'Bearbeiten' | 'Beim Ziehen' | 'Werkzeuge' | 'Ansicht' | 'Pages' | 'Start-Page' | 'Fenster';
 
 export interface ShortcutDef {
   id: string;
@@ -78,7 +78,13 @@ export const SHORTCUTS: ShortcutDef[] = [
   { id: 'page.duplicate', label: 'Festplatz duplizieren', group: 'Pages', keys: ['Mod+Alt+D'] },
   { id: 'page.delete', label: 'Festplatz löschen', group: 'Pages', keys: ['Mod+Alt+Backspace'] },
 
-  { id: 'ui.panels', label: 'Alle Panels ein-/ausblenden', group: 'Fenster', keys: ['Tab'] },
+  { id: 'start.stands', label: 'Start-Page: Geschäfte', group: 'Start-Page', keys: ['Mod+1'] },
+  { id: 'start.free', label: 'Start-Page: Freiflächen', group: 'Start-Page', keys: ['Mod+2'] },
+  { id: 'start.settings', label: 'Start-Page: Einstellungen', group: 'Start-Page', keys: ['Mod+3'] },
+  { id: 'start.search', label: 'Geschäfte suchen', group: 'Start-Page', keys: ['Mod+F'] },
+  { id: 'start.exportCsv', label: 'Liste als CSV exportieren …', group: 'Start-Page', keys: ['Mod+Shift+E'] },
+
+  { id: 'ui.panels', label: 'Alle Panels ein-/ausblenden (Festplatz-Page)', group: 'Fenster', keys: ['Tab'] },
   { id: 'ui.sidebar', label: 'Seitenleiste ein-/ausblenden', group: 'Fenster', keys: ['Shift+Tab'] },
   { id: 'ui.theme', label: 'Helles/dunkles Design', group: 'Fenster', keys: ['Mod+Alt+T'] },
   { id: 'ui.fps', label: 'Bildrate anzeigen (Bilder/s, längstes Bild)', group: 'Fenster', keys: ['Mod+Alt+F'] },

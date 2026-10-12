@@ -1,37 +1,64 @@
-import { addPage } from '../../state/pages';
+import { useStartPage, type StartTab } from '../../state/startPage';
 import { useStore } from '../../state/store';
-import { Icon } from '../icons/Icon';
-import { tip } from '../shortcuts/tip';
+import { keyLabel } from '../shortcuts/tip';
+import { FreeSpaceList } from './FreeSpaceList';
+import { ProjectSettings } from './ProjectSettings';
+import { StandTable } from './StandTable';
+import { StatsBar } from './StatsBar';
 
-/** Start-Page. Statistik, Listen, Tabelle und Projekteinstellungen folgen in M6. */
+const TABS: { id: StartTab; label: string; shortcut: string }[] = [
+  { id: 'stands', label: 'Geschäfte', shortcut: 'start.stands' },
+  { id: 'free', label: 'Freiflächen', shortcut: 'start.free' },
+  { id: 'settings', label: 'Einstellungen', shortcut: 'start.settings' },
+];
+
+/**
+ * Start-Page (M6, spec.md §7): Kopf, Kennzahlen-Leiste, darunter die Unter-Tabs Geschäfte, Freiflächen und
+ * Einstellungen. Deren Inhalt füllt die Resthöhe und scrollt selbst.
+ */
 export function StartPage() {
-  const project = useStore((s) => s.project);
-  const setUi = useStore((s) => s.setUi);
+  const name = useStore((s) => s.project.name);
+  const pages = useStore((s) => s.project.pages.length);
+  const tab = useStartPage((s) => s.tab);
+  const setTab = useStartPage((s) => s.setTab);
   return (
-    <section className="startpage">
-      <h1>{project.name}</h1>
-      <p className="sub">
-        {project.pages.length} {project.pages.length === 1 ? 'Festplatz' : 'Festplätze'}
-      </p>
-      <div className="cards">
-        {project.pages.map((p) => (
-          <button key={p.id} type="button" className="card link" onClick={() => setUi({ activePage: p.id })}>
-            <h2>{p.name}</h2>
-            <p>
-              {p.stands.length} Geschäfte · {p.areas.length} Grundflächen
-            </p>
+    <section className="startpage" aria-label="Start-Page">
+      <header className="sp-head">
+        <h1>{name}</h1>
+        <span className="sub">
+          {pages} {pages === 1 ? 'Festplatz' : 'Festplätze'}
+        </span>
+      </header>
+      <StatsBar />
+      <div className="sp-tabs" role="tablist" aria-label="Bereiche der Start-Page">
+        {TABS.map((t) => (
+          <button
+            key={t.id}
+            type="button"
+            role="tab"
+            id={`sp-tab-${t.id}`}
+            aria-selected={tab === t.id}
+            aria-controls={`sp-panel-${t.id}`}
+            className={`sp-tab${tab === t.id ? ' active' : ''}`}
+            onClick={() => setTab(t.id)}
+            title={`${t.label} (${keyLabel(t.shortcut)})`}
+          >
+            {t.label}
+            {t.id !== 'settings' && <TabCount tab={t.id} />}
           </button>
         ))}
-        <button type="button" className="card link" onClick={() => addPage()} {...tip({ shortcut: 'page.new', ariaLabel: false })}>
-          <h2 style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-            <Icon name="add" size={16} /> Neuer Festplatz
-          </h2>
-          <p>Leere Festplatz-Page anlegen</p>
-        </button>
       </div>
-      <div className="placeholder">
-        Kennzahlen, Freiflächen-Liste, Geschäftstabelle und Projekteinstellungen folgen in Meilenstein 6.
+      <div className="sp-body" role="tabpanel" id={`sp-panel-${tab}`} aria-labelledby={`sp-tab-${tab}`}>
+        {tab === 'stands' && <StandTable />}
+        {tab === 'free' && <FreeSpaceList />}
+        {tab === 'settings' && <ProjectSettings />}
       </div>
     </section>
   );
+}
+
+function TabCount({ tab }: { tab: StartTab }) {
+  const n = useStore((s) => (tab === 'stands' ? s.project.pages.reduce((k, p) => k + p.stands.length, 0) : -1));
+  if (n < 0) return null;
+  return <span className="sp-count">{n}</span>;
 }

@@ -117,15 +117,16 @@ Freiflächen-Logik wurde bereits erfolgreich getestet (prototype/freiflaechen.ht
   Notiz, Farbe/Kategorie.
 - Farbe: aus der Kategorie; optional eine eigene Farbe pro Stand, die die Kategoriefarbe überschreibt.
   Ohne beides neutrales Grau.
-- Kategorien werden in der Seitenleiste im Bereich „Kategorien“ angelegt, umbenannt, umgefärbt und
-  gelöscht (bis M6; danach zusätzlich in den Projekteinstellungen). Beim Löschen einer verwendeten
+- Kategorien werden in den Projekteinstellungen der Start-Page (§7) angelegt, umbenannt, umgefärbt und
+  gelöscht (bis M5 in der Seitenleiste; seit M6 nur noch auf der Start-Page, Entscheidung 2026-10-12). In der
+  Seitenleiste bleibt die Auswahl der Kategorie eines Stands. Beim Löschen einer verwendeten
   Kategorie fragt die App nach; die Stände verlieren die Kategorie (Farbe fällt auf die eigene Farbe
   bzw. Grau zurück), alles rückgängig machbar.
 - Beschriftung mittig auf dem Stand aus konfigurierbarer Vorlage, z. B.
   `{nr}` / `{name}` / `{breite}×{tiefe} m`. Platzhalter: `{nr}`, `{name}`, `{eigentuemer}`, `{ware}`,
   `{breite}`, `{tiefe}`, `{strom}`, `{anschluss}`, `{kategorie}`. Zeilen, die nach dem Einsetzen leer
-  sind oder deren Platzhalter alle leer sind (z. B. „{strom} kW“ ohne Stromangabe), entfallen. Vorlage und Schriftgröße sind projektweit; bis M6 in einem eigenen Bereich
-  „Beschriftung“ der Seitenleiste (nicht bei den Eigenschaften eines Stands).
+  sind oder deren Platzhalter alle leer sind (z. B. „{strom} kW“ ohne Stromangabe), entfallen. Vorlage und Schriftgröße sind projektweit und stehen in den Projekteinstellungen der
+  Start-Page (§7; bis M5 im Seitenleisten-Bereich „Beschriftung“).
 - Die Beschriftung ist IMMER horizontal, unabhängig von der Drehung des Stands, und wird über
   dem Stand gezeichnet (oberste Ebene).
 - Feste Schriftgröße in Planeinheiten (skaliert mit dem Zoom und erscheint im PDF in passender
@@ -150,8 +151,8 @@ Freiflächen-Logik wurde bereits erfolgreich getestet (prototype/freiflaechen.ht
   zugeschnitten, ihre Freiflächen verlieren den Teil in der früheren Fläche (kann L-förmig werden;
   Beschriftung dann mit den Hüllmaßen Breite entlang der Vorderseite × größte Tiefe). Frühere
   Grundflächen ändern sich durch spätere nie (Entscheidung 2026-10-11).
-- Freiflächen unter einer Mindestbreite (Standard 0,5 m, einstellbar 0,05–100 m im Seitenleisten-
-  Bereich „Freiflächen & Warnungen“, bis M6) werden nicht angezeigt.
+- Freiflächen unter einer Mindestbreite (Standard 0,5 m, einstellbar 0,05–100 m in den Projekteinstellungen
+  der Start-Page, §7) werden nicht angezeigt. Dort stehen auch die projektweiten Warnungsschalter (§3).
 - Beschriftung der Freiflächen wie bei Ständen: „Frei 20 × 10 m“, immer horizontal, mittig, feste
   Schriftgröße; sie erscheint ab 6 px Schrifthöhe auf dem Bildschirm (darunter unlesbar). Darstellung
   hellgrün getönt und schraffiert.
@@ -187,8 +188,9 @@ Entscheidungen 2026-10-12 (M5-Planung).
   mit Strahl sichtbar, solange der Modus aktiv ist (nicht im PDF).
 - **Manuell:** Die Automatik lässt die Page aus.
 - **Format:** Präfix der Page + Zahl, aufgefüllt auf die Stellenzahl (z. B. Präfix „A-“, 2 Stellen → „A-01“).
-  Präfix pro Festplatz; Startnummer und Stellenzahl (1–4, Standard 1 = ohne führende Nullen) projektweit.
-- **Nummernkreis:** „pro Festplatz“ (jede Page beginnt bei der Startnummer) oder „global durchgehend“ (Pages in
+  Präfix pro Festplatz (Seitenleiste); Startnummer und Stellenzahl (1–4, Standard 1 = ohne führende Nullen)
+  projektweit in den Projekteinstellungen der Start-Page (§7).
+- **Nummernkreis** (Projekteinstellungen der Start-Page; die Seitenleiste zeigt ihn mit Link dorthin): „pro Festplatz“ (jede Page beginnt bei der Startnummer) oder „global durchgehend“ (Pages in
   der Reihenfolge der Tabs; Pages im Modus „manuell“ werden übersprungen, ihre Nummern gelten als belegt).
 - **Fixierte Nummern:** Schloss neben der Platznummer (auch bei Mehrfachauswahl). Die Automatik überspringt
   fixierte Stände und vergibt keine Nummer, die einer fixierten im selben Nummernkreis gleicht (Vergleich wie bei
@@ -216,7 +218,7 @@ Entscheidungen 2026-10-12 (M5-Planung).
   0,001 kW gerundet (11,7 von 13 kW sind genau 90 %, also gelb). Die Prozentzahl wird abgerundet, damit sie zur
   Farbe passt (89,9 % zeigt „89 %“); über dem Limit erscheint sie mit einer Nachkommastelle, wenn die ganze Zahl
   100 wäre (100,1 %), bei weniger als 0,1 % darüber „über 100 %“. Anzeige auf der Festplatz-Page
-  im Seitenleisten-Bereich „Strom“ (immer sichtbar, auch bei Auswahl), auf der Start-Page in M6. Ohne Limit nur
+  im Seitenleisten-Bereich „Strom“ (immer sichtbar, auch bei Auswahl), auf der Start-Page in den Kennzahlen (§7). Ohne Limit nur
   die Summe. Dazu Anzahl und kW je Anschlussart (230 V, CEE 16 A, CEE 32 A, ohne Angabe).
 - Überschreitung: eigenes Blitz-Symbol am Page-Tab (getrennt vom Warnzähler der Stände). Ohne Blockieren erscheint
   ein Hinweis nur, wenn eine Änderung die Summe von „im Limit“ auf „über dem Limit“ bringt (Entscheidung 2026-10-12).
@@ -227,15 +229,54 @@ Entscheidungen 2026-10-12 (M5-Planung).
   Duplizieren einer Page. Bestehende Überschreitungen bleiben sichtbar und werden nicht korrigiert.
 
 ### 7. Start-Page (Statistik & Listen)
-- Kennzahlen global und pro Festplatz: Anzahl Geschäfte, Summe Frontmeter (Breiten),
-  belegte Fläche, Stromsumme vs. Limit.
-- Liste aller Freiflächen: Festplatz, Grundfläche, Maße. Klick wechselt auf die Festplatz-Page,
-  zoomt hin und hebt die Fläche kurz hervor.
-- Tabelle aller Geschäfte über alle Festplätze: sortier- und filterbar, direkt editierbar
-  (Änderungen wirken sofort im Plan), Klick springt zum Stand.
-- Projekteinstellungen (Projektname, Nummerierungsschema, Mindestbreite Freiflächen,
-  Schriftgröße der Standbeschriftung).
-- Export der Tabellen als CSV/XLSX.
+Entscheidungen 2026-10-12 (M6-Planung).
+- **Aufbau:** Kopf mit Projektname, darunter eine immer sichtbare Kennzahlen-Leiste, darunter die Unter-Tabs
+  „Geschäfte“, „Freiflächen“ und „Einstellungen“ (Cmd/Strg+1/2/3 auf der Start-Page); deren Inhalt füllt die
+  Resthöhe und scrollt selbst. Die Start-Page hat keine Werkzeug- und keine Seitenleiste.
+- **Kennzahlen** als Karten „Gesamt“ und je Festplatz (Reihenfolge der Tabs): Anzahl Geschäfte, Frontmeter
+  (Summe der Breiten; das ist die belegte Fläche, eine m²-Angabe gibt es nicht), freie Frontmeter (Summe der Breiten
+  aller angezeigten Freiflächen, also ab der Mindestbreite; bei angeschnittenen die Hüllbreite; Entscheidung
+  2026-10-12), Strom wie in §6 (Balken mit
+  Limit je Festplatz, gesamt nur die Summe), Anzahl und kW je Anschlussart, Zahl der Stände mit aktiver Warnung
+  (rot, sobald eine Überlappung dabei ist). Klick auf den Festplatz öffnet die Page; Klick auf die Warnzahl öffnet
+  die Geschäftstabelle gefiltert auf diesen Festplatz und „mit Warnung“.
+- **Geschäftstabelle** über alle Festplätze:
+  - Spalten: Sprung, Festplatz, Nummer (mit Schloss), Name, Eigentümer, Ware, Kategorie, Breite, Tiefe, Strom,
+    Anschlussart, Warnungen, Notiz. Spalten ein-/ausblendbar (Sprung und Name immer sichtbar); die Auswahl gilt pro
+    Rechner, nicht in der Projektdatei.
+  - Sortieren per Klick auf den Spaltenkopf (erneuter Klick kehrt um, Shift+Klick ergibt eine zweite Stufe);
+    Nummern natürlich sortiert („A-2“ vor „A-10“), Stände ohne Nummer zuletzt. Standard: Festplatz, dann Nummer.
+    Nach einer Zelländerung bleibt die Reihenfolge stehen, bis Sortierung oder Filter geändert werden (Hinweis
+    „Sortierung veraltet“), damit die bearbeitete Zeile nicht wegspringt.
+  - Freitextsuche in Name, Eigentümer und Ware (ohne Groß-/Kleinschreibung und Akzente). Filter nach Festplatz,
+    Kategorie und Anschlussart (jeweils auch „ohne“), „mit Warnung“, „ohne Nummer“. Suche, Filter und Sortierung
+    gelten nur für die Sitzung, werden nicht im Projekt gespeichert (Entscheidung 2026-10-12) und bleiben beim Wechsel der Page erhalten.
+  - Summenzeile über die gefilterten Zeilen: Anzahl, Frontmeter, Strom, Anzahl je Anschlussart.
+  - Direkt editierbar: Nummer, Schloss, Name, Eigentümer, Ware, Kategorie, Breite, Tiefe, Strom, Anschlussart,
+    Notiz. Es gelten dieselben Regeln wie in der Seitenleiste (Grenzen, Rundung, Zahlenformat, Fixierung,
+    Stromlimit-Blockieren aus §6). Jede Zelländerung ist genau ein Undo-Schritt und wirkt sofort im Plan.
+    Festplatz und Warnungen sind nicht editierbar.
+  - Tastatur: Pfeiltasten, Pos1/Ende, Bild↑/↓ bewegen die aktive Zelle; Enter oder F2 bearbeitet, ein getipptes
+    Zeichen beginnt die Bearbeitung und ersetzt den Inhalt; im Editor übernimmt Enter (eine Zeile tiefer), Tab/Shift+Tab
+    (nächste/vorige Zelle), Esc verwirft. Leertaste schaltet das Schloss, Entf leert eine Textzelle,
+    Cmd/Strg+Enter springt zum Stand. Kurzbefehle der Zeichenfläche greifen in der Tabelle nicht.
+  - Flüssig mit mindestens 500 Zeilen (nur die sichtbaren Zeilen werden gezeichnet).
+  - Sprung (Symbol am Zeilenanfang oder Cmd/Strg+Enter; ein Klick in eine Zelle springt nicht): wechselt auf die
+    Festplatz-Page, zoomt auf den Stand (mindestens 30 m Ausschnitt), wählt ihn aus und hebt ihn etwa 1,5 s hervor.
+- **Freiflächenliste:** Festplatz, Grundfläche, Breite, Tiefe, Fläche (m²); angeschnittene Freiflächen (§4,
+  L-förmig) sind markiert und zeigen die Hüllmaße. Filter nach Festplatz und „passt für einen Stand mit mindestens
+  B × T“: Breite ≥ B und Tiefe ≥ T mit 0,01 m Toleranz; bei angeschnittenen Freiflächen zählt die kleinste
+  durchgehende Tiefe. Sortierbar, Standard Breite absteigend, bei aktivem Passt-Filter aufsteigend (engste passende
+  Lücke zuerst). Klick auf eine Zeile springt wie bei Ständen und hebt die Freifläche hervor. Der Sprung nutzt den
+  stabilen Schlüssel aus §4; hat sich die Freifläche inzwischen verändert, wird die passendste Freifläche derselben
+  Grundfläche gezeigt; gibt es keine mehr, zeigt die App die Grundfläche mit einem Hinweis.
+- **Projekteinstellungen** (Unter-Tab „Einstellungen“): Projektname, Nummernkreis (Zählung, Startnummer,
+  Stellen; §5), Beschriftung (Vorlage, Schriftgröße; §3), Mindestbreite der Freiflächen und Warnungsschalter (§4,
+  §3), Kategorien (§3). Alles mit Undo. Seitenbezogenes (Präfix, Modus, Stromlimit, Blockieren) bleibt in der
+  Seitenleiste der Festplatz-Page.
+- **Export:** Geschäftstabelle und Freiflächenliste als CSV (gefilterte, sortierte Zeilen, sichtbare Spalten;
+  UTF-8 mit BOM, Semikolon, Zahlen mit Komma, damit Excel in Deutschland die Datei direkt öffnet; Textzellen, die
+  mit = + - @ beginnen, bekommen ein ' vorangestellt). XLSX folgt in Phase 2.
 
 ### 8. Schriftfeld
 - Auf jeder Festplatz-Page: Projektname, Festplatz, Datum/Version, optionales Freitextfeld.
@@ -308,6 +349,8 @@ Entscheidungen 2026-10-12 (M5-Planung).
 - AltGr (Entscheidung 2026-10-12, QA-M5-03): Unter Windows ist AltGr = Strg+Alt. Deshalb keine Kurzbefehle mit
   Strg+Alt (macOS Cmd+Alt) auf Tasten, die auf deutschen Tastaturen per AltGr ein Zeichen erzeugen (u. a. Q @, E €,
   M µ, 2 ², 3 ³, 7 {, 8 [, 9 ], 0 }, ß \, + ~, < |).
+- Start-Page (M6): Tab und Shift+Tab springen dort zwischen Bedienelementen (Panels ausblenden gibt es nur auf
+  Festplatz-Pages). Tasten der Geschäftstabelle siehe §7.
 - Textfelder (korrigiert 2026-10-12, Laurin): Solange ein Textfeld den Fokus hat, greifen nur Speichern, Speichern
   unter, Öffnen und Neu (jeweils Cmd/Strg ohne Alt). Vorher übernimmt das Feld seinen Wert, damit die letzte Eingabe
   gespeichert wird. Alle anderen Kurzbefehle, insbesondere alle mit Alt, sind in Textfeldern gesperrt.
@@ -378,7 +421,7 @@ als Vektor über pdf-lib.
 4. Freiflächen-Logik inkl. Tests (aus dem Prototyp übernommen), Fang-Optionen,
    Warnungen (außerhalb, Überlappung).
 5. Nummerierung, Stromlimit.
-6. Start-Page: Statistik, Listen mit Sprung-Links, Tabellenbearbeitung.
+6. Start-Page: Statistik, Listen mit Sprung-Links, Tabellenbearbeitung, Projekteinstellungen, CSV-Export.
 7. Infrastruktur-Objekte, Schriftfeld, Legende.
 8. PDF-Export inkl. Export-Profile.
-9. Phase 2: Händler-Import, Jahresvorlage, CSV/XLSX-Export.
+9. Phase 2: Händler-Import, Jahresvorlage, XLSX-Export.

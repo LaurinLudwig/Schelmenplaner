@@ -47,3 +47,15 @@ export function fitBounds(bounds: Bounds | null, width: number, height: number, 
     ty: height / 2 - ((bounds.minY + bounds.maxY) / 2) * scale,
   };
 }
+
+/**
+ * Ziel eines Sprungs (M6-09): `bounds` um die Mitte auf mindestens `minSize` Meter je Richtung erweitert, damit die
+ * Umgebung eines kleinen Stands sichtbar bleibt.
+ */
+export function focusBounds(bounds: Bounds, minSize = 30): Bounds {
+  const cx = (bounds.minX + bounds.maxX) / 2;
+  const cy = (bounds.minY + bounds.maxY) / 2;
+  const hw = Math.max(bounds.maxX - bounds.minX, minSize) / 2;
+  const hh = Math.max(bounds.maxY - bounds.minY, minSize) / 2;
+  return { minX: cx - hw, minY: cy - hh, maxX: cx + hw, maxY: cy + hh };
+}

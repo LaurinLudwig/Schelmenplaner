@@ -1,5 +1,5 @@
 import { expect, test, type Page } from '@playwright/test';
-import { canvasBox, MOD, openApp, origin, scale } from './helpers';
+import { canvasBox, MOD, openApp, origin, scale, openSettings, backToPage } from './helpers';
 
 /**
  * M4: Freiflächen, Fang, Warnungen, Tasten beim Ziehen (spec.md §3, §4, Allgemein).
@@ -100,10 +100,12 @@ test.describe('M4: Freiflächen', () => {
     await openApp(page);
     await seed(page, { areas: [G], stands: [inG('s1', 20, 28), inG('s2', 28.3, 31)] });
     await expect(page.locator('.free-space')).toHaveCount(2);
+    await openSettings(page); // M6-07: Mindestbreite in den Projekteinstellungen
     const field = page.locator('#free-min-width');
     await expect(field).toHaveValue('0,5');
     await field.fill('0,2');
     await field.press('Enter');
+    await backToPage(page);
     await expect(freeLabels(page)).toHaveText(['Frei 20 × 10 m', 'Frei 0,3 × 10 m', 'Frei 19 × 10 m']);
     expect(await lastLabel(page)).toBe('Mindestbreite ändern');
     await page.keyboard.press(`${MOD}+z`);
@@ -293,8 +295,10 @@ test.describe('M4: Warnungen', () => {
 
     // global: beide Arten aus, mit Undo
     await page.keyboard.press('Escape');
+    await openSettings(page); // M6-07: Warnungsschalter in den Projekteinstellungen
     await page.getByLabel('Warnung, wenn sich Geschäfte überlappen').uncheck();
     await page.getByLabel('Warnung, wenn ein Geschäft außerhalb der Grundflächen steht').uncheck();
+    await backToPage(page);
     await expect(page.locator('.stand[data-warning]')).toHaveCount(0);
     await expect(badge).toHaveCount(0);
     await page.keyboard.press(`${MOD}+z`);

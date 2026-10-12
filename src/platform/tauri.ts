@@ -38,6 +38,13 @@ export const tauriPlatform: Platform = {
     return { path: target, name: baseName(target) };
   },
 
+  async saveFile(bytes, suggestedName, filter) {
+    const target = await saveDialog({ defaultPath: suggestedName, filters: [filter] });
+    if (!target) return null;
+    await writeFile(target, bytes);
+    return { path: target, name: baseName(target) };
+  },
+
   async writeAutosave(projectPath, bytes, slot) {
     await writeFile(await autosavePath(projectPath, slot), bytes);
   },
