@@ -1,0 +1,16 @@
+npm notice run schelmeplaner@0.1.0 test:e2e
+npm notice run playwright test --project=chromium --reporter=dot
+[WebServer] npm notice run schelmeplaner@0.1.0 predev
+[WebServer] npm notice run node scripts/copy-pdfjs-assets.mjs
+[WebServer] npm notice run schelmeplaner@0.1.0 dev
+[WebServer] npm notice run vite
+
+Running 295 tests using 5 workers
+···········°····································································
+·················································[WebServer] 11:44:51 AM [vite] (client) [console.warn] PDF-Fehler InvalidPDFException: Invalid PDF structure.
+[WebServer] 11:44:51 AM [vite] (client) [console.warn] Warning: Indexing all PDF objects
+·······························
+················································································
+·······················································
+  1 skipped
+  294 passed (1.0m)

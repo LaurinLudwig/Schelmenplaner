@@ -307,7 +307,10 @@ Entscheidungen 2026-10-12 (M5-Planung).
   nennt auch die Tasten beim Ziehen (Shift, Alt, Cmd/Strg).
 - AltGr (Entscheidung 2026-10-12, QA-M5-03): Unter Windows ist AltGr = Strg+Alt. Deshalb keine Kurzbefehle mit
   Strg+Alt (macOS Cmd+Alt) auf Tasten, die auf deutschen Tastaturen per AltGr ein Zeichen erzeugen (u. a. Q @, E €,
-  M µ, 2 ², 3 ³, 7 {, 8 [, 9 ], 0 }, ß \, + ~, < |). Kurzbefehle greifen nicht, solange ein Textfeld den Fokus hat.
+  M µ, 2 ², 3 ³, 7 {, 8 [, 9 ], 0 }, ß \, + ~, < |).
+- Textfelder (korrigiert 2026-10-12, Laurin): Solange ein Textfeld den Fokus hat, greifen nur Speichern, Speichern
+  unter, Öffnen und Neu (jeweils Cmd/Strg ohne Alt). Vorher übernimmt das Feld seinen Wert, damit die letzte Eingabe
+  gespeichert wird. Alle anderen Kurzbefehle, insbesondere alle mit Alt, sind in Textfeldern gesperrt.
 
 ### Allgemein
 - Ebenen (Hintergrund, Grundflächen, Freiflächen, Geschäfte, Infrastruktur, Beschriftung)

@@ -101,15 +101,34 @@ test.describe('M5: Nummerierung', () => {
     expect(await pastLen(page)).toBe(n0 + 2);
   });
 
-  test('QA-M5-03: Kurzbefehle greifen nicht, solange ein Textfeld den Fokus hat (auch nicht Speichern)', async ({ page }) => {
+  test('QA-M5-03: in Textfeldern greifen keine Kurzbefehle außer den Datei-Befehlen (insbesondere keine mit Alt)', async ({ page }) => {
     await openApp(page);
     await seed(page, { stands: [{ id: 'a', cx: 0, cy: 0 }] });
     const prefix = panel(page).getByLabel('Präfix dieses Festplatzes', { exact: true });
     await prefix.focus();
-    for (const k of [`${MOD}+Alt+N`, `${MOD}+Alt+D`, `${MOD}+S`, `${MOD}+Shift+N`]) await page.keyboard.press(k);
+    for (const k of [`${MOD}+Alt+N`, `${MOD}+Alt+D`, `${MOD}+Shift+N`, `${MOD}+Alt+T`]) await page.keyboard.press(k);
     await expect(dialog(page)).toHaveCount(0);
     expect(await store(page, 's.project.pages.length')).toBe(1);
+    expect(await store(page, 's.ui.theme')).toBe('dark');
     await expect(prefix).toBeFocused();
+  });
+
+  test('QA-M5-03: Cmd/Strg+S im Namensfeld übernimmt die letzte Eingabe und speichert sie mit', async ({ page }) => {
+    await openApp(page);
+    await seed(page, { stands: [{ id: 'a', cx: 0, cy: 0, name: 'Alt' }] });
+    await select(page, ['a']);
+    const name = page.getByRole('region', { name: 'Eigenschaften' }).getByLabel('Geschäftsname');
+    await name.click();
+    await name.fill('Crêpes Müller');
+    const download = page.waitForEvent('download');
+    await page.keyboard.press(`${MOD}+S`);
+    const file = await (await download).path();
+    const { readFileSync } = await import('node:fs');
+    const { unzipSync, strFromU8 } = await import('fflate');
+    const json = JSON.parse(strFromU8(unzipSync(new Uint8Array(readFileSync(file)))['project.json']!));
+    expect(json.project.pages[0].stands[0].name).toBe('Crêpes Müller');
+    expect(await store(page, 's.project.pages[0].stands[0].name')).toBe('Crêpes Müller');
+    expect(await lastLabel(page)).toBe('Geschäftsname ändern');
   });
 
   test('M5-06: Kurzbefehl öffnet die Vorschau, Esc bricht ohne Änderung ab; ohne Änderungen nur ein Hinweis', async ({ page }) => {

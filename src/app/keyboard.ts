@@ -5,6 +5,9 @@ import { usePagePicker } from './pagePicker';
 import { useRenumber } from './renumber';
 import { COMMANDS, runCommand } from './commands';
 
+/** Befehle, die auch in Textfeldern greifen (alle Cmd/Strg ohne Alt, siehe spec.md Tastaturkürzel). */
+export const FILE_COMMANDS_IN_TEXT = new Set(['file.save', 'file.saveAs', 'file.open', 'file.new']);
+
 const compiled = SHORTCUTS.flatMap((def) => def.keys.map((k) => ({ id: def.id, combo: parseCombo(k) })));
 
 /** Häkchen und Optionsfelder sind keine Textfelder: Cmd/Strg+Z usw. wirken dort global (M4: „ignorieren“ mit Undo). */
@@ -32,7 +35,7 @@ export function setInteractionKeyHandler(handler: InteractionKeyHandler): () => 
 /**
  * Der einzige globale Tastatur-Handler. Reihenfolge, fest im Code statt über die Anmeldung von
  * Listenern: 1. offene Dialoge behandeln ihre Tasten selbst; 2. die laufende Interaktion;
- * 3. die Kurzbefehle aus der zentralen Konfiguration (nicht, solange ein Textfeld den Fokus hat).
+ * 3. die Kurzbefehle aus der zentralen Konfiguration (in Textfeldern nur Speichern, Speichern unter, Öffnen, Neu).
  */
 export function handleKeyDown(e: KeyboardEvent) {
   if (e.defaultPrevented || e.isComposing) return;
@@ -45,12 +48,18 @@ export function handleKeyDown(e: KeyboardEvent) {
   for (const { id, combo } of compiled) {
     const cmd = COMMANDS[id];
     if (!cmd || !matches(combo, e, IS_MAC)) continue;
-    // Solange ein Textfeld den Fokus hat, greift kein Kurzbefehl (spec.md Tastaturkürzel, QA-M5-03): Unter
-    // Windows ist AltGr = Strg+Alt, ein Tippfehler im Feld darf z. B. keinen Festplatz duplizieren. Undo,
-    // Kopieren usw. gehören dem Feld. Nur Kombinationen mit Strg/Cmd ohne Alt werden abgefangen, damit der
-    // Browser im Dev-Modus z. B. bei Cmd+S keinen eigenen Dialog öffnet; AltGr-Zeichen bleiben unberührt.
+    // In Textfeldern (spec.md Tastaturkürzel, QA-M5-03) greifen nur die Datei-Befehle (Cmd/Strg ohne Alt).
+    // Vorher verlässt der Fokus das Feld, damit es seinen Wert übernimmt und die letzte Eingabe mitgespeichert
+    // wird. Alle anderen Kurzbefehle sind gesperrt, vor allem alle mit Alt: Unter Windows ist AltGr = Strg+Alt,
+    // ein Tippfehler im Feld darf z. B. keinen Festplatz duplizieren. Undo, Kopieren usw. gehören dem Feld.
+    // Gesperrte Kombinationen mit Strg/Cmd ohne Alt werden trotzdem abgefangen, damit der Browser im Dev-Modus
+    // keine eigene Aktion ausführt; AltGr-Zeichen bleiben unberührt.
     if (inText) {
-      if ((combo.mod || combo.ctrl) && !combo.alt && !id.startsWith('edit.')) e.preventDefault();
+      if (FILE_COMMANDS_IN_TEXT.has(id)) {
+        e.preventDefault();
+        (e.target as HTMLElement).blur();
+        runCommand(id, e);
+      } else if ((combo.mod || combo.ctrl) && !combo.alt && !id.startsWith('edit.')) e.preventDefault();
       return;
     }
     const ran = runCommand(id, e);

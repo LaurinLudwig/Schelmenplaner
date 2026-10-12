@@ -17,8 +17,8 @@ QA-Befunde und sein Abschluss nach `docs/archiv/Mx.md`; erledigte Eingang-Eintr�
 - Zahlen: Eingabefelder mit `fmtInput` (ohne Tausenderpunkt) und `parseNum`; reine Anzeigen mit `fmt`.
 - Kurzbefehle (spec.md, Tastaturkürzel): keine Strg+Alt-Kombinationen (macOS Cmd+Alt) mit Tasten, die auf deutschen
   Tastaturen per AltGr ein Zeichen erzeugen (u. a. Q, E, M, 2, 3, 7, 8, 9, 0, ß, +, <); unter Windows ist AltGr =
-  Strg+Alt. Kurzbefehle greifen nicht, solange ein Textfeld den Fokus hat. Geprüft von
-  `src/ui/shortcuts/definitions.test.ts`.
+  Strg+Alt. Geprüft von `src/ui/shortcuts/definitions.test.ts`. In Textfeldern greifen nur Speichern, Speichern
+  unter, Öffnen und Neu (Cmd/Strg ohne Alt; das Feld übernimmt vorher seinen Wert), alle anderen nicht.
 - Fehlermeldungen für den Nutzer nur auf Deutsch: `UserError` für fertige Meldungen, sonst `userMessage(e, fallback)`.
 - Betriebssystem-Zugriffe (Dateien, Dialoge, Fenster) laufen ausschließlich über `src/platform/`
   (`platform` aus `src/platform/index.ts`). Nur `src/platform/tauri.ts` importiert `@tauri-apps/*`;
