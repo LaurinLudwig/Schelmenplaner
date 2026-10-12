@@ -1,0 +1,10 @@
+npm notice run schelmeplaner@0.1.0 npx
+npm notice run 'playwright' test tests/e2e/m5-qa.spec.ts tests/e2e/m5-numbering.spec.ts tests/e2e/m5-power.spec.ts --project=chromium --reporter=dot
+[WebServer] npm notice run schelmeplaner@0.1.0 predev
+[WebServer] npm notice run node scripts/copy-pdfjs-assets.mjs
+[WebServer] npm notice run schelmeplaner@0.1.0 dev
+[WebServer] npm notice run vite
+
+Running 39 tests using 5 workers
+·······································
+  39 passed (8.1s)

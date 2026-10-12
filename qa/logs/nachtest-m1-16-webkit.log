@@ -1,0 +1,19 @@
+npm notice run schelmeplaner@0.1.0 npx
+npm notice run 'playwright' test tests/e2e/m1-canvas.spec.ts -g Mittlere Maustaste --project=webkit --repeat-each=5 --reporter=line
+[WebServer] npm notice run schelmeplaner@0.1.0 predev
+
+[WebServer] npm notice run node scripts/copy-pdfjs-assets.mjs
+
+[WebServer] npm notice run schelmeplaner@0.1.0 dev
+
+[WebServer] npm notice run vite
+
+
+Running 5 tests using 5 workers
+
+[1/5] [webkit] › tests/e2e/m1-canvas.spec.ts:180:3 › M1 Zeichenfläche: Zoom und Pan › M1-16: Mittlere Maustaste verschiebt immer
+[2/5] [webkit] › tests/e2e/m1-canvas.spec.ts:180:3 › M1 Zeichenfläche: Zoom und Pan › M1-16: Mittlere Maustaste verschiebt immer
+[3/5] [webkit] › tests/e2e/m1-canvas.spec.ts:180:3 › M1 Zeichenfläche: Zoom und Pan › M1-16: Mittlere Maustaste verschiebt immer
+[4/5] [webkit] › tests/e2e/m1-canvas.spec.ts:180:3 › M1 Zeichenfläche: Zoom und Pan › M1-16: Mittlere Maustaste verschiebt immer
+[5/5] [webkit] › tests/e2e/m1-canvas.spec.ts:180:3 › M1 Zeichenfläche: Zoom und Pan › M1-16: Mittlere Maustaste verschiebt immer
+  5 passed (2.9s)
