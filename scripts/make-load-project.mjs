@@ -35,7 +35,7 @@ const SIZES = [
 ];
 const CONNECTIONS = [null, '230V', 'CEE16', 'CEE32'];
 
-const layers = () => Object.fromEntries(['background', 'areas', 'free', 'stands', 'infra', 'labels'].map((id) => [id, { visible: true, locked: false }]));
+const layers = () => Object.fromEntries(['background', 'areas', 'free', 'stands', 'infra', 'labels', 'sheet'].map((id) => [id, { visible: true, locked: false }]));
 
 function page(id, name, prefix) {
   return {
@@ -52,8 +52,10 @@ function page(id, name, prefix) {
     areas: [],
     stands: [],
     infra: [],
-    titleBlockPos: { x: 0, y: 0 },
+    sheet: { format: 'A3', orientation: 'landscape', scale: null, cx: 0, cy: 0 },
+    titleBlock: { visible: true, corner: 'br', dx: 10, dy: 10 },
     titleBlockText: '',
+    legend: { visible: true, corner: 'bl', dx: 10, dy: 10 },
     view: null,
   };
 }
@@ -95,6 +97,7 @@ function fillPage(pg, rows, counter) {
         suppressOutsideWarning: false,
         suppressOverlapWarning: false,
         suppressDuplicateWarning: false,
+        suppressInfraWarning: false,
         cx: r2(area.cx + lx * c - ly * sn),
         cy: r2(area.cy + lx * sn + ly * c),
         w,
@@ -128,20 +131,23 @@ const project = {
     warnOutside: true,
     warnOverlap: true,
     warnDuplicateNr: true,
+    warnInfra: true,
+    warnPassageWidth: true,
+    minPassageWidth: 3.5,
     snap: { front: true, grid: false, neighbors: true },
   },
   pages: pages.map(([pg]) => pg),
   categories: CATEGORIES,
   // wie DEFAULT_INFRA_TYPES in src/core/model/defaults.ts (die Datei soll beim Laden unverändert bleiben)
   infraTypes: [
-    { type: 'barrierMobile', label: 'Mobile Sperre', color: '#e0a526', icon: 'fence', occupiesArea: true },
-    { type: 'barrierFixed', label: 'Feste Sperre', color: '#c0392b', icon: 'fence', occupiesArea: true },
-    { type: 'medical', label: 'Sanitätsdienst', color: '#e74c3c', icon: 'medical_services', occupiesArea: true },
-    { type: 'ambulance', label: 'RTW-Platz', color: '#d35454', icon: 'ambulance', occupiesArea: true },
-    { type: 'toilet', label: 'Toilette', color: '#3a86c8', icon: 'wc', occupiesArea: true },
-    { type: 'waste', label: 'Müllcontainer', color: '#6d7a80', icon: 'delete', occupiesArea: true },
-    { type: 'narrowPassage', label: 'Enge Durchfahrt', color: '#9b59b6', icon: 'signpost', occupiesArea: false },
-    { type: 'marker', label: 'Marker', color: '#16a085', icon: 'location_on', occupiesArea: false },
+    { id: 'barrierMobile', builtin: true, label: 'Mobile Sperre', geometry: 'line', color: '#e0a526', icon: 'fence', defaultW: 3.5, defaultD: 0.3, occupiesArea: false, keepClear: true },
+    { id: 'barrierFixed', builtin: true, label: 'Feste Sperre', geometry: 'line', color: '#c0392b', icon: 'block', defaultW: 4, defaultD: 0.8, occupiesArea: false, keepClear: true },
+    { id: 'medical', builtin: true, label: 'Sanitätsdienst', geometry: 'rect', color: '#e74c3c', icon: 'medical_services', defaultW: 6, defaultD: 3, occupiesArea: true, keepClear: true },
+    { id: 'ambulance', builtin: true, label: 'RTW-Platz', geometry: 'rect', color: '#d35454', icon: 'ambulance', defaultW: 8, defaultD: 3.5, occupiesArea: true, keepClear: true },
+    { id: 'toilet', builtin: true, label: 'Toilette', geometry: 'rect', color: '#3a86c8', icon: 'wc', defaultW: 6, defaultD: 2.5, occupiesArea: true, keepClear: true },
+    { id: 'waste', builtin: true, label: 'Müllcontainer', geometry: 'rect', color: '#6d7a80', icon: 'delete', defaultW: 1.5, defaultD: 1.2, occupiesArea: true, keepClear: true },
+    { id: 'narrowPassage', builtin: true, label: 'Enge Durchfahrt', geometry: 'line', color: '#9b59b6', icon: 'arrow_range', defaultW: 3.5, defaultD: 0, occupiesArea: true, keepClear: true },
+    { id: 'marker', builtin: true, label: 'Marker', geometry: 'point', color: '#16a085', icon: 'location_on', defaultW: 0, defaultD: 0, occupiesArea: false, keepClear: false },
   ],
   exportProfiles: [],
   titleBlock: { dateText: '', version: '' },
@@ -151,6 +157,6 @@ const project = {
 const total = project.pages.reduce((n, p) => n + p.stands.length, 0);
 if (total !== 500) throw new Error(`Erwartet 500 Stände, erzeugt ${total}`);
 
-const file = { format: 'schelmeplaner', schemaVersion: 3, project };
+const file = { format: 'schelmeplaner', schemaVersion: 4, project };
 writeFileSync(out, zipSync({ 'project.json': [strToU8(JSON.stringify(file, null, 2)), { level: 6 }] }, { mtime: new Date('2026-01-01T00:00:00Z') }));
 console.warn(`${out}: ${total} Stände auf ${project.pages.length} Festplätzen`);

@@ -37,7 +37,14 @@ Freiflächen-Logik wurde bereits erfolgreich getestet (prototype/freiflaechen.ht
   Müllcontainer, enge Durchfahrt (mit Maß der lichten Breite), freier Marker mit Text.
   Jeder Typ hat eine eigene Farbe/Symbol und erscheint in der Legende. Pro Typ ist einstellbar,
   ob er die Fläche belegt (dann entsteht an dieser Stelle keine Freifläche, wie bei einem Geschäft).
-- **Schriftfeld**: Planbeschriftung pro Festplatz-Page.
+  Weitere Typen lassen sich in den Projekteinstellungen anlegen. Details in §11 (Entscheidungen 2026-10-12,
+  M7-Planung).
+- **Blatt**: pro Festplatz-Page das Papier für Druck und PDF (Format, Ausrichtung, Maßstab, Lage auf dem Plan), auf
+  der Zeichenfläche als Rahmen sichtbar (§8).
+- **Schriftfeld**: Planbeschriftung pro Festplatz-Page, ein Papier-Element des Blatts (§8).
+- **Legende**: automatisch erzeugte Zeichenerklärung pro Festplatz-Page, ein Papier-Element des Blatts (§8).
+- **Papier-Elemente** (Schriftfeld, Legende; ab M8 Nordpfeil und Maßstabsbalken): Maße und Schriftgrößen in mm auf
+  dem Papier, Position relativ zu einer Ecke des Blatts. Sie sind in jedem Maßstab gleich groß.
 
 ## Funktionen
 
@@ -107,11 +114,14 @@ Freiflächen-Logik wurde bereits erfolgreich getestet (prototype/freiflaechen.ht
     Platznummer („12“ = „012“, Groß-/Kleinschreibung und Leerzeichen am Rand egal). Das Präfix gehört zur Nummer:
     „A-12“ = „A-012“, aber „A-12“ ≠ „B-12“. Leere Nummern sind nie doppelt.
     Die Seitenleiste nennt die anderen Stände mit dieser Nummer (auch auf anderen Pages).
+  - Infrastruktur (rot, Entscheidung 2026-10-12): Der Stand dringt mehr als 0,01 m in ein Infrastruktur-Objekt ein,
+    dessen Typ „freihalten“ hat (§11). Die Seitenleiste nennt das Objekt.
   - Jede Art ist projektweit abschaltbar und pro Stand ignorierbar („außerhalb ignorieren“,
-    „Überlappung ignorieren“, „doppelte Nummer ignorieren“, wirkt nur auf den eigenen Stand); alles rückgängig
-    machbar.
-  - Der Page-Tab zeigt die Zahl der Stände mit aktiver Warnung (rot, sobald eine Überlappung dabei ist),
-    damit Probleme auf anderen Pages sichtbar sind.
+    „Überlappung ignorieren“, „doppelte Nummer ignorieren“, „Infrastruktur ignorieren“, wirkt nur auf den eigenen
+    Stand); alles rückgängig machbar.
+  - Der Page-Tab zeigt die Zahl der Objekte mit aktiver Warnung: Stände und Infrastruktur-Objekte (Durchfahrt zu eng,
+    §11) zusammen. Er ist rot, sobald eine Überlappung, eine Infrastruktur-Warnung oder eine zu enge Durchfahrt dabei
+    ist. So sind Probleme auf anderen Pages sichtbar.
 - Attribute (Seitenleiste rechts): Platznummer, Geschäftsname, Eigentümer, Typ/Ware,
   Breite, Tiefe, Stromverbrauch in kW [ANPASSEN], Anschlussart (230 V / CEE 16 A / CEE 32 A),
   Notiz, Farbe/Kategorie.
@@ -137,6 +147,9 @@ Freiflächen-Logik wurde bereits erfolgreich getestet (prototype/freiflaechen.ht
 - Jede Grundfläche hat eine Achse entlang ihrer Vorderseite, Bereich [0, Breite].
 - Jedes Geschäft, das die Grundfläche überlappt, belegt auf dieser Achse das Intervall seiner
   Projektion (Schnittmenge mit der Grundfläche).
+- Infrastruktur-Objekte, deren Typ „belegt Fläche“ hat, belegen die Achse genau wie ein Geschäft (alle Regeln dieses
+  Abschnitts gelten für sie mit). Bei Linien zählt das Rechteck aus Länge × Strichstärke, bei Linien ohne Stärke die
+  Projektion der Linie (gerechnet als 5 cm breiter Streifen, damit die Eindringtiefe über der Toleranz liegt). Punkte (Marker) belegen nie (Entscheidung 2026-10-12).
 - Freiflächen = [0, Breite] minus Vereinigung aller belegten Intervalle. Jede Freifläche hat die
   volle Tiefe der Grundfläche. Hinter einem Stand entsteht NIE eine Freifläche, auch wenn der
   Stand weniger tief ist.
@@ -213,7 +226,9 @@ Entscheidungen 2026-10-12 (M5-Planung).
 
 ### 6. Strom
 Entscheidungen 2026-10-12 (M5-Planung).
-- Optionales Stromlimit pro Festplatz in kW. Es zählen alle Stände der Page, auch außerhalb von Grundflächen.
+- Optionales Stromlimit pro Festplatz in kW. Es zählen alle Stände der Page, auch außerhalb von Grundflächen, und
+  seit M7 der Strom der Infrastruktur-Objekte (§11; Entscheidung 2026-10-12). Für sie gilt alles in diesem Abschnitt
+  genauso (Summe, Anschlussarten, Hinweis, Blockieren). Die Anzeigen nennen zusätzlich „davon Infrastruktur x kW“.
 - Laufende Summe als Balken (grün / gelb ab 90 % / rot über Limit) mit „84 / 100 kW (84 %)“. Verglichen wird auf
   0,001 kW gerundet (11,7 von 13 kW sind genau 90 %, also gelb). Die Prozentzahl wird abgerundet, damit sie zur
   Farbe passt (89,9 % zeigt „89 %“); über dem Limit erscheint sie mit einer Nachkommastelle, wenn die ganze Zahl
@@ -231,7 +246,8 @@ Entscheidungen 2026-10-12 (M5-Planung).
 ### 7. Start-Page (Statistik & Listen)
 Entscheidungen 2026-10-12 (M6-Planung).
 - **Aufbau:** Kopf mit Projektname, darunter eine immer sichtbare Kennzahlen-Leiste, darunter die Unter-Tabs
-  „Geschäfte“, „Freiflächen“ und „Einstellungen“ (Cmd/Strg+1/2/3 auf der Start-Page); deren Inhalt füllt die
+  „Geschäfte“, „Freiflächen“, „Infrastruktur“ und „Einstellungen“ (Cmd/Strg+1/2/3/4 auf der Start-Page; „Infrastruktur“
+  seit M7, Entscheidung 2026-10-12); deren Inhalt füllt die
   Resthöhe und scrollt selbst. Die Start-Page hat keine Werkzeug- und keine Seitenleiste.
 - **Kennzahlen** als Karten „Gesamt“ und je Festplatz (Reihenfolge der Tabs): Anzahl Geschäfte, Frontmeter
   (Summe der Breiten; das ist die belegte Fläche, eine m²-Angabe gibt es nicht), freie Frontmeter (Summe der Breiten
@@ -240,6 +256,10 @@ Entscheidungen 2026-10-12 (M6-Planung).
   Limit je Festplatz, gesamt nur die Summe), Anzahl und kW je Anschlussart, Zahl der Stände mit aktiver Warnung
   (rot, sobald eine Überlappung dabei ist). Klick auf den Festplatz öffnet die Page; Klick auf die Warnzahl öffnet
   die Geschäftstabelle gefiltert auf diesen Festplatz und „mit Warnung“.
+  Seit M7 zusätzlich: Anzahl je Infrastruktur-Typ (nur vorkommende Typen, mit Symbol), der Strom der Infrastruktur
+  („davon Infrastruktur x kW“) und die Warnungen getrennt als „n Stände · m Infrastruktur“. Die Infrastruktur-Zahl
+  öffnet den Unter-Tab „Infrastruktur“ mit den Filtern Festplatz und „mit Warnung“. Die Warnzahl ist rot, sobald
+  eine Überlappung, eine Infrastruktur-Warnung oder eine zu enge Durchfahrt dabei ist.
 - **Geschäftstabelle** über alle Festplätze:
   - Spalten: Sprung, Festplatz, Nummer (mit Schloss), Name, Eigentümer, Ware, Kategorie, Breite, Tiefe, Strom,
     Anschlussart, Warnungen, Notiz. Spalten ein-/ausblendbar (Sprung und Name immer sichtbar); die Auswahl gilt pro
@@ -270,21 +290,98 @@ Entscheidungen 2026-10-12 (M6-Planung).
   Lücke zuerst). Klick auf eine Zeile springt wie bei Ständen und hebt die Freifläche hervor. Der Sprung nutzt den
   stabilen Schlüssel aus §4; hat sich die Freifläche inzwischen verändert, wird die passendste Freifläche derselben
   Grundfläche gezeigt; gibt es keine mehr, zeigt die App die Grundfläche mit einem Hinweis.
+- **Infrastrukturliste** (Unter-Tab „Infrastruktur“, seit M7): alle Infrastruktur-Objekte über alle Festplätze.
+  - Spalten: Sprung, Festplatz, Typ (mit Symbol), Bezeichnung, Maße (B × T, bei Linien die Länge, bei der Durchfahrt
+    die lichte Breite, bei Markern leer), Strom, Anschlussart, Warnung, Notiz.
+  - Sortierbar wie die Geschäftstabelle. Standard: Festplatz, dann Typ (Reihenfolge der Typen), dann Bezeichnung.
+  - Filter: Festplatz, Typ, „mit Warnung“; nur für die Sitzung.
+  - Direkt editierbar: Bezeichnung, Notiz und bei Rechteck-Typen Strom und Anschlussart, in Eingabefeldern der Zeile
+    (Enter oder Verlassen übernimmt, Esc verwirft; Tab springt zum nächsten Feld). Jede Änderung ist ein Undo-Schritt,
+    das Stromlimit-Blockieren gilt wie in der Geschäftstabelle. Die Zellnavigation mit Pfeiltasten der
+    Geschäftstabelle gibt es hier nicht (wenige Zeilen).
+  - Sprung wie bei Ständen. CSV-Export wie bei den anderen Listen (Cmd/Strg+Shift+E).
 - **Projekteinstellungen** (Unter-Tab „Einstellungen“): Projektname, Nummernkreis (Zählung, Startnummer,
   Stellen; §5), Beschriftung (Vorlage, Schriftgröße; §3), Mindestbreite der Freiflächen und Warnungsschalter (§4,
-  §3), Kategorien (§3). Alles mit Undo. Seitenbezogenes (Präfix, Modus, Stromlimit, Blockieren) bleibt in der
+  §3), Kategorien (§3). Seit M7 außerdem: Mindestbreite der Durchfahrt und die Schalter der Infrastruktur-Warnungen
+  (§11), die Infrastruktur-Typen (§11) und das Schriftfeld (Datum, Version; §8). Alles mit Undo. Seitenbezogenes (Präfix, Modus, Stromlimit, Blockieren) bleibt in der
   Seitenleiste der Festplatz-Page.
 - **Export:** Geschäftstabelle und Freiflächenliste als CSV (gefilterte, sortierte Zeilen, sichtbare Spalten;
   UTF-8 mit BOM, Semikolon, Zahlen mit Komma, damit Excel in Deutschland die Datei direkt öffnet; Textzellen, die
   mit = + - @ beginnen, bekommen ein ' vorangestellt). XLSX folgt in Phase 2.
 
-### 8. Schriftfeld
-- Auf jeder Festplatz-Page: Projektname, Festplatz, Datum/Version, optionales Freitextfeld.
-- Frei verschiebbar, einheitliches Layout auf allen Pages.
+### 8. Schriftfeld, Blatt und Legende
+Entscheidungen 2026-10-12 (M7-Planung). Schriftfeld und Legende sind Papier-Elemente: Ihre Größe ist in mm auf dem
+Papier festgelegt, nicht in Metern auf dem Plan. Damit sind sie im PDF bei jedem Maßstab gleich groß und lesbar.
+
+**Blatt** (pro Festplatz-Page):
+- Einstellungen: Papierformat A4–A0, Hoch/Quer, Maßstab 1:n oder „an Seite anpassen“.
+  - Standard: A3 quer, an Seite anpassen.
+  - Einstellbar im Seitenleisten-Bereich „Blatt“ der Page, ohne Auswahl. Jede Änderung ist ein Undo-Schritt.
+- Auf der Zeichenfläche ist das Blatt als gestrichelter Rahmen sichtbar, mit der Marke „A1 quer · 1:500“. Es ist
+  nicht gedreht; seine Achsen sind die der Zeichenfläche.
+- **Fester Maßstab 1:n:** Der Rahmen ist Papiermaß × n groß (A1 quer bei 1:500 = 420,5 × 297 m). Seine Lage (Mitte
+  in Metern) ändert man, indem man Rahmen oder Marke mit dem Auswahlwerkzeug zieht (Undo-Schritt). n ist eine ganze
+  Zahl von 10 bis 100.000.
+- **An Seite anpassen:** Der Rahmen umschließt alle Grundflächen, Geschäfte und Infrastruktur-Objekte der Page mit
+  10 mm Papierrand. Gibt es keine, umschließt er den Hintergrund; gibt es den auch nicht, sind es 100 × 100 m um den
+  Ursprung.
+  - n wird auf volle 10 aufgerundet, damit ein lesbarer Maßstab entsteht (z. B. 1:440).
+  - Der Rahmen folgt dem Inhalt und lässt sich nicht ziehen.
+  - Beim Umschalten auf einen festen Maßstab werden die aktuelle Mitte und n (auf volle 10) übernommen.
+- Ab M8 exportiert das PDF genau dieses Blatt (§9).
+
+**Papier-Elemente:**
+- Anker: Jedes Element hängt an einer Ecke des Blatts (oben links, oben rechts, unten links, unten rechts). Dazu kommt
+  ein Abstand in mm von den beiden Blatträndern dieser Ecke.
+- Ändern sich Format, Ausrichtung oder Maßstab, bleibt das Element an seiner Ecke. Es bleibt auf dem Papier gleich
+  groß und deckt bei 1:500 mehr Planfläche ab als bei 1:200.
+- Auf der Zeichenfläche wird es in Planeinheiten gezeichnet (1 mm = n/1000 m).
+- **Verschieben:** Ziehen mit dem Auswahlwerkzeug (ein Klick wählt aus). Beim Loslassen wird die nächstgelegene Ecke
+  zum Anker. Der Abstand wird auf 1 mm gerundet und so begrenzt, dass das Element ganz auf dem Blatt bleibt.
+  - Pfeiltasten verschieben um 1 mm, mit Shift um 10 mm.
+  - Jede Verschiebung ist ein Undo-Schritt.
+- Einschränkungen: Papier-Elemente kommen nicht in Auswahlrechteck oder Mehrfachauswahl und sind nicht kopierbar.
+  Entf blendet ein ausgewähltes Element aus (Undo-Schritt).
+- Sichtbarkeit: Pro Page sind Schriftfeld und Legende ein-/ausblendbar (Bereich „Blatt“; Legende auch mit Shift+L).
+- Ebene „Blatt“: Rahmen und Papier-Elemente liegen auf dieser eigenen Ebene. Sie ist ein-/ausblendbar und sperrbar.
+
+**Schriftfeld:**
+- Auf jeder Festplatz-Page, einheitliches festes Layout auf allen Pages, 180 mm breit (nach ISO 7200):
+  - Zeile 1: Projektname (5 mm Schrifthöhe).
+  - Zeile 2: Festplatz (3,5 mm).
+  - Zeile 3: „Maßstab 1:n · Format · Datum · Version“ (2,5 mm). Leere Angaben entfallen. Der Maßstab kommt aus dem
+    Blatt.
+  - Darunter der optionale Freitext der Page: bis zu 4 Zeilen à 2,5 mm, weitere Zeilen werden abgeschnitten (mit
+    Hinweis in der Seitenleiste). Die Höhe wächst mit dem Freitext.
+- Standardposition: unten rechts, 10 mm Abstand.
+- **Projektweite Felder:** Datum (freier Text, Knopf „Heute“ setzt das aktuelle Datum TT.MM.JJJJ) und Version. Sie
+  gelten für alle Pages und sind in den Projekteinstellungen (Bereich „Schriftfeld“) und in der Seitenleiste
+  bearbeitbar, wenn das Schriftfeld ausgewählt ist.
+- **Pro Page:** Freitext, Position und Sichtbarkeit.
+- **Werkzeug „Schriftfeld“ (T):** Ein Klick auf die Zeichenfläche setzt die linke obere Ecke des Schriftfelds an die
+  Klickstelle (Anker wie beim Ziehen) und wählt es aus.
+
+**Legende:**
+- Die Einträge entstehen automatisch aus dem, was auf der Page tatsächlich sichtbar vorkommt. Ausgeblendete Ebenen
+  fehlen; ab M8 gilt das auch für die Ebenen des Export-Profils.
+- Reihenfolge der Einträge:
+  1. Grundfläche (wenn es eine gibt)
+  2. Freifläche (wenn mindestens eine angezeigt wird)
+  3. Kategorien der Stände in Projektreihenfolge
+  4. „Geschäft ohne Kategorie“ (grau), wenn es Stände ohne Kategorie und ohne eigene Farbe gibt
+  5. Infrastruktur-Typen in der Reihenfolge der Typen, mit Symbol und Farbe
+- Stände mit eigener Farbe erzeugen keinen eigenen Eintrag.
+- Layout: Titel „Legende“ (3,5 mm), Spalten von 60 mm Breite, Zeilen von 5 mm mit Farbfeld bzw. Symbol (8 × 5 mm) und
+  Text (2,5 mm).
+  - Reicht die Blatthöhe abzüglich 20 mm nicht, wird die nächste Spalte angelegt.
+  - Lange Namen werden mit „…“ gekürzt.
+- Standardposition: unten links, 10 mm Abstand.
+- Eine Legende ohne Einträge wird nicht gezeichnet; die Seitenleiste zeigt dann einen Hinweis.
 
 ### 9. PDF-Export
 - Gesamtplan (alle Festplatz-Pages, optional mit Start-Page-Listen als Anhang) oder einzelne Pages.
-- Papierformat A4–A0, Hoch/Quer, Maßstab wählbar (z. B. 1:200, 1:500) oder „an Seite anpassen“.
+- Papierformat A4–A0, Hoch/Quer, Maßstab wählbar (z. B. 1:200, 1:500) oder „an Seite anpassen“. Diese Werte sind das
+  Blatt der Page (§8, seit M7). Der Export-Dialog zeigt sie und kann sie ändern; die Änderung gilt dann für die Page.
 - Mit Maßstabsbalken, Nordpfeil, Legende. Vektor-PDF mit durchsuchbarem Text.
 - Ebenen beim Export ein-/ausblendbar und als Export-Profile speicherbar, z. B.
   „Sanität/Ordnungsamt“ (ohne Eigentümer und Strom) oder „intern“ (alles).
@@ -297,10 +394,82 @@ Entscheidungen 2026-10-12 (M6-Planung).
 - Das Dateiformat ist versioniert (`schemaVersion` in `project.json`). Jede Formatänderung erhöht die
   Version und bringt eine Migration mit, die ältere Dateien beim Öffnen umwandelt und fehlende Felder mit
   Standardwerten ergänzt. Dateien einer neueren Version, als die App kennt, werden mit einer
-  verständlichen Meldung abgewiesen (Entscheidung 2026-10-11; Version 2 seit M4, Version 3 seit M5).
+  verständlichen Meldung abgewiesen (Entscheidung 2026-10-11; Version 2 seit M4, Version 3 seit M5, Version 4 seit M7).
 - Projekt als Vorlage fürs nächste Jahr duplizieren.
 - Import einer Händlerliste aus CSV/XLSX (Spalten zuordnen). Importierte Händler landen in einer
   Liste „noch nicht platziert“ und können per Drag & Drop platziert werden. [Phase 2]
+
+### 11. Infrastruktur
+Entscheidungen 2026-10-12 (M7-Planung).
+
+**Geometrie.** Jeder Typ hat eine Geometrie. Gespeichert wird immer ein Rechteck (Mitte, w, d, Drehung), damit
+Auswahl, Drehen, Pfeiltasten, Kopieren und Undo wie bei Ständen funktionieren.
+- **Rechteck:** Breite × Tiefe, Mitte, Drehung. Die Maße ändert man über die Zahlenfelder, wie bei Ständen.
+- **Linie:** Länge (`w`), Richtung (Drehung) und Strichstärke (`d`).
+  - Zwei Endpunkt-Griffe ändern Länge und Richtung. Sie fangen an Ecken und Kanten von Objekten (Fang wie beim
+    Messwerkzeug; Cmd/Strg schaltet ihn aus, Shift beschränkt auf 15°-Schritte).
+  - Die Länge ist 0,5–2000 m, die Stärke 0–5 m.
+- **Punkt:** nur Mitte und Text, keine Maße. Symbol und Text sind in Planeinheiten so groß wie die Standbeschriftung.
+
+**Feste Typen.** Sie lassen sich umbenennen, umfärben und in den Einstellungen „belegt Fläche“ und „freihalten“
+umstellen; Standardmaß ebenfalls. Geometrie und Symbol fester Typen sind fest, löschen lässt sich ein fester Typ nicht.
+
+| Typ | Geometrie | Standardmaß | Symbol | belegt Fläche | freihalten |
+|---|---|---|---|---|---|
+| Mobile Sperre | Linie (gestrichelt) | 3,5 m, Stärke 0,3 m | `fence` | nein | ja |
+| Feste Sperre | Linie | 4 m, Stärke 0,8 m | `block` | nein | ja |
+| Sanitätsdienst | Rechteck | 6 × 3 m | `medical_services` | ja | ja |
+| RTW-Platz | Rechteck | 8 × 3,5 m | `ambulance` | ja | ja |
+| Toilette | Rechteck | 6 × 2,5 m (Toilettenwagen) | `wc` | ja | ja |
+| Müllcontainer | Rechteck | 1,5 × 1,2 m | `delete` | ja | ja |
+| Enge Durchfahrt | Linie (Maßlinie) | 3,5 m, Stärke 0 | `arrow_range` | ja | ja |
+| Marker | Punkt | – | `location_on` | nein | nein |
+
+**Eigene Typen.** In den Projekteinstellungen werden eigene Typen angelegt, z. B. Bühne, Info-Stand oder
+Feuerwehrzufahrt. Felder:
+- Name und Geometrie.
+- Symbol aus einer festen Auswahl lokal gebündelter Material Symbols.
+- Farbe und Standardmaß.
+- „belegt Fläche“ und „freihalten“.
+
+Löschen eines verwendeten Typs: Die App fragt nach und löscht seine Objekte mit. Alles mit Undo.
+
+**Anlegen und Attribute.**
+- Werkzeug „Infrastruktur“ (I) mit dem gewählten Typ.
+  - Ein Klick legt ein Objekt im Standardmaß an (Mitte bzw. bei Linien Anfangspunkt an der Klickstelle, waagerecht).
+  - Ziehen zieht bei Rechtecken das Rechteck auf und bei Linien die Linie von A nach B.
+  - Unter 0,5 m zählt das als Klick.
+- Attribute: Typ (wechselbar innerhalb derselben Geometrie), Bezeichnung (beim Marker der angezeigte Text), Notiz,
+  X/Y, Maße, Drehung.
+- Bei Rechteck-Typen zusätzlich Strom in kW und Anschlussart. Sie zählen ins Stromlimit des Festplatzes (§6).
+- Neue Objekte beginnen ohne Bezeichnung, Notiz und Strom; Kopien (Einfügen, Duplizieren, Alt+Ziehen) übernehmen sie
+  vom Original.
+
+**Darstellung.**
+- Rechtecke: in Typfarbe getönt, mit Rand und Symbol in der Mitte.
+- Linien: in Typfarbe in ihrer Stärke, mindestens 2 px.
+- Enge Durchfahrt: als Maßlinie mit Endstrichen und der lichten Breite („3,20 m“).
+- Marker: Symbol mit Text daneben.
+- Bezeichnungen stehen wie die Standbeschriftung horizontal auf der Ebene „Beschriftung“.
+
+**Enge Durchfahrt.**
+- Die Durchfahrt ist eine Linie von Hindernis zu Hindernis; ihre Länge ist die lichte Breite.
+- Warnung „Durchfahrt zu eng“ (rot): Die lichte Breite liegt unter der projektweiten Mindestbreite.
+  - Die Mindestbreite ist standardmäßig 3,5 m und einstellbar von 0,5 bis 50 m.
+  - Verglichen wird auf 0,01 m gerundet.
+- Die Warnung hängt am Objekt. Sie ist projektweit abschaltbar und pro Objekt ignorierbar („Breite ignorieren“). Sie
+  zählt am Page-Tab und in den Kennzahlen mit (§3, §7).
+
+**Freihalten.**
+- Dringt ein Stand mehr als 0,01 m in ein Objekt eines Typs mit „freihalten“ ein, bekommt er die rote Warnung
+  „Infrastruktur“ (§3).
+- Geprüft wird je nach Geometrie:
+  - Rechtecke und Linien mit Stärke: als Rechteck (wie die Überlappung zweier Stände).
+  - Linien ohne Stärke: Die Linie reicht mehr als 0,01 m in den Stand hinein (über eine Kante oder parallel zu
+    ihr). Eine Linie, die nur eine Standkante berührt oder auf ihr liegt, warnt nicht.
+- Infrastruktur-Objekte untereinander und Infrastruktur außerhalb von Grundflächen erzeugen keine Warnungen.
+
+**Nummerierung.** Infrastruktur-Objekte bekommen keine Platznummer und zählen in der Nummerierung nicht mit.
 
 ## Bedienung / UI
 
@@ -324,7 +493,8 @@ Entscheidungen 2026-10-12 (M6-Planung).
   Aktive Werkzeuge und eingeschaltete Umschalter (z. B. Fang) sind farblich hervorgehoben.
   Enthält mindestens:
   Auswahl, Hand (Verschieben der Ansicht), Zoom, Grundfläche erstellen, Geschäft erstellen,
-  Infrastruktur-Objekte (als aufklappbare Werkzeuggruppe), Messwerkzeug, Kalibrierung,
+  Infrastruktur-Objekte (als aufklappbare Werkzeuggruppe: der Knopf zeigt den zuletzt genutzten Typ, Klick auf das
+  Dreieck, Rechtsklick oder langes Drücken öffnet die Liste aller Typen), Messwerkzeug, Kalibrierung,
   Schriftfeld, sowie Umschalter für Fang (Vorderkante, Raster, Nachbarstände; einzeln
   schaltbar), Raster ein/aus.
 - **Mitte: Zeichenfläche** mit Zoom (Mausrad, Strg/Cmd + / −, „an Fenster anpassen“) und Pan
@@ -349,6 +519,9 @@ Entscheidungen 2026-10-12 (M6-Planung).
 - AltGr (Entscheidung 2026-10-12, QA-M5-03): Unter Windows ist AltGr = Strg+Alt. Deshalb keine Kurzbefehle mit
   Strg+Alt (macOS Cmd+Alt) auf Tasten, die auf deutschen Tastaturen per AltGr ein Zeichen erzeugen (u. a. Q @, E €,
   M µ, 2 ², 3 ³, 7 {, 8 [, 9 ], 0 }, ß \, + ~, < |).
+- Infrastruktur und Papier-Elemente (M7): I = Infrastruktur mit dem zuletzt genutzten Typ, Shift+I = nächster Typ
+  der Gruppe (zyklisch, wie in Illustrator), T = Schriftfeld, Shift+L = Legende ein/aus. Der zuletzt genutzte Typ ist
+  eine Ansichtseinstellung (kein Undo-Schritt, nur für die Sitzung).
 - Start-Page (M6): Tab und Shift+Tab springen dort zwischen Bedienelementen (Panels ausblenden gibt es nur auf
   Festplatz-Pages). Tasten der Geschäftstabelle siehe §7.
 - Textfelder (korrigiert 2026-10-12, Laurin): Solange ein Textfeld den Fokus hat, greifen nur Speichern, Speichern
@@ -356,7 +529,7 @@ Entscheidungen 2026-10-12 (M6-Planung).
   gespeichert wird. Alle anderen Kurzbefehle, insbesondere alle mit Alt, sind in Textfeldern gesperrt.
 
 ### Allgemein
-- Ebenen (Hintergrund, Grundflächen, Freiflächen, Geschäfte, Infrastruktur, Beschriftung)
+- Ebenen (Hintergrund, Grundflächen, Freiflächen, Geschäfte, Infrastruktur, Beschriftung, Blatt; Blatt seit M7)
   ein-/ausblendbar und sperrbar. Ein-/Ausblenden und Sperren sind Ansichtseinstellungen (kein
   Undo-Schritt). Gesperrte Ebenen sind sichtbar, aber nicht auswählbar; ausgeblendete fangen nicht.
   Die Sperre der Ebene „Hintergrund“ ist dieselbe wie die Hintergrund-Sperre aus §1 und bleibt wie

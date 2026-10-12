@@ -3,8 +3,8 @@ import { confirmDeletePage, runCommand } from '../../app/commands';
 import type { Id } from '../../core/model/types';
 import { fmt } from '../../core/format';
 import { cachedDuplicates } from '../../core/numbering';
-import { sumPower } from '../../core/power';
-import { cachedPageWarnings, countWarnings } from '../../core/warnings';
+import { pageSumKw } from '../../core/power';
+import { cachedInfraWarnings, cachedPageWarnings, countWarnings, warningSevere, warningTotal } from '../../core/warnings';
 import { addPage, duplicatePage, movePage, renamePage } from '../../state/pages';
 import { selectCanRedo, selectCanUndo, selectDirty, START_PAGE, useStore } from '../../state/store';
 import { Icon } from '../icons/Icon';
@@ -211,26 +211,32 @@ export function TabBar() {
 }
 
 /**
- * Zahl der Stände mit angezeigter Warnung (M4-18, M5-10), rot sobald eine Überlappung dabei ist. Liest das
+ * Zahl der Objekte mit angezeigter Warnung (M4-18, M5-10; seit M7 auch Infrastruktur und zu enge Durchfahrten),
+ * rot sobald eine Überlappung, eine Infrastruktur-Warnung oder eine zu enge Durchfahrt dabei ist. Liest das
  * gespeicherte Projekt; die Warnungen sind je Page zwischengespeichert, unveränderte Pages kosten nichts.
  */
 function WarnBadge({ pageId }: { pageId: Id }) {
   const summary = useStore((s) => {
     const page = s.project.pages.find((p) => p.id === pageId);
-    if (!page || !page.stands.length) return '';
+    if (!page || (!page.stands.length && !page.infra.length)) return '';
     const dups = cachedDuplicates(s.project.pages, s.project.settings.numbering.scope);
-    const n = countWarnings(cachedPageWarnings(page.areas, page.stands), page.stands, s.project.settings, dups);
-    return n.stands ? `${n.stands}|${n.overlap}|${n.outside}|${n.duplicate}` : '';
+    const n = countWarnings(cachedPageWarnings(page.areas, page.stands), page.stands, s.project.settings, dups, {
+      warnings: cachedInfraWarnings(page, s.project.infraTypes, s.project.settings.minPassageWidth),
+      objects: page.infra,
+    });
+    return warningTotal(n) ? `${warningTotal(n)}|${n.overlap}|${n.outside}|${n.duplicate}|${n.infra}|${n.narrow}|${warningSevere(n) ? 1 : 0}` : '';
   });
   if (!summary) return null;
-  const [n, overlap, outside, duplicate] = summary.split('|').map(Number) as [number, number, number, number];
+  const [n, overlap, outside, duplicate, infra, narrow, severe] = summary.split('|').map(Number) as [number, number, number, number, number, number, number];
   const parts = [
     overlap ? `${overlap} Überlappung${overlap === 1 ? '' : 'en'}` : '',
     outside ? `${outside} außerhalb` : '',
     duplicate ? `${duplicate} mit doppelter Nummer` : '',
+    infra ? `${infra} in Freihalteflächen` : '',
+    narrow ? `${narrow} Durchfahrt${narrow === 1 ? '' : 'en'} zu eng` : '',
   ].filter(Boolean);
   return (
-    <span className={`warn-badge${overlap ? ' overlap' : ''}`} data-testid="warn-badge" {...tip({ label: `${n} ${n === 1 ? 'Warnung' : 'Warnungen'}: ${parts.join(', ')}`, side: 'bottom' })}>
+    <span className={`warn-badge${severe ? ' overlap' : ''}`} data-testid="warn-badge" {...tip({ label: `${n} ${n === 1 ? 'Warnung' : 'Warnungen'}: ${parts.join(', ')}`, side: 'bottom' })}>
       {n}
     </span>
   );
@@ -241,7 +247,7 @@ function PowerBadge({ pageId }: { pageId: Id }) {
   const text = useStore((s) => {
     const page = s.project.pages.find((p) => p.id === pageId);
     if (!page || page.powerLimitKw === null) return '';
-    const sum = sumPower(page.stands);
+    const sum = pageSumKw(page);
     return sum > page.powerLimitKw ? `Stromlimit überschritten: ${fmt(sum)} / ${fmt(page.powerLimitKw)} kW` : '';
   });
   if (!text) return null;

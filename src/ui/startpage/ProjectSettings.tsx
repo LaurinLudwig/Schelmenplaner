@@ -6,6 +6,7 @@ import { useStore } from '../../state/store';
 import { NumberField } from '../panels/NumberField';
 import { CategoryPanel, FreeSpacePanel, LabelPanel } from '../panels/ProjectPanels';
 import { TextField } from '../panels/TextField';
+import { InfraTypesPanel, InfraWarningsPanel, TitleBlockSettingsPanel } from './InfraSettings';
 
 /**
  * Projekteinstellungen (M6-05, spec.md §7): alles Projektweite an einer Stelle. Seitenbezogenes (Präfix, Modus,
@@ -18,10 +19,15 @@ export function ProjectSettings() {
         <ProjectPanel />
         <NumberingCirclePanel />
         <LabelPanel />
+        <TitleBlockSettingsPanel />
       </div>
       <div className="sp-settings-col">
         <FreeSpacePanel />
+        <InfraWarningsPanel />
         <CategoryPanel />
+      </div>
+      <div className="sp-settings-col">
+        <InfraTypesPanel />
       </div>
     </div>
   );
@@ -34,7 +40,7 @@ function ProjectPanel() {
       <div className="panel-head">Projekt</div>
       <div className="panel-body form">
         <TextField id="project-name" label="Projektname" value={name} onCommit={(v) => void setProjectName(v)} />
-        <p className="hint">Erscheint auf der Start-Page und später im Schriftfeld der Pläne.</p>
+        <p className="hint">Erscheint auf der Start-Page und im Schriftfeld der Pläne.</p>
       </div>
     </section>
   );

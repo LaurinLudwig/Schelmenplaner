@@ -6,7 +6,8 @@ import { useStartPage, type StandColumn } from '../state/startPage';
 import { useStore } from '../state/store';
 import { showError } from './dialogs';
 import { notify } from './notify';
-import { allFreeRows, connectionText, displayedFreeRows, displayedStandRows, warningText } from './startPageData';
+import { allFreeRows, connectionText, displayedFreeRows, displayedInfraRows, displayedStandRows, warningText } from './startPageData';
+import { CONNECTION_LABEL } from '../core/label';
 
 /** CSV-Export der Start-Page (M6-06, spec.md §7): die angezeigten Zeilen der aktiven Liste mit den sichtbaren Spalten. */
 
@@ -48,6 +49,23 @@ export async function exportCurrentList() {
       rows.map((r) => [r.pageName, r.areaName, r.width, r.depth, r.size, r.clipped ? 'ja' : '']),
     );
     what = 'Freiflächen';
+  } else if (st.tab === 'infra') {
+    const rows = displayedInfraRows(project, st).rows;
+    csv = toCsv(
+      ['Festplatz', 'Typ', 'Bezeichnung', 'Breite/Länge (m)', 'Tiefe/Stärke (m)', 'Strom (kW)', 'Anschlussart', 'Warnung', 'Notiz'],
+      rows.map((r) => [
+        r.pageName,
+        r.type.label,
+        r.obj.label,
+        r.type.geometry === 'point' ? null : r.obj.w,
+        r.type.geometry === 'rect' || (r.type.geometry === 'line' && r.obj.d > 0) ? r.obj.d : null,
+        r.type.geometry === 'rect' ? r.obj.powerKw : null,
+        r.obj.connection ? CONNECTION_LABEL[r.obj.connection] : '',
+        r.narrow ? 'Durchfahrt zu eng' : '',
+        r.obj.note,
+      ]),
+    );
+    what = 'Infrastruktur';
   } else {
     csv = standCsv(displayedStandRows(project, st).rows, st.hidden);
     what = 'Geschäfte';

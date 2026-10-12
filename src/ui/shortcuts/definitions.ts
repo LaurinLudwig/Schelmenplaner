@@ -56,9 +56,11 @@ export const SHORTCUTS: ShortcutDef[] = [
   { id: 'tool.area', label: 'Grundfläche erstellen', group: 'Werkzeuge', keys: ['F'] },
   { id: 'tool.stand', label: 'Geschäft erstellen', group: 'Werkzeuge', keys: ['G'] },
   { id: 'tool.infra', label: 'Infrastruktur', group: 'Werkzeuge', keys: ['I'] },
+  { id: 'tool.infraNext', label: 'Infrastruktur: nächster Typ', group: 'Werkzeuge', keys: ['Shift+I'] },
   { id: 'tool.measure', label: 'Messen', group: 'Werkzeuge', keys: ['M'] },
   { id: 'tool.calibrate', label: 'Kalibrieren', group: 'Werkzeuge', keys: ['K'] },
   { id: 'tool.titleBlock', label: 'Schriftfeld', group: 'Werkzeuge', keys: ['T'] },
+  { id: 'view.legend', label: 'Legende ein/aus', group: 'Ansicht', keys: ['Shift+L'] },
   { id: 'snap.front', label: 'Fang an Vorderkante', group: 'Werkzeuge', keys: ['Shift+F'] },
   { id: 'snap.grid', label: 'Fang am Raster', group: 'Werkzeuge', keys: ['Shift+R'] },
   { id: 'snap.neighbors', label: 'Fang an Nachbarständen', group: 'Werkzeuge', keys: ['Shift+N'] },
@@ -80,7 +82,8 @@ export const SHORTCUTS: ShortcutDef[] = [
 
   { id: 'start.stands', label: 'Start-Page: Geschäfte', group: 'Start-Page', keys: ['Mod+1'] },
   { id: 'start.free', label: 'Start-Page: Freiflächen', group: 'Start-Page', keys: ['Mod+2'] },
-  { id: 'start.settings', label: 'Start-Page: Einstellungen', group: 'Start-Page', keys: ['Mod+3'] },
+  { id: 'start.infra', label: 'Start-Page: Infrastruktur', group: 'Start-Page', keys: ['Mod+3'] },
+  { id: 'start.settings', label: 'Start-Page: Einstellungen', group: 'Start-Page', keys: ['Mod+4'] },
   { id: 'start.search', label: 'Geschäfte suchen', group: 'Start-Page', keys: ['Mod+F'] },
   { id: 'start.exportCsv', label: 'Liste als CSV exportieren …', group: 'Start-Page', keys: ['Mod+Shift+E'] },
 

@@ -1,9 +1,10 @@
 /**
  * Strom (M5, spec.md §6): Summe je Festplatz und Projekt, Stand gegen das Limit, Summen je
- * Anschlussart, Prüfung fürs Blockieren. Es zählen alle Stände der Page, auch außerhalb von Grundflächen.
+ * Anschlussart, Prüfung fürs Blockieren. Es zählen alle Stände der Page, auch außerhalb von Grundflächen, und seit
+ * M7 die Infrastruktur-Objekte mit Strom oder Anschlussart (§11).
  */
 import { fmt } from './format';
-import type { Connection, FestplatzPage, Id, Project, Stand } from './model/types';
+import type { Connection, FestplatzPage, Id, InfraObject, Project, Stand } from './model/types';
 
 /** Ab diesem Anteil am Limit ist der Balken gelb. */
 export const POWER_WARN_RATIO = 0.9;
@@ -21,9 +22,17 @@ export interface PowerSummary {
   /** Summe / Limit, ohne Limit null. */
   ratio: number | null;
   level: PowerLevel;
-  /** Anzahl Stände und kW je Anschlussart (`none` = ohne Angabe). */
+  /** Anzahl Stände und Infrastruktur-Objekte mit Strom sowie kW je Anschlussart (`none` = ohne Angabe). */
   byConnection: Record<ConnectionKey, { count: number; kw: number }>;
+  /** Anteil der Infrastruktur an `sumKw` (M7). */
+  infraKw: number;
 }
+
+/** Page-Felder für den Strom; `infra` fehlt nur in alten Tests. */
+export type PowerPage = Pick<FestplatzPage, 'stands' | 'powerLimitKw'> & { infra?: readonly InfraObject[] };
+
+/** Infrastruktur-Objekte, die beim Strom zählen: mit kW oder Anschlussart (nur Rechteck-Typen haben beides). */
+export const poweredInfra = (infra: readonly InfraObject[] = []) => infra.filter((o) => o.powerKw > 0 || o.connection !== null);
 
 /** Auf 0,001 kW gerundet, damit sich Gleitkomma-Reste beim Summieren nicht zeigen. */
 const roundKw = (kw: number) => Math.round(kw * 1000) / 1000;
@@ -54,17 +63,21 @@ export function powerPercentLabel(sumKw: number, limitKw: number | null): string
   return tenths > 1000 ? `${fmt(tenths / 10, 1)} %` : 'über 100 %';
 }
 
-export function pagePower(page: Pick<FestplatzPage, 'stands' | 'powerLimitKw'>): PowerSummary {
+/** Summe einer Page: Stände und Infrastruktur. */
+export const pageSumKw = (page: PowerPage) => sumPower([...page.stands, ...(page.infra ?? [])]);
+
+export function pagePower(page: PowerPage): PowerSummary {
   const byConnection = Object.fromEntries(CONNECTION_KEYS.map((k) => [k, { count: 0, kw: 0 }])) as PowerSummary['byConnection'];
-  for (const s of page.stands) {
+  const infra = poweredInfra(page.infra);
+  for (const s of [...page.stands, ...infra]) {
     const c = byConnection[s.connection ?? 'none'];
     c.count++;
     c.kw += s.powerKw;
   }
   for (const k of CONNECTION_KEYS) byConnection[k].kw = roundKw(byConnection[k].kw);
-  const sumKw = sumPower(page.stands);
+  const sumKw = pageSumKw(page);
   const limitKw = page.powerLimitKw;
-  return { sumKw, limitKw, ratio: limitKw === null ? null : sumKw / limitKw, level: powerLevel(sumKw, limitKw), byConnection };
+  return { sumKw, limitKw, ratio: limitKw === null ? null : sumKw / limitKw, level: powerLevel(sumKw, limitKw), byConnection, infraKw: sumPower(infra) };
 }
 
 /** Pages mit Summe und Limit sowie die Gesamtsumme (Grundlage der Start-Page, M6). */
@@ -95,9 +108,9 @@ export function checkPowerChange(before: readonly FestplatzPage[], after: readon
   const out: PowerCheck[] = [];
   for (const p of after) {
     const prev = old.get(p.id);
-    if (!prev || p.powerLimitKw === null || prev.stands === p.stands) continue;
-    const a = sumPower(prev.stands);
-    const b = sumPower(p.stands);
+    if (!prev || p.powerLimitKw === null || (prev.stands === p.stands && prev.infra === p.infra)) continue;
+    const a = pageSumKw(prev);
+    const b = pageSumKw(p);
     const limit = watts(p.powerLimitKw);
     if (watts(b) > watts(a) && watts(b) > limit) out.push({ pageId: p.id, pageName: p.name, before: a, after: b, limitKw: p.powerLimitKw, blocked: p.blockOverLimit, crossed: watts(a) <= limit });
   }

@@ -67,7 +67,7 @@ describe('Migration 1 → 2 (M4: Warnungen)', () => {
       expect(p.name).toBe(raw.project.pages[i].name);
       expect(p.areas).toEqual(raw.project.pages[i].areas);
       // alle bisherigen Felder unverändert, die neuen Felder (M4, M5) ergänzt
-      expect(p.stands).toEqual(raw.project.pages[i].stands.map((s: object) => ({ ...s, suppressOverlapWarning: false, suppressDuplicateWarning: false })));
+      expect(p.stands).toEqual(raw.project.pages[i].stands.map((s: object) => ({ ...s, suppressOverlapWarning: false, suppressDuplicateWarning: false, suppressInfraWarning: false })));
     });
   });
 });
@@ -111,7 +111,81 @@ describe('Migration 2 → 3 (M5: Nummerierung)', () => {
       expect(p.numberingMode).toBe(rp.numberingMode);
       expect(p.powerLimitKw).toBe(rp.powerLimitKw);
       expect(p.areas).toEqual(rp.areas);
-      expect(p.stands).toEqual(rp.stands.map((s: object) => ({ ...s, suppressDuplicateWarning: false })));
+      expect(p.stands).toEqual(rp.stands.map((s: object) => ({ ...s, suppressDuplicateWarning: false, suppressInfraWarning: false })));
     });
+  });
+});
+
+describe('Migration 3 → 4 (M7: Infrastruktur, Blatt, Schriftfeld, Legende)', () => {
+  it('ergänzt Warnungen und Felder, benennt Infrastruktur-Felder um, entfernt alte Typen und titleBlockPos', () => {
+    const v3 = {
+      id: 'p',
+      settings: { warnOverlap: false, minPassageWidth: 4 },
+      infraTypes: [{ type: 'toilet', label: 'Toilette', color: '#3a86c8', icon: 'wc', occupiesArea: true }],
+      pages: [
+        {
+          id: 'a',
+          titleBlockPos: { x: 3, y: 4 },
+          stands: [{ id: 's1' }, { id: 's2', suppressInfraWarning: true }],
+          infra: [{ id: 'i1', type: 'marker', text: 'Treffpunkt', cx: 1, cy: 2, w: 0, d: 0, rot: 0 }],
+        },
+      ],
+    };
+    const before = structuredClone(v3);
+    const v4 = MIGRATIONS[3]!(v3) as any;
+    expect(v3).toEqual(before);
+    expect(v4).not.toHaveProperty('infraTypes');
+    expect(v4.settings).toEqual({ warnOverlap: false, warnInfra: true, warnPassageWidth: true, minPassageWidth: 4 });
+    expect(v4.pages[0]).not.toHaveProperty('titleBlockPos');
+    expect(v4.pages[0].stands).toEqual([
+      { id: 's1', suppressInfraWarning: false },
+      { id: 's2', suppressInfraWarning: true },
+    ]);
+    expect(v4.pages[0].infra).toEqual([{ id: 'i1', typeId: 'marker', label: 'Treffpunkt', cx: 1, cy: 2, w: 0, d: 0, rot: 0 }]);
+    expect((MIGRATIONS[3]!({ id: 'x', settings: 'kaputt', pages: 'kaputt' }) as any).pages).toBe('kaputt');
+
+    // Laden ergänzt Standards: feste Typen, Blatt, Anker; das migrierte Objekt bleibt erhalten
+    const project = parseProjectFile({ format: 'schelmeplaner', schemaVersion: 3, project: v3 });
+    expect(project.infraTypes.map((t) => t.id)).toEqual(['barrierMobile', 'barrierFixed', 'medical', 'ambulance', 'toilet', 'waste', 'narrowPassage', 'marker']);
+    expect(project.pages[0]!.infra).toEqual([
+      { id: 'i1', typeId: 'marker', label: 'Treffpunkt', note: '', powerKw: 0, connection: null, suppressWidthWarning: false, cx: 1, cy: 2, w: 0, d: 0, rot: 0 },
+    ]);
+    expect(project.pages[0]!.sheet).toEqual({ format: 'A3', orientation: 'landscape', scale: null, cx: 0, cy: 0 });
+    expect(project.pages[0]!.titleBlock).toEqual({ visible: true, corner: 'br', dx: 10, dy: 10 });
+    expect(project.pages[0]!.legend).toEqual({ visible: true, corner: 'bl', dx: 10, dy: 10 });
+    expect(project.pages[0]!.layers.sheet).toEqual({ visible: true, locked: false });
+  });
+
+  it('echte Datei aus M6 (Version 3, tests/fixtures/format-v3-m6.schelme) wird vollständig migriert', () => {
+    const bytes = new Uint8Array(readFileSync(join(process.cwd(), 'tests', 'fixtures', 'format-v3-m6.schelme')));
+    const raw = JSON.parse(strFromU8(unzipSync(bytes)['project.json']!));
+    expect(raw.schemaVersion).toBe(3);
+    expect(raw.project.settings).not.toHaveProperty('warnInfra');
+    expect(raw.project.pages[0]).toHaveProperty('titleBlockPos');
+    expect(raw.project.infraTypes[0]).toHaveProperty('type');
+
+    const { project } = decodeProjectFile(bytes);
+    const { warnInfra, warnPassageWidth, minPassageWidth, ...settings } = project.settings;
+    expect(settings).toEqual(raw.project.settings);
+    expect([warnInfra, warnPassageWidth, minPassageWidth]).toEqual([true, true, 3.5]);
+    expect(project.categories).toEqual(raw.project.categories);
+    expect(project.titleBlock).toEqual(raw.project.titleBlock);
+    expect(project.infraTypes.every((t) => t.builtin)).toBe(true);
+    expect(project.pages.reduce((n, p) => n + p.stands.length, 0)).toBe(500);
+    project.pages.forEach((p, i) => {
+      const rp = raw.project.pages[i];
+      const { infra, sheet, titleBlock, legend, layers, stands, ...rest } = p;
+      const { titleBlockPos: _pos, layers: rawLayers, stands: rawStands, infra: rawInfra, ...rawRest } = rp;
+      expect(rest).toEqual(rawRest);
+      expect(layers).toEqual({ ...rawLayers, sheet: { visible: true, locked: false } });
+      expect(stands).toEqual(rawStands.map((s: object) => ({ ...s, suppressInfraWarning: false })));
+      expect(infra).toEqual(rawInfra);
+      expect(sheet.scale).toBeNull();
+      expect([titleBlock.corner, legend.corner]).toEqual(['br', 'bl']);
+    });
+    // Werte, die in der Datei gezielt gesetzt waren
+    expect(project.pages[0]!.powerLimitKw).toBe(100);
+    expect(project.pages[0]!.stands[0]!.nr).toBe('A-07');
+    expect(project.pages[1]!.clockwise).toEqual({ center: { x: 50, y: 40 }, startAngle: 90 });
   });
 });

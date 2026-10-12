@@ -13,6 +13,8 @@ export interface ToolbarItem {
   snap?: 'front' | 'grid' | 'neighbors';
   /** Tooltip-Zusatz, wenn das Werkzeug gerade nicht verfügbar ist. */
   disabledHint?: string;
+  /** Aufklappbare Werkzeuggruppe (Infrastruktur, M7): Symbol des zuletzt genutzten Typs, Liste per Dreieck. */
+  flyout?: boolean;
 }
 
 export const TOOL_GROUPS: ToolbarItem[][] = [
@@ -24,12 +26,12 @@ export const TOOL_GROUPS: ToolbarItem[][] = [
   [
     { shortcut: 'tool.area', icon: 'area', kind: 'tool', tool: 'area', description: 'Grundfläche als Rechteck aufziehen' },
     { shortcut: 'tool.stand', icon: 'stand', kind: 'tool', tool: 'stand', description: 'Neuen Stand auf der Zeichenfläche aufziehen' },
-    { shortcut: 'tool.infra', icon: 'infra', kind: 'tool', milestone: 'M7', description: 'Sperren, Sanität, Toiletten und weitere Objekte platzieren' },
+    { shortcut: 'tool.infra', icon: 'infra', kind: 'tool', tool: 'infra', flyout: true, description: 'Sperren, Sanität, Toiletten und weitere Objekte platzieren. Dreieck, Rechtsklick oder langes Drücken: Typ wählen' },
   ],
   [
     { shortcut: 'tool.measure', icon: 'measure', kind: 'tool', tool: 'measure', description: 'Zwei Punkte klicken, Abstand in Metern ablesen' },
     { shortcut: 'tool.calibrate', icon: 'calibrate', kind: 'tool', tool: 'calibrate', description: 'Hintergrund über zwei Punkte und einen bekannten Abstand skalieren', disabledHint: 'Zuerst einen Hintergrund importieren (Cmd/Strg+Shift+P)' },
-    { shortcut: 'tool.titleBlock', icon: 'titleBlock', kind: 'tool', milestone: 'M7', description: 'Schriftfeld platzieren und verschieben' },
+    { shortcut: 'tool.titleBlock', icon: 'titleBlock', kind: 'tool', tool: 'titleBlock', description: 'Klick setzt das Schriftfeld an diese Stelle; verschieben mit dem Auswahlwerkzeug' },
   ],
   [
     { shortcut: 'snap.front', icon: 'snapFront', kind: 'toggle', snap: 'front', description: 'Stände rasten an der Vorderseite einer Grundfläche ein. Cmd/Strg beim Ziehen: Fang aus' },

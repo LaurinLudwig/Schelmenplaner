@@ -2,6 +2,7 @@ import { useStartPage, type StartTab } from '../../state/startPage';
 import { useStore } from '../../state/store';
 import { keyLabel } from '../shortcuts/tip';
 import { FreeSpaceList } from './FreeSpaceList';
+import { InfraTable } from './InfraTable';
 import { ProjectSettings } from './ProjectSettings';
 import { StandTable } from './StandTable';
 import { StatsBar } from './StatsBar';
@@ -9,12 +10,13 @@ import { StatsBar } from './StatsBar';
 const TABS: { id: StartTab; label: string; shortcut: string }[] = [
   { id: 'stands', label: 'Geschäfte', shortcut: 'start.stands' },
   { id: 'free', label: 'Freiflächen', shortcut: 'start.free' },
+  { id: 'infra', label: 'Infrastruktur', shortcut: 'start.infra' },
   { id: 'settings', label: 'Einstellungen', shortcut: 'start.settings' },
 ];
 
 /**
- * Start-Page (M6, spec.md §7): Kopf, Kennzahlen-Leiste, darunter die Unter-Tabs Geschäfte, Freiflächen und
- * Einstellungen. Deren Inhalt füllt die Resthöhe und scrollt selbst.
+ * Start-Page (M6, spec.md §7): Kopf, Kennzahlen-Leiste, darunter die Unter-Tabs Geschäfte, Freiflächen,
+ * Infrastruktur (M7) und Einstellungen. Deren Inhalt füllt die Resthöhe und scrollt selbst.
  */
 export function StartPage() {
   const name = useStore((s) => s.project.name);
@@ -51,6 +53,7 @@ export function StartPage() {
       <div className="sp-body" role="tabpanel" id={`sp-panel-${tab}`} aria-labelledby={`sp-tab-${tab}`}>
         {tab === 'stands' && <StandTable />}
         {tab === 'free' && <FreeSpaceList />}
+        {tab === 'infra' && <InfraTable />}
         {tab === 'settings' && <ProjectSettings />}
       </div>
     </section>
@@ -58,7 +61,7 @@ export function StartPage() {
 }
 
 function TabCount({ tab }: { tab: StartTab }) {
-  const n = useStore((s) => (tab === 'stands' ? s.project.pages.reduce((k, p) => k + p.stands.length, 0) : -1));
+  const n = useStore((s) => (tab === 'stands' ? s.project.pages.reduce((k, p) => k + p.stands.length, 0) : tab === 'infra' ? s.project.pages.reduce((k, p) => k + p.infra.length, 0) : -1));
   if (n < 0) return null;
   return <span className="sp-count">{n}</span>;
 }

@@ -11,6 +11,12 @@ export function openStartTab(tab: StartTab) {
 /** Link „Projekteinstellungen“ aus der Seitenleiste (M6-07). */
 export const openProjectSettings = () => openStartTab('settings');
 
+/** Klick auf die Infrastruktur-Warnzahl einer Kennzahl-Karte (M7-09): Infrastrukturliste „mit Warnung“. */
+export function showInfraWarnings(pageId: Id | null) {
+  useStartPage.getState().setInfraFilter({ pageId, typeId: null, withWarning: true, search: '' });
+  openStartTab('infra');
+}
+
 /** Klick auf die Warnzahl einer Kennzahl-Karte: Geschäftstabelle mit „mit Warnung“, ggf. nur dieser Festplatz. */
 export function showWarnings(pageId: Id | null) {
   const sp = useStartPage.getState();

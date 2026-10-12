@@ -7,14 +7,16 @@ import { checkPowerChange } from '../core/power';
 import { normAngle, roundRect, setFront } from '../core/geometry/rect';
 import { allSelectable } from '../core/hit';
 import { newId } from '../core/id';
-import type { Area, Category, EdgeIndex, FestplatzPage, Id, Project, Rect, Stand } from '../core/model/types';
+import { clampToLimits, createInfra, fitRect, INFRA_LIMITS } from '../core/infra';
+import { clampMinPassage } from '../core/model/schema';
+import type { Area, Category, EdgeIndex, FestplatzPage, Id, InfraObject, Project, Rect, Stand } from '../core/model/types';
 import { cloneObjects, createArea, createStand, findObjects, LIMITS, MIN_DRAW_SIZE, PALETTE, STAND_DEFAULT, type Clipboard, type ObjectKind } from '../core/objects';
 import { groupCenter, moveRects, type RectMap } from '../core/transform';
 import type { Bounds } from '../core/viewport';
 import { START_PAGE, useStore } from './store';
 
 /**
- * Befehle für Grundflächen, Geschäfte und Kategorien (M3). Jede Änderung ist genau ein Undo-Schritt;
+ * Befehle für Grundflächen, Geschäfte, Infrastruktur (M7) und Kategorien (M3). Jede Änderung ist genau ein Undo-Schritt;
  * Werte werden beim Übernehmen gerundet (`roundRect`: 0,01 m bzw. 0,1°).
  */
 
@@ -37,11 +39,19 @@ export function select(ids: Id[]) {
 
 const pageOf = (p: Project, pageId: Id) => p.pages.find((x) => x.id === pageId);
 
-function eachObject(page: FestplatzPage, ids: readonly Id[], fn: (o: Area | Stand, kind: ObjectKind) => void) {
+function eachObject(page: FestplatzPage, ids: readonly Id[], fn: (o: Area | Stand | InfraObject, kind: ObjectKind) => void) {
   const set = new Set(ids);
   for (const a of page.areas) if (set.has(a.id)) fn(a, 'area');
   for (const s of page.stands) if (set.has(s.id)) fn(s, 'stand');
+  for (const o of page.infra) if (set.has(o.id)) fn(o, 'infra');
 }
+
+/** Geometrie des Typs eines Infrastruktur-Objekts (unbekannter Typ: Rechteck). */
+const geometryOf = (p: Pick<Project, 'infraTypes'>, o: InfraObject) => p.infraTypes.find((t) => t.id === o.typeId)?.geometry ?? 'rect';
+
+/** Rechteck übernehmen; Infrastruktur nach den Regeln ihrer Geometrie (Punkte ohne Maße und Drehung). */
+const assignObj = (p: Pick<Project, 'infraTypes'>, o: Area | Stand | InfraObject, kind: ObjectKind, r: Rect) =>
+  assignRect(o, kind === 'infra' ? fitRect(geometryOf(p, o as InfraObject), r) : r);
 
 const assignRect = (o: Rect, r: Rect) => {
   const n = roundRect(r);
@@ -99,13 +109,48 @@ export function addStand(pageId: Id, rect: Rect): Id {
   return stand.id;
 }
 
+/** Infrastruktur-Objekt anlegen (Undo-Schritt, danach ausgewählt). Strom hat ein neues Objekt nicht. */
+export function addInfra(pageId: Id, typeId: Id, rect: Rect): Id | null {
+  const type = st().project.infraTypes.find((t) => t.id === typeId);
+  if (!type) return null;
+  const obj = createInfra(type, rect);
+  st().change(`${type.label} anlegen`, (p) => void pageOf(p, pageId)?.infra.push(obj));
+  select([obj.id]);
+  return obj.id;
+}
+
+/** Attribute von Infrastruktur-Objekten ändern; false, wenn das Stromlimit die Änderung blockiert. */
+export function updateInfra(pageId: Id, ids: Id[], patch: Partial<Pick<InfraObject, 'label' | 'note' | 'powerKw' | 'connection' | 'suppressWidthWarning'>>, label: string): boolean {
+  return changeWithPowerCheck(label, (p) => {
+    const page = pageOf(p, pageId);
+    if (!page) return;
+    eachObject(page, ids, (o, kind) => {
+      if (kind !== 'infra') return;
+      const obj = o as InfraObject;
+      const rect = geometryOf(p, obj) === 'rect';
+      // Strom und Anschluss gibt es nur bei Rechteck-Typen
+      Object.assign(obj, rect ? patch : { ...patch, powerKw: obj.powerKw, connection: obj.connection });
+    });
+  });
+}
+
+/** Typ wechseln, nur innerhalb derselben Geometrie (Maße bleiben). */
+export function setInfraType(pageId: Id, ids: Id[], typeId: Id) {
+  const type = st().project.infraTypes.find((t) => t.id === typeId);
+  if (!type) return;
+  st().change('Typ ändern', (p) => {
+    const page = pageOf(p, pageId);
+    if (page) for (const o of page.infra) if (ids.includes(o.id) && geometryOf(p, o) === type.geometry) o.typeId = typeId;
+  });
+}
+
 // ---------- Geometrie ----------
 
 /** Übernimmt die Rechtecke einer Geste (Ziehen, Drehen, Größe ändern) als einen Undo-Schritt. */
 export function commitRects(pageId: Id, rects: RectMap, label: string) {
   st().change(label, (p) => {
     const page = pageOf(p, pageId);
-    if (page) eachObject(page, Object.keys(rects), (o) => assignRect(o, rects[o.id]!));
+    if (page) eachObject(page, Object.keys(rects), (o, kind) => assignObj(p, o, kind, rects[o.id]!));
   });
 }
 
@@ -116,8 +161,8 @@ export function setRectField(pageId: Id, ids: Id[], field: 'w' | 'd' | 'rot', va
     const page = pageOf(p, pageId);
     if (!page) return;
     eachObject(page, ids, (o, kind) => {
-      const v = field === 'rot' ? normAngle(value) : clamp(value, kind);
-      assignRect(o, { ...o, [field]: v });
+      const v = field === 'rot' ? normAngle(value) : kind === 'infra' ? clampToLimits(value, INFRA_LIMITS[geometryOf(p, o as InfraObject)][field]) : clamp(value, kind);
+      assignObj(p, o, kind, { ...o, [field]: v });
     });
   });
 }
@@ -141,7 +186,7 @@ export function moveBy(pageId: Id, ids: Id[], dx: number, dy: number, label: str
     label,
     (p) => {
       const pg = pageOf(p, pageId);
-      if (pg) eachObject(pg, ids, (o) => assignRect(o, moved[o.id]!));
+      if (pg) eachObject(pg, ids, (o, kind) => assignObj(p, o, kind, moved[o.id]!));
     },
     merge ?? {},
   );
@@ -195,6 +240,7 @@ export function deleteObjects(pageId: Id, ids: Id[]) {
     if (!page) return;
     page.areas = page.areas.filter((a) => !set.has(a.id));
     page.stands = page.stands.filter((s) => !set.has(s.id));
+    page.infra = page.infra.filter((o) => !set.has(o.id));
   });
   select([]);
 }
@@ -217,6 +263,7 @@ function copyInternal(): boolean {
   clipboard = {
     areas: structuredClone(page.areas.filter((a) => ids.has(a.id))),
     stands: structuredClone(page.stands.filter((s) => ids.has(s.id))),
+    infra: structuredClone(page.infra.filter((o) => ids.has(o.id))),
     sourcePageId: page.id,
   };
   pasteCounts = {};
@@ -231,14 +278,22 @@ export function cutSelection() {
   if (copyInternal()) deleteSelection();
 }
 
-function insertObjects(pageId: Id, areas: Area[], stands: Stand[], label: string) {
+interface ObjectLists {
+  areas: Area[];
+  stands: Stand[];
+  infra: InfraObject[];
+}
+
+function insertObjects(pageId: Id, objs: ObjectLists, label: string) {
   const ok = changeWithPowerCheck(label, (p) => {
     const page = pageOf(p, pageId);
     if (!page) return;
-    page.areas.push(...areas.map((a) => roundRect(a)));
-    page.stands.push(...stands.map((s) => roundRect(s)));
+    page.areas.push(...objs.areas.map((a) => roundRect(a)));
+    page.stands.push(...objs.stands.map((s) => roundRect(s)));
+    // Objekte unbekannter Typen (z. B. aus einem anderen Projektstand) nicht einfügen
+    page.infra.push(...objs.infra.filter((o) => p.infraTypes.some((t) => t.id === o.typeId)).map((o) => ({ ...o, ...fitRect(geometryOf(p, o), o) })));
   });
-  if (ok) select([...areas.map((a) => a.id), ...stands.map((s) => s.id)]);
+  if (ok) select([...objs.areas, ...objs.stands, ...objs.infra].map((o) => o.id));
 }
 
 /**
@@ -249,7 +304,7 @@ function insertObjects(pageId: Id, areas: Area[], stands: Stand[], label: string
 export function paste(view: Bounds | null) {
   const page = activePage();
   if (!page || !clipboard) return;
-  const all = [...clipboard.areas, ...clipboard.stands];
+  const all = [...clipboard.areas, ...clipboard.stands, ...clipboard.infra];
   const c = groupCenter(all);
   if (!c) return;
   const n = pasteCounts[page.id] ?? 0;
@@ -263,25 +318,26 @@ export function paste(view: Bounds | null) {
     dx = (view.minX + view.maxX) / 2 - c.x + off;
     dy = (view.minY + view.maxY) / 2 - c.y + off;
   }
-  const copies = cloneObjects(clipboard.areas, clipboard.stands, dx, dy);
-  insertObjects(page.id, copies.areas, copies.stands, 'Einfügen');
+  insertObjects(page.id, cloneObjects(clipboard.areas, clipboard.stands, dx, dy, clipboard.infra), 'Einfügen');
 }
 
 /** Kopien der Objekte für Alt+Ziehen (an derselben Stelle, leere Platznummer); `from` = Kopie → Original. */
-export function cloneForDrag(page: FestplatzPage, ids: readonly Id[]): { areas: Area[]; stands: Stand[]; from: Record<Id, Id> } {
+export function cloneForDrag(page: FestplatzPage, ids: readonly Id[]): ObjectLists & { from: Record<Id, Id> } {
   const set = new Set(ids);
   const areas = page.areas.filter((a) => set.has(a.id));
   const stands = page.stands.filter((s) => set.has(s.id));
-  const copies = cloneObjects(areas, stands, 0, 0);
+  const infra = page.infra.filter((o) => set.has(o.id));
+  const copies = cloneObjects(areas, stands, 0, 0, infra);
   const from: Record<Id, Id> = {};
   copies.areas.forEach((c, i) => (from[c.id] = areas[i]!.id));
   copies.stands.forEach((c, i) => (from[c.id] = stands[i]!.id));
+  copies.infra.forEach((c, i) => (from[c.id] = infra[i]!.id));
   return { ...copies, from };
 }
 
 /** Alt+Ziehen: Kopien an ihrer neuen Lage einfügen, ein Undo-Schritt; danach sind die Kopien ausgewählt (M4-12). */
-export function commitDuplicateDrag(pageId: Id, copies: { areas: Area[]; stands: Stand[] }) {
-  insertObjects(pageId, copies.areas, copies.stands, 'Duplizieren');
+export function commitDuplicateDrag(pageId: Id, copies: ObjectLists) {
+  insertObjects(pageId, copies, 'Duplizieren');
 }
 
 /** Duplizieren: Kopie um 1 m nach rechts unten versetzt, danach ausgewählt. */
@@ -294,8 +350,9 @@ export function duplicateSelection() {
     page.stands.filter((s) => ids.has(s.id)),
     1,
     1,
+    page.infra.filter((o) => ids.has(o.id)),
   );
-  insertObjects(page.id, copies.areas, copies.stands, 'Duplizieren');
+  insertObjects(page.id, copies, 'Duplizieren');
 }
 
 export function selectAll() {
@@ -356,13 +413,29 @@ export function setMinFreeWidth(width: number) {
   st().change('Mindestbreite ändern', (p) => void (p.settings.minFreeWidth = v));
 }
 
-export type WarningKind = 'outside' | 'overlap' | 'duplicate';
+export type WarningKind = 'outside' | 'overlap' | 'duplicate' | 'infra';
 
-const WARNING: Record<WarningKind, { name: string; setting: 'warnOutside' | 'warnOverlap' | 'warnDuplicateNr'; suppress: 'suppressOutsideWarning' | 'suppressOverlapWarning' | 'suppressDuplicateWarning' }> = {
+const WARNING: Record<
+  WarningKind,
+  { name: string; setting: 'warnOutside' | 'warnOverlap' | 'warnDuplicateNr' | 'warnInfra'; suppress: 'suppressOutsideWarning' | 'suppressOverlapWarning' | 'suppressDuplicateWarning' | 'suppressInfraWarning' }
+> = {
   outside: { name: 'Warnung „außerhalb“', setting: 'warnOutside', suppress: 'suppressOutsideWarning' },
   overlap: { name: 'Warnung „Überlappung“', setting: 'warnOverlap', suppress: 'suppressOverlapWarning' },
   duplicate: { name: 'Warnung „doppelte Nummer“', setting: 'warnDuplicateNr', suppress: 'suppressDuplicateWarning' },
+  infra: { name: 'Warnung „Infrastruktur“', setting: 'warnInfra', suppress: 'suppressInfraWarning' },
 };
+
+/** Warnung „Durchfahrt zu eng“ projektweit ein- oder ausschalten (Undo-Schritt, M7). */
+export function setPassageWarningEnabled(on: boolean) {
+  st().change(`Warnung „Durchfahrt zu eng“ ${on ? 'einschalten' : 'ausschalten'}`, (p) => void (p.settings.warnPassageWidth = on));
+}
+
+/** Mindestbreite der engen Durchfahrt (projektweit, 0,5–50 m, M7). */
+export function setMinPassageWidth(width: number) {
+  if (!(width > 0)) return;
+  const v = Math.round(clampMinPassage(width) * 100) / 100;
+  st().change('Mindestbreite der Durchfahrt ändern', (p) => void (p.settings.minPassageWidth = v));
+}
 
 /** Warnungen einer Art projektweit ein- oder ausschalten (Undo-Schritt). */
 export function setWarningsEnabled(kind: WarningKind, on: boolean) {

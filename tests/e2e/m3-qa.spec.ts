@@ -42,9 +42,9 @@ async function drag(page: Page, from: P, to: P, steps = 12) {
   await page.mouse.up();
 }
 
-// suppressOverlapWarning (M4, Formatversion 2) und suppressDuplicateWarning (M5, Formatversion 3): Teil des Modells,
+// suppressOverlapWarning (M4, Formatversion 2), suppressDuplicateWarning (M5, Formatversion 3) und suppressInfraWarning (M7, Version 4): Teil des Modells,
 // nachgetragen vom Entwickler, siehe qa/M3.md
-const BASE = { nr: '', nrLocked: false, name: '', owner: '', ware: '', powerKw: 0, connection: null, note: '', categoryId: null, color: null, suppressOutsideWarning: false, suppressOverlapWarning: false, suppressDuplicateWarning: false };
+const BASE = { nr: '', nrLocked: false, name: '', owner: '', ware: '', powerKw: 0, connection: null, note: '', categoryId: null, color: null, suppressOutsideWarning: false, suppressOverlapWarning: false, suppressDuplicateWarning: false, suppressInfraWarning: false };
 async function seed(page: Page, objs: { areas?: any[]; stands?: any[]; categories?: any[] }) {
   await page.evaluate(
     ({ o, base }) => {

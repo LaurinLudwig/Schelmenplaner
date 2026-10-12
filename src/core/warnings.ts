@@ -3,12 +3,15 @@
  * - außerhalb: Ein Teil des Stands liegt mehr als TOL außerhalb der Vereinigung aller Grundflächen.
  * - Überlappung: Zwei Stände dringen mehr als TOL ineinander ein.
  * - doppelte Nummer (M5): berechnet in numbering.ts (`cachedDuplicates`), hier nur angezeigt und gezählt.
+ * - Infrastruktur (M7): Stand in einem Objekt mit „freihalten“ (core/infra.ts, `infraConflicts`).
+ * - Durchfahrt zu eng (M7): hängt am Infrastruktur-Objekt, nicht am Stand.
  * Die Rohdaten hängen nur von der Geometrie ab; ob eine Warnung angezeigt wird, entscheiden die
  * Projekteinstellungen und die Häkchen am Stand (`activeWarnings`).
  */
 import { boundsTouch, clipConvex, dilateRect, distToRect, penetration, rectGeo, subtractAll, type Polygon } from './geometry/polygon';
 import { exceedsTol, greaterThan, TOL, withinTol } from './geometry/tolerance';
-import type { Area, Id, ProjectSettings, Stand } from './model/types';
+import { infraConflicts, passageTooNarrow, typeMap } from './infra';
+import type { Area, FestplatzPage, Id, InfraObject, InfraTypeDef, ProjectSettings, Stand } from './model/types';
 
 export interface StandWarning {
   outside: boolean;
@@ -83,25 +86,56 @@ export function pageWarnings(areas: readonly Area[], stands: readonly Stand[]): 
   return { byStand, regions };
 }
 
-export type WarnSettings = Pick<ProjectSettings, 'warnOutside' | 'warnOverlap' | 'warnDuplicateNr'>;
+export type WarnSettings = Pick<ProjectSettings, 'warnOutside' | 'warnOverlap' | 'warnDuplicateNr' | 'warnInfra' | 'warnPassageWidth'>;
 
 export interface ActiveWarnings {
   outside: boolean;
   overlap: boolean;
   duplicate: boolean;
+  /** Stand in einem Infrastruktur-Objekt mit „freihalten“ (M7). */
+  infra: boolean;
 }
 
 /**
  * Angezeigte Warnungen eines Stands nach Projekteinstellung und eigenen Häkchen.
- * `duplicate` = der Stand hat eine doppelte Nummer (numbering.ts).
+ * `duplicate` = der Stand hat eine doppelte Nummer (numbering.ts); `infra` = er dringt in ein Objekt mit „freihalten“ ein.
  */
-export function activeWarnings(w: StandWarning | undefined, stand: Stand, settings: WarnSettings, duplicate = false): ActiveWarnings {
+export function activeWarnings(w: StandWarning | undefined, stand: Stand, settings: WarnSettings, duplicate = false, infra = false): ActiveWarnings {
   return {
     outside: !!w?.outside && settings.warnOutside && !stand.suppressOutsideWarning,
     overlap: !!w?.overlaps.length && settings.warnOverlap && !stand.suppressOverlapWarning,
     duplicate: duplicate && settings.warnDuplicateNr && !stand.suppressDuplicateWarning,
+    infra: infra && settings.warnInfra && !stand.suppressInfraWarning,
   };
 }
+
+/** Rohdaten der Infrastruktur-Warnungen einer Page (M7). */
+export interface InfraWarnings {
+  /** Stand-ID → IDs der Objekte mit „freihalten“, in die er eindringt. */
+  byStand: ReadonlyMap<Id, readonly Id[]>;
+  /** Durchfahrten unter der Mindestbreite. */
+  narrow: ReadonlySet<Id>;
+}
+
+export const NO_INFRA_WARNINGS: InfraWarnings = { byStand: new Map(), narrow: new Set() };
+
+/** Zwischenspeicher je Liste der Stände; gültig, solange Objekte, Typen und Mindestbreite gleich sind. */
+const infraCache = new WeakMap<readonly Stand[], { infra: readonly InfraObject[]; types: readonly InfraTypeDef[]; min: number; result: InfraWarnings }>();
+
+export function cachedInfraWarnings(page: Pick<FestplatzPage, 'stands' | 'infra'>, types: readonly InfraTypeDef[], minPassageWidth: number): InfraWarnings {
+  if (!page.infra.length) return NO_INFRA_WARNINGS;
+  const hit = infraCache.get(page.stands);
+  if (hit && hit.infra === page.infra && hit.types === types && hit.min === minPassageWidth) return hit.result;
+  const result: InfraWarnings = {
+    byStand: infraConflicts(page.stands, page.infra, typeMap(types)),
+    narrow: new Set(page.infra.filter((o) => passageTooNarrow(o, minPassageWidth)).map((o) => o.id)),
+  };
+  infraCache.set(page.stands, { infra: page.infra, types, min: minPassageWidth, result });
+  return result;
+}
+
+/** Angezeigte Warnung „Durchfahrt zu eng“ eines Objekts. */
+export const activeNarrow = (o: InfraObject, iw: InfraWarnings, settings: WarnSettings) => iw.narrow.has(o.id) && settings.warnPassageWidth && !o.suppressWidthWarning;
 
 export interface WarningCount {
   /** Stände mit mindestens einer angezeigten Warnung. */
@@ -111,19 +145,38 @@ export interface WarningCount {
   overlap: number;
   /** Stände mit doppelter Nummer (zusätzlich zu den beiden anderen gezählt). */
   duplicate: number;
+  /** Stände mit Warnung „Infrastruktur“ (zusätzlich gezählt, M7). */
+  infra: number;
+  /** Infrastruktur-Objekte mit Warnung „Durchfahrt zu eng“ (M7; zählen nicht bei `stands`). */
+  narrow: number;
 }
 
-export function countWarnings(w: PageWarnings, stands: readonly Stand[], settings: WarnSettings, duplicates?: ReadonlyMap<Id, unknown>): WarningCount {
-  const n: WarningCount = { stands: 0, outside: 0, overlap: 0, duplicate: 0 };
+export const NO_WARNINGS: WarningCount = { stands: 0, outside: 0, overlap: 0, duplicate: 0, infra: 0, narrow: 0 };
+
+export function countWarnings(
+  w: PageWarnings,
+  stands: readonly Stand[],
+  settings: WarnSettings,
+  duplicates?: ReadonlyMap<Id, unknown>,
+  infra?: { warnings: InfraWarnings; objects: readonly InfraObject[] },
+): WarningCount {
+  const n: WarningCount = { ...NO_WARNINGS };
   for (const s of stands) {
-    const a = activeWarnings(w.byStand.get(s.id), s, settings, !!duplicates?.has(s.id));
-    if (a.outside || a.overlap || a.duplicate) n.stands++;
+    const a = activeWarnings(w.byStand.get(s.id), s, settings, !!duplicates?.has(s.id), !!infra?.warnings.byStand.has(s.id));
+    if (a.outside || a.overlap || a.duplicate || a.infra) n.stands++;
     if (a.overlap) n.overlap++;
     else if (a.outside) n.outside++;
     if (a.duplicate) n.duplicate++;
+    if (a.infra) n.infra++;
   }
+  if (infra) for (const o of infra.objects) if (activeNarrow(o, infra.warnings, settings)) n.narrow++;
   return n;
 }
+
+/** Zahl am Page-Tab und in den Kennzahlen: Stände und Infrastruktur-Objekte mit Warnung (M7). */
+export const warningTotal = (n: WarningCount) => n.stands + n.narrow;
+/** Rot statt orange: Überlappung, Infrastruktur oder zu enge Durchfahrt (M7). */
+export const warningSevere = (n: WarningCount) => n.overlap > 0 || n.infra > 0 || n.narrow > 0;
 
 /**
  * Warnungen einer Page, zwischengespeichert je Liste der Stände (Immer liefert bei unveränderter Page

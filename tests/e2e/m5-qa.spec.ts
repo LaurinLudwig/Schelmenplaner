@@ -27,7 +27,8 @@ const orderByNr = async (page: Page) => {
 const powers = (page: Page, idx = 0) => store(page, `s.project.pages[${idx}].stands.map((x) => x.powerKw)`) as Promise<number[]>;
 const standCount = (page: Page, idx = 0) => store(page, `s.project.pages[${idx}].stands.length`) as Promise<number>;
 
-const BASE = { nr: '', nrLocked: false, name: '', owner: '', ware: '', powerKw: 0, connection: null, note: '', categoryId: null, color: null, suppressOutsideWarning: false, suppressOverlapWarning: false, suppressDuplicateWarning: false };
+// suppressInfraWarning (M7, Formatversion 4): Teil des Modells, ergänzt vom Entwickler
+const BASE = { nr: '', nrLocked: false, name: '', owner: '', ware: '', powerKw: 0, connection: null, note: '', categoryId: null, color: null, suppressOutsideWarning: false, suppressOverlapWarning: false, suppressDuplicateWarning: false, suppressInfraWarning: false };
 
 /** Objekte auf die Page `idx` (Standard: aktive Page) legen, ein Undo-Schritt „Testdaten“. */
 async function seed(page: Page, objs: { areas?: any[]; stands?: any[]; pageIdx?: number; pagePatch?: Record<string, unknown> }) {
@@ -621,7 +622,8 @@ test.describe('QA M5: Dateiformat Version 3 (§10)', () => {
       const { readFileSync } = await import('node:fs');
       const { unzipSync, strFromU8 } = await import('fflate');
       const json = JSON.parse(strFromU8(unzipSync(new Uint8Array(readFileSync(path)))['project.json']!));
-      expect(json.schemaVersion).toBe(3);
+      // Seit M7 Formatversion 4 (Speichern schreibt die aktuelle Version), angepasst vom Entwickler (vorher 3)
+      expect(json.schemaVersion).toBe(4);
       expect(json.project.settings.numbering.digits).toBe(1);
       expect(errors).toEqual([]);
     });

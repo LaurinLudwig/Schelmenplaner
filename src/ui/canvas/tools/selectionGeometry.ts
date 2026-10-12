@@ -1,5 +1,6 @@
 import { boundsOfRects, fromLocal, handlePoint, rectEdge, RESIZE_HANDLES, type Handle } from '../../../core/geometry/rect';
-import type { EdgeIndex, FestplatzPage, Id, Vec, View } from '../../../core/model/types';
+import { lineEnds } from '../../../core/infra';
+import type { EdgeIndex, FestplatzPage, Id, InfraGeometry, Vec, View } from '../../../core/model/types';
 import { findObjects, type PageObject } from '../../../core/objects';
 import { closestPointOnSegment } from '../../../core/snap';
 import { groupCenter } from '../../../core/transform';
@@ -19,14 +20,17 @@ export interface SelectionGeometry {
   /** Drehpunkt in Weltkoordinaten: Mittelpunkt bzw. Mitte der Auswahl. */
   pivot: Vec;
   rotateBase: Vec;
-  rotateHandle: Vec;
+  /** null: kein Drehgriff (einzelner Marker, M7). */
+  rotateHandle: Vec | null;
   /** Größenänderung, nur bei genau einer ausgewählten Grundfläche. */
   resize: { handle: Handle; p: Vec }[];
   /** Kanten, die Vorderseite werden können (nur einzelne Grundfläche, ohne die aktuelle). */
   edges: { edge: EdgeIndex; a: Vec; b: Vec }[];
+  /** Endpunkt-Griffe einer einzelnen Linie (Infrastruktur, M7); `world` in Metern. */
+  ends: { end: 0 | 1; p: Vec; world: Vec }[];
 }
 
-export function selectionGeometry(page: FestplatzPage, ids: readonly Id[], view: View): SelectionGeometry | null {
+export function selectionGeometry(page: FestplatzPage, ids: readonly Id[], view: View, geometryOf?: (typeId: Id) => InfraGeometry | undefined): SelectionGeometry | null {
   const objects = findObjects(page, ids);
   if (!objects.length) return null;
   const rects = objects.map((o) => o.obj);
@@ -49,11 +53,14 @@ export function selectionGeometry(page: FestplatzPage, ids: readonly Id[], view:
     rotateHandle = { x: rotateBase.x, y: rotateBase.y - ROTATE_OFFSET };
   }
   const single = objects.length === 1 && objects[0]!.kind === 'area' ? objects[0]!.obj : null;
+  const only = objects.length === 1 ? objects[0]! : null;
+  const geometry = only?.kind === 'infra' ? geometryOf?.(only.obj.typeId) : undefined;
   return {
     objects,
     pivot,
     rotateBase,
-    rotateHandle,
+    rotateHandle: geometry === 'point' ? null : rotateHandle,
+    ends: geometry === 'line' && only ? lineEnds(only.obj).map((w, i) => ({ end: i as 0 | 1, p: s(w), world: w })) : [],
     resize: single ? RESIZE_HANDLES.map((handle) => ({ handle, p: s(handlePoint(single, handle)) })) : [],
     edges: single
       ? ([0, 1, 3] as const).map((edge) => {
@@ -64,14 +71,15 @@ export function selectionGeometry(page: FestplatzPage, ids: readonly Id[], view:
   };
 }
 
-export type HandleHit = { kind: 'rotate' } | { kind: 'resize'; handle: Handle } | { kind: 'edge'; edge: EdgeIndex };
+export type HandleHit = { kind: 'rotate' } | { kind: 'resize'; handle: Handle } | { kind: 'edge'; edge: EdgeIndex } | { kind: 'end'; end: 0 | 1 };
 
 const dist = (a: Vec, b: Vec) => Math.hypot(a.x - b.x, a.y - b.y);
 
-/** Welcher Griff liegt unter dem Bildschirmpunkt? Reihenfolge: Drehgriff, Größe, Kanten. */
+/** Welcher Griff liegt unter dem Bildschirmpunkt? Reihenfolge: Endpunkte, Drehgriff, Größe, Kanten. */
 export function hitHandle(g: SelectionGeometry | null, p: Vec): HandleHit | null {
   if (!g) return null;
-  if (dist(g.rotateHandle, p) <= HANDLE_HIT) return { kind: 'rotate' };
+  for (const e of g.ends) if (dist(e.p, p) <= HANDLE_HIT) return { kind: 'end', end: e.end };
+  if (g.rotateHandle && dist(g.rotateHandle, p) <= HANDLE_HIT) return { kind: 'rotate' };
   // Liegen Griffe übereinander (sehr kleine Fläche auf dem Bildschirm), gewinnt der nächstgelegene
   let best: { handle: Handle; d: number } | null = null;
   for (const r of g.resize) {

@@ -5,7 +5,7 @@
 import { sumWidths } from './stats';
 import { cachedDuplicates, nrKey, type NrRef } from './numbering';
 import { CONNECTION_KEYS, sumPower, type ConnectionKey } from './power';
-import { activeWarnings, cachedPageWarnings, type ActiveWarnings } from './warnings';
+import { activeWarnings, cachedInfraWarnings, cachedPageWarnings, NO_INFRA_WARNINGS, type ActiveWarnings } from './warnings';
 import type { Id, Project, Stand } from './model/types';
 
 export interface StandRow {
@@ -20,15 +20,16 @@ export interface StandRow {
   duplicates: readonly NrRef[];
 }
 
-export function standRows(project: Pick<Project, 'pages' | 'settings' | 'categories'>): StandRow[] {
+export function standRows(project: Pick<Project, 'pages' | 'settings' | 'categories'> & Partial<Pick<Project, 'infraTypes'>>): StandRow[] {
   const cats = new Map(project.categories.map((c) => [c.id, c.name]));
   const dups = cachedDuplicates(project.pages, project.settings.numbering.scope);
   const rows: StandRow[] = [];
   project.pages.forEach((page, pageIndex) => {
     const w = cachedPageWarnings(page.areas, page.stands);
+    const iw = project.infraTypes ? cachedInfraWarnings(page, project.infraTypes, project.settings.minPassageWidth) : NO_INFRA_WARNINGS;
     for (const s of page.stands) {
       const d = dups.get(s.id);
-      const warnings = activeWarnings(w.byStand.get(s.id), s, project.settings, !!d);
+      const warnings = activeWarnings(w.byStand.get(s.id), s, project.settings, !!d, iw.byStand.has(s.id));
       rows.push({
         pageId: page.id,
         pageIndex,
@@ -43,7 +44,7 @@ export function standRows(project: Pick<Project, 'pages' | 'settings' | 'categor
   return rows;
 }
 
-export const hasWarning = (r: StandRow) => r.warnings.outside || r.warnings.overlap || r.warnings.duplicate;
+export const hasWarning = (r: StandRow) => r.warnings.outside || r.warnings.overlap || r.warnings.duplicate || r.warnings.infra;
 
 // ---------- Suche und Filter ----------
 
@@ -131,7 +132,7 @@ export function compareNr(a: string, b: string): number {
   return ta.length - tb.length;
 }
 
-const WARN_RANK = (r: StandRow) => (r.warnings.overlap ? 4 : 0) + (r.warnings.outside ? 2 : 0) + (r.warnings.duplicate ? 1 : 0);
+const WARN_RANK = (r: StandRow) => (r.warnings.infra ? 8 : 0) + (r.warnings.overlap ? 4 : 0) + (r.warnings.outside ? 2 : 0) + (r.warnings.duplicate ? 1 : 0);
 const CONN_RANK: Record<ConnectionKey, number> = { '230V': 0, CEE16: 1, CEE32: 2, none: 3 };
 
 /** Wert für den Vergleich; null = leer (steht in beiden Richtungen am Ende). */

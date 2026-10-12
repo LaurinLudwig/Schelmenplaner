@@ -2,17 +2,24 @@ import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { moveBy as moveBackground, worldToBg, type BgTransform } from '../../../core/background';
 import { boundsOfRects, resizeRect, type Handle } from '../../../core/geometry/rect';
 import { objectsInBounds, pickObject } from '../../../core/hit';
-import type { Area, EdgeIndex, Id, Stand, Vec } from '../../../core/model/types';
+import type { Area, EdgeIndex, Id, InfraObject, Stand, Vec } from '../../../core/model/types';
 import { computeMoveSnap, type Guide, type SnapState } from '../../../core/moveSnap';
+import { lineFromEnds } from '../../../core/infra';
+import { constrainAngle } from '../../../core/measure';
 import { findObjects, LIMITS } from '../../../core/objects';
+import type { SnapResult } from '../../../core/snap';
 import { angleTo, rotateRects, snapAngle, type RectMap } from '../../../core/transform';
 import { cloneForDrag, commitDuplicateDrag, commitRects, select, setAreaFront } from '../../../state/objects';
 import { updateBackground } from '../../../state/pageSettings';
-import { useStore } from '../../../state/store';
+import { useStore, type PaperElement } from '../../../state/store';
+import { mmToM, worldToAnchor } from '../../../core/sheet';
+import type { Bounds } from '../../../core/viewport';
+import { setPaperAnchor, setSheet } from '../../../state/paper';
 import { IS_MAC } from '../../shortcuts/keys';
 import { tip } from '../../shortcuts/tip';
 import { hitHandle, resizeCursor, selectionGeometry, type HandleHit } from './selectionGeometry';
 import { SnapGuides } from './SnapGuides';
+import { SnapMarker } from './SnapMarker';
 import { SNAP_PX, type ToolContext, type ToolHandlers, type ToolPointer } from './types';
 
 /** Ab dieser Mausbewegung (px) wird aus einem Klick ein Ziehen. */
@@ -29,15 +36,21 @@ type Gesture =
       grabbed: Id | null;
       snap: SnapState;
       /** Kopien für Alt+Ziehen, sobald Alt einmal gedrückt war (M4-12). */
-      copies: { areas: Area[]; stands: Stand[]; from: Record<Id, Id> } | null;
+      copies: ReturnType<typeof cloneForDrag> | null;
       last: ToolPointer;
     }
   | { kind: 'rotate'; pivot: Vec; a0: number; rects0: RectMap; single: number | null; start: Vec; moved: boolean }
   | { kind: 'resize'; id: Id; handle: Handle; rects0: RectMap; start: Vec; moved: boolean }
+  /** Endpunkt einer Linie (Infrastruktur, M7): der andere Endpunkt bleibt fest. */
+  | { kind: 'end'; id: Id; end: 0 | 1; fixed: Vec; rects0: RectMap; start: Vec; moved: boolean }
   | { kind: 'marquee'; start: Vec; cur: Vec; base: Id[] }
+  /** Blatt, Schriftfeld oder Legende ziehen (M7): Vorschau als Umriss, beim Loslassen ein Undo-Schritt. */
+  | { kind: 'paper'; element: PaperElement; startWorld: Vec; box0: Bounds; start: Vec; moved: boolean; delta: Vec }
   | { kind: 'background'; start: Vec; transform0: BgTransform };
 
-const LABEL = { move: 'Verschieben', rotate: 'Drehen', resize: 'Größe ändern' } as const;
+const LABEL = { move: 'Verschieben', rotate: 'Drehen', resize: 'Größe ändern', end: 'Länge ändern' } as const;
+/** Trefferabstand für Linien ohne Fläche in Bildschirmpixeln (M7). */
+const LINE_HIT_PX = 5;
 /** Ein eingerasteter Stand löst sich erst bei diesem Abstand von der Vorderseite (Hysterese, M4-06). */
 const RELEASE_PX = 2 * SNAP_PX;
 const MODIFIER_KEYS = new Set(['Shift', 'Alt', 'Meta', 'Control']);
@@ -55,10 +68,14 @@ export function useSelectTool(ctx: ToolContext, active: boolean): ToolHandlers {
   const [hover, setHover] = useState<{ handle: HandleHit | null; object: boolean; alt: boolean } | null>(null);
   const [moving, setMoving] = useState<false | 'move' | 'copy'>(false);
   const [guides, setGuides] = useState<Guide[]>([]);
+  const [endSnap, setEndSnap] = useState<SnapResult | null>(null);
+  const [paperGhost, setPaperGhost] = useState<Bounds | null>(null);
   const selection = useStore((s) => s.ui.selection);
   const ids = selection?.kind === 'objects' ? selection.ids : [];
-  const geo = active ? selectionGeometry(ctx.page, ids, ctx.view) : null;
+  const geo = active ? selectionGeometry(ctx.page, ids, ctx.view, ctx.geometryOf) : null;
   const pageId = ctx.page.id;
+  /** Treffertest mit Infrastruktur: Linien und Marker bekommen eine Toleranz in Bildschirmpixeln. */
+  const pick = (w: Vec) => pickObject(ctx.page, w, 0, { geometry: ctx.geometryOf, tol: { line: LINE_HIT_PX / ctx.view.scale, point: Math.max(ctx.markerSize / 2, LINE_HIT_PX / ctx.view.scale) } });
 
   const rectsOf = (list: readonly Id[]): RectMap => {
     // Ausgangsrechtecke aus dem Projekt (nicht aus einer womöglich laufenden Vorschau)
@@ -73,6 +90,30 @@ export function useSelectTool(ctx: ToolContext, active: boolean): ToolHandlers {
     return q.x >= 0 && q.y >= 0 && q.x <= bg.pxSize.w && q.y <= bg.pxSize.h;
   };
   const setPreview = (rects: RectMap) => useStore.getState().setPreview({ pageId, rects });
+
+  /** Umriss eines Papier-Elements auf dem Plan (Meter). */
+  const paperBox = (element: PaperElement): Bounds | null => {
+    const pp = ctx.paper;
+    if (element === 'sheet') return pp.frame.bounds;
+    const el = element === 'titleBlock' ? (ctx.page.titleBlock.visible ? pp.titleBlock : null) : ctx.page.legend.visible ? pp.legend : null;
+    if (!el) return null;
+    const k = mmToM(1, pp.frame.scale);
+    return { minX: el.topLeft.x, minY: el.topLeft.y, maxX: el.topLeft.x + el.layout.w * k, maxY: el.topLeft.y + el.layout.h * k };
+  };
+  /** Treffer auf Papier-Elemente (liegen über allen Objekten): Schriftfeld, Legende, Rand oder Marke des Blatts. */
+  const pickPaper = (w: Vec): PaperElement | null => {
+    const L = ctx.page.layers.sheet;
+    if (!L.visible || L.locked) return null;
+    const inside = (b: Bounds | null, tol = 0) => !!b && w.x >= b.minX - tol && w.x <= b.maxX + tol && w.y >= b.minY - tol && w.y <= b.maxY + tol;
+    for (const el of ['titleBlock', 'legend'] as const) if (inside(paperBox(el))) return el;
+    const f = ctx.paper.frame.bounds;
+    const tol = LINE_HIT_PX / ctx.view.scale;
+    const onEdge = inside(f, tol) && !inside({ minX: f.minX + tol, minY: f.minY + tol, maxX: f.maxX - tol, maxY: f.maxY - tol });
+    // Marke „A1 quer · 1:500“ über der linken oberen Ecke (4 mm Schrift, etwa 60 mm breit)
+    const k = mmToM(1, ctx.paper.frame.scale);
+    const onLabel = inside({ minX: f.minX, minY: f.minY - 7 * k, maxX: f.minX + 70 * k, maxY: f.minY });
+    return onEdge || onLabel ? 'sheet' : null;
+  };
 
   /**
    * Ein Schritt beim Verschieben: Shift beschränkt die Richtung, Alt dupliziert, Cmd/Strg schaltet den
@@ -111,11 +152,11 @@ export function useSelectTool(ctx: ToolContext, active: boolean): ToolHandlers {
     setMoving(p.altKey ? 'copy' : 'move');
     if (p.altKey && g.copies) {
       const c = g.copies;
-      const place = <T extends Area | Stand>(o: T): T => {
+      const place = <T extends Area | Stand | InfraObject>(o: T): T => {
         const q = r.rects[c.from[o.id]!];
         return q ? { ...o, cx: q.cx, cy: q.cy, w: q.w, d: q.d, rot: q.rot } : o;
       };
-      st.setPreview({ pageId, rects: {}, added: { areas: c.areas.map(place), stands: c.stands.map(place) } });
+      st.setPreview({ pageId, rects: {}, added: { areas: c.areas.map(place), stands: c.stands.map(place), infra: c.infra.map(place) } });
     } else setPreview(r.rects);
   };
 
@@ -155,6 +196,7 @@ export function useSelectTool(ctx: ToolContext, active: boolean): ToolHandlers {
   const finish = (commit: boolean) => {
     if (commit) flushMove();
     else dropMove();
+    setEndSnap(null);
     const g = gesture.current;
     gesture.current = null;
     setMarquee(null);
@@ -167,7 +209,20 @@ export function useSelectTool(ctx: ToolContext, active: boolean): ToolHandlers {
       else st.abortTransaction();
       return;
     }
-    if (g.kind === 'move' || g.kind === 'rotate' || g.kind === 'resize') {
+    if (g.kind === 'paper') {
+      setPaperGhost(null);
+      if (!commit || !g.moved) return;
+      const pp = ctx.paper;
+      if (g.element === 'sheet') {
+        const c = { x: (g.box0.minX + g.box0.maxX) / 2 + g.delta.x, y: (g.box0.minY + g.box0.maxY) / 2 + g.delta.y };
+        setSheet(pageId, { cx: Math.round(c.x * 100) / 100, cy: Math.round(c.y * 100) / 100 });
+      } else {
+        const el = g.element === 'titleBlock' ? pp.titleBlock : pp.legend;
+        if (el) setPaperAnchor(pageId, g.element, worldToAnchor(pp.frame, { x: g.box0.minX + g.delta.x, y: g.box0.minY + g.delta.y }, el.layout));
+      }
+      return;
+    }
+    if (g.kind === 'move' || g.kind === 'rotate' || g.kind === 'resize' || g.kind === 'end') {
       const preview = st.preview;
       if (commit && preview?.pageId === pageId) {
         // Alt beim Loslassen: Kopien einfügen (ein Undo-Schritt „Duplizieren“), Originale bleiben
@@ -196,6 +251,12 @@ export function useSelectTool(ctx: ToolContext, active: boolean): ToolHandlers {
         startGesture({ kind: 'resize', id, handle: handle.handle, rects0: rectsOf([id]), start: p.screen, moved: false });
         return true;
       }
+      if (handle?.kind === 'end' && geo?.ends.length) {
+        const id = current[0]!;
+        const other = geo.ends.find((e) => e.end !== handle.end)!;
+        startGesture({ kind: 'end', id, end: handle.end, fixed: other.world, rects0: rectsOf([id]), start: p.screen, moved: false });
+        return true;
+      }
       if (handle?.kind === 'edge') {
         const edge: EdgeIndex = handle.edge;
         const id = current[0]!;
@@ -203,25 +264,35 @@ export function useSelectTool(ctx: ToolContext, active: boolean): ToolHandlers {
         return true;
       }
 
-      const hit = pickObject(ctx.page, p.world);
+      const paperHit = !handle ? pickPaper(p.world) : null;
+      if (paperHit) {
+        st.setUi({ selection: { kind: 'paper', element: paperHit } });
+        const box0 = paperBox(paperHit)!;
+        // Ein angepasstes Blatt folgt dem Inhalt und lässt sich nicht ziehen
+        if (paperHit === 'sheet' && ctx.page.sheet.scale === null) return true;
+        startGesture({ kind: 'paper', element: paperHit, startWorld: p.world, box0, start: p.screen, moved: false, delta: { x: 0, y: 0 } });
+        return true;
+      }
+      const hit = pick(p.world);
       if (hit) {
         const isSelected = current.includes(hit.id);
         if (p.shiftKey) {
           // Shift: umschalten; Ziehen auf einer schon ausgewählten Gruppe verschiebt sie
           const next = isSelected ? current.filter((x) => x !== hit.id) : [...current, hit.id];
-          if (hit.kind === 'stand' || isSelected) select(next);
+          if (hit.kind !== 'area' || isSelected) select(next);
           startGesture({
             kind: 'pending',
             start: p.screen,
             startWorld: p.world,
             shift: true,
             grab: hit.id,
-            onDrag: hit.kind === 'stand' && !isSelected ? 'move' : hit.kind === 'area' ? 'marquee' : 'none',
+            onDrag: hit.kind !== 'area' && !isSelected ? 'move' : hit.kind === 'area' ? 'marquee' : 'none',
             onClick: () => hit.kind === 'area' && !isSelected && select(next),
           });
           return true;
         }
-        if (hit.kind === 'stand' || isSelected) {
+        // Stände und Infrastruktur verschieben sich sofort; Grundflächen erst, wenn sie ausgewählt sind
+        if (hit.kind !== 'area' || isSelected) {
           if (!isSelected) select([hit.id]);
           startGesture({
             kind: 'pending',
@@ -267,7 +338,7 @@ export function useSelectTool(ctx: ToolContext, active: boolean): ToolHandlers {
       if (!g) {
         const handle = hitHandle(geo, p.screen);
         const bg = ctx.page.background;
-        const object = !handle && (!!pickObject(ctx.page, p.world) || (!!bg && !bg.locked && ctx.page.layers.background.visible && onBackground(p.world)));
+        const object = !handle && (!!pickPaper(p.world) || !!pick(p.world) || (!!bg && !bg.locked && ctx.page.layers.background.visible && onBackground(p.world)));
         if (hover?.object !== object || hover.alt !== p.altKey || JSON.stringify(hover?.handle ?? null) !== JSON.stringify(handle)) setHover({ handle, object, alt: p.altKey });
         return;
       }
@@ -309,10 +380,29 @@ export function useSelectTool(ctx: ToolContext, active: boolean): ToolHandlers {
           if (r0) setPreview({ [g.id]: resizeRect(r0, g.handle, p.world, LIMITS.area.min, LIMITS.area.max) });
           return;
         }
+        case 'end': {
+          if (!g.moved && Math.hypot(p.screen.x - g.start.x, p.screen.y - g.start.y) < DRAG_PX) return;
+          g.moved = true;
+          const r0 = g.rects0[g.id];
+          if (!r0) return;
+          // Fang an Objekten (nicht an der Linie selbst), Cmd/Strg aus; Shift: 15°-Schritte um den festen Punkt
+          const s = p.modKey ? null : ctx.snap(p.world, g.id);
+          setEndSnap(s);
+          const q = s ? s.point : p.shiftKey ? constrainAngle(g.fixed, p.world, 15) : p.world;
+          setPreview({ [g.id]: g.end === 0 ? lineFromEnds(r0, q, g.fixed) : lineFromEnds(r0, g.fixed, q) });
+          return;
+        }
         case 'marquee':
           g.cur = p.world;
           setMarquee({ a: g.start, b: p.world });
           return;
+        case 'paper': {
+          if (!g.moved && Math.hypot(p.screen.x - g.start.x, p.screen.y - g.start.y) < DRAG_PX) return;
+          g.moved = true;
+          g.delta = { x: p.world.x - g.startWorld.x, y: p.world.y - g.startWorld.y };
+          setPaperGhost({ minX: g.box0.minX + g.delta.x, minY: g.box0.minY + g.delta.y, maxX: g.box0.maxX + g.delta.x, maxY: g.box0.maxY + g.delta.y });
+          return;
+        }
         case 'background':
           updateBackground(pageId, 'Hintergrund verschieben', { transform: moveBackground(g.transform0, p.world.x - g.start.x, p.world.y - g.start.y) });
           return;
@@ -327,6 +417,7 @@ export function useSelectTool(ctx: ToolContext, active: boolean): ToolHandlers {
         g.onClick();
         return;
       }
+      setEndSnap(null);
       // Klick ohne Ziehen auf den Griff in einer Kantenmitte: diese Kante wird Vorderseite
       if (g?.kind === 'resize' && !g.moved) {
         const edge = EDGE_OF_HANDLE[`${g.handle.hx},${g.handle.hy}`];
@@ -391,7 +482,9 @@ export function useSelectTool(ctx: ToolContext, active: boolean): ToolHandlers {
           ? 'cursor-rotate'
           : h.kind === 'resize' && geo
             ? resizeCursor(geo, h.handle)
-            : 'cursor-pointer';
+            : h.kind === 'end'
+              ? 'cursor-crosshair'
+              : 'cursor-pointer';
     handlers.overlay = (
       <g className="selection-overlay">
         {geo && (
@@ -408,15 +501,24 @@ export function useSelectTool(ctx: ToolContext, active: boolean): ToolHandlers {
                 {...tip({ label: 'Als Vorderseite festlegen', desc: 'Klicken: diese Kante wird Vorderseite. Die Fläche bleibt, wo sie ist.', side: 'top' })}
               />
             ))}
-            <line className="rotate-line" x1={geo.rotateBase.x} y1={geo.rotateBase.y} x2={geo.rotateHandle.x} y2={geo.rotateHandle.y} />
-            <circle className="rotate-handle" data-testid="rotate-handle" cx={geo.rotateHandle.x} cy={geo.rotateHandle.y} r={5.5} />
+            {geo.rotateHandle && (
+              <>
+                <line className="rotate-line" x1={geo.rotateBase.x} y1={geo.rotateBase.y} x2={geo.rotateHandle.x} y2={geo.rotateHandle.y} />
+                <circle className="rotate-handle" data-testid="rotate-handle" cx={geo.rotateHandle.x} cy={geo.rotateHandle.y} r={5.5} />
+              </>
+            )}
+            {geo.ends.map((e) => (
+              <circle key={e.end} className="end-handle" data-testid={`end-handle-${e.end}`} cx={e.p.x} cy={e.p.y} r={5} />
+            ))}
             {geo.resize.map((r) => (
               <rect key={`${r.handle.hx}${r.handle.hy}`} className="resize-handle" data-handle={`${r.handle.hx},${r.handle.hy}`} x={r.p.x - 4} y={r.p.y - 4} width={8} height={8} />
             ))}
           </>
         )}
         {marquee && <MarqueeRect ctx={ctx} a={marquee.a} b={marquee.b} />}
+        {paperGhost && <MarqueeRect ctx={ctx} a={{ x: paperGhost.minX, y: paperGhost.minY }} b={{ x: paperGhost.maxX, y: paperGhost.maxY }} className="paper-ghost" />}
         {guides.length > 0 && <SnapGuides guides={guides} toScreen={ctx.toScreen} />}
+        <SnapMarker snap={endSnap} toScreen={ctx.toScreen} />
       </g>
     );
   }
@@ -425,10 +527,10 @@ export function useSelectTool(ctx: ToolContext, active: boolean): ToolHandlers {
 
 const modifiersOf = (e: KeyboardEvent) => ({ shiftKey: e.shiftKey, altKey: e.altKey, modKey: IS_MAC ? e.metaKey : e.ctrlKey });
 
-function MarqueeRect({ ctx, a, b }: { ctx: ToolContext; a: Vec; b: Vec }) {
+function MarqueeRect({ ctx, a, b, className = 'marquee' }: { ctx: ToolContext; a: Vec; b: Vec; className?: string }) {
   const p = ctx.toScreen(a);
   const q = ctx.toScreen(b);
-  return <rect className="marquee" x={Math.min(p.x, q.x)} y={Math.min(p.y, q.y)} width={Math.abs(q.x - p.x)} height={Math.abs(q.y - p.y)} />;
+  return <rect className={className} x={Math.min(p.x, q.x)} y={Math.min(p.y, q.y)} width={Math.abs(q.x - p.x)} height={Math.abs(q.y - p.y)} />;
 }
 
 /** Gestricheltes Hüllrechteck einer Mehrfachauswahl. */

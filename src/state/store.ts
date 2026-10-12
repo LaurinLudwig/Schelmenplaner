@@ -10,10 +10,14 @@ import * as H from './history';
 export const START_PAGE = 'start';
 export type PageRef = typeof START_PAGE | Id;
 
-export type ToolId = 'select' | 'hand' | 'zoom' | 'measure' | 'calibrate' | 'area' | 'stand' | 'numberCenter';
+export type ToolId = 'select' | 'hand' | 'zoom' | 'measure' | 'calibrate' | 'area' | 'stand' | 'infra' | 'titleBlock' | 'numberCenter';
 
-/** Auswahl auf der aktiven Page: der Hintergrund oder Objekte (Grundflächen und Geschäfte gemischt). */
-export type Selection = { kind: 'background' } | { kind: 'objects'; ids: Id[] } | null;
+/**
+ * Auswahl auf der aktiven Page: der Hintergrund, Objekte (Grundflächen, Geschäfte, Infrastruktur gemischt) oder ein
+ * Element des Blatts (M7: Rahmen, Schriftfeld, Legende; nie zusammen mit Objekten).
+ */
+export type PaperElement = 'sheet' | 'titleBlock' | 'legend';
+export type Selection = { kind: 'background' } | { kind: 'objects'; ids: Id[] } | { kind: 'paper'; element: PaperElement } | null;
 export type Theme = 'dark' | 'light';
 
 export interface UiState {
@@ -38,6 +42,8 @@ export interface UiState {
    * hebt `flash` kurz hervor und setzt das Feld zurück.
    */
   focus: FocusRequest | null;
+  /** Typ des Infrastruktur-Werkzeugs (zuletzt genutzt; Ansichtseinstellung, nur für die Sitzung, M7). */
+  infraTypeId: Id;
 }
 
 export interface FocusRequest {
@@ -130,7 +136,8 @@ function validSelection(project: Project, active: PageRef, sel: Selection): Sele
   const page = project.pages.find((p) => p.id === active);
   if (!page) return null;
   if (sel.kind === 'background') return page.background ? sel : null;
-  const exists = new Set([...page.areas.map((a) => a.id), ...page.stands.map((st) => st.id)]);
+  if (sel.kind === 'paper') return sel;
+  const exists = new Set([...page.areas.map((a) => a.id), ...page.stands.map((st) => st.id), ...page.infra.map((o) => o.id)]);
   const ids = sel.ids.filter((id) => exists.has(id));
   if (!ids.length) return null;
   return ids.length === sel.ids.length ? sel : { kind: 'objects', ids };
@@ -177,6 +184,7 @@ export const useStore = create<AppState>()((set, get) => {
       fpsVisible: false,
       viewport: { w: 0, h: 0 },
       focus: null,
+      infraTypeId: 'barrierMobile',
     },
     preview: null,
     viewLive: false,

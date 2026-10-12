@@ -1,18 +1,19 @@
 import { normAngle, rectCorners, roundRect } from '../../core/geometry/rect';
 import { openProjectSettings } from '../../app/startPageNav';
 import { CONNECTION_LABEL } from '../../core/label';
-import type { Area, Connection, EdgeIndex, FestplatzPage, Stand } from '../../core/model/types';
-import { LIMITS } from '../../core/objects';
+import { PASSAGE_TYPE_ID, typeMap } from '../../core/infra';
+import type { Area, Connection, EdgeIndex, FestplatzPage, InfraObject, Stand } from '../../core/model/types';
 import { cachedDuplicates } from '../../core/numbering';
-import { cachedPageWarnings } from '../../core/warnings';
+import { fmt } from '../../core/format';
+import { cachedInfraWarnings, cachedPageWarnings } from '../../core/warnings';
 import { Icon } from '../icons/Icon';
 import { tip } from '../shortcuts/tip';
 import { setNrLocked } from '../../state/numbering';
-import { setAreaFront, setRectField, setWarningIgnored, updateArea, updateStands, type WarningKind } from '../../state/objects';
+import { setAreaFront, setInfraType, setRectField, setWarningIgnored, updateArea, updateInfra, updateStands, type WarningKind } from '../../state/objects';
 import { useStore } from '../../state/store';
 import { ColorField } from './ColorField';
 import { NumberField } from './NumberField';
-import { common, selectionTitle, type SelectionInfo } from './selection';
+import { common, dimSpec, selectionTitle, type SelectionInfo } from './selection';
 import { TextField } from './TextField';
 
 /**
@@ -23,20 +24,26 @@ export function ObjectPanel({ sel }: { sel: SelectionInfo }) {
   const { page, objects } = sel;
   const stands = objects.filter((o) => o.kind === 'stand').map((o) => o.obj as Stand);
   const areas = objects.filter((o) => o.kind === 'area').map((o) => o.obj as Area);
+  const infra = objects.filter((o) => o.kind === 'infra').map((o) => o.obj as InfraObject);
   const single = objects.length === 1;
+  const infraTypes = useStore((s) => s.project.infraTypes);
+  const onlyInfra = infra.length === objects.length;
+  const kinds = [areas.length, stands.length, infra.length].filter(Boolean).length;
   return (
     <section className="panel" aria-label="Eigenschaften">
       <div className="panel-head">
-        <span>{selectionTitle(objects)}</span>
+        <span>{selectionTitle(objects, typeMap(infraTypes))}</span>
         {!single && <span className="panel-badge">{objects.length} ausgewählt</span>}
       </div>
       <div className="panel-body form">
         {areas.length === 1 && single && <AreaFields pageId={page.id} area={areas[0]!} />}
-        {stands.length > 0 && !areas.length && <StandWarnings page={page} stands={stands} />}
-        {stands.length > 0 && !areas.length && <StandFields pageId={page.id} stands={stands} />}
+        {stands.length > 0 && kinds === 1 && <StandWarnings page={page} stands={stands} />}
+        {stands.length > 0 && kinds === 1 && <StandFields pageId={page.id} stands={stands} />}
+        {onlyInfra && <InfraWarnings page={page} objects={infra} />}
+        {onlyInfra && <InfraFields pageId={page.id} objects={infra} />}
         <GeometryFields pageId={page.id} sel={sel} />
         {single && areas.length === 1 && <FrontPicker pageId={page.id} area={areas[0]!} />}
-        {areas.length > 0 && stands.length > 0 && <p className="hint">Geschäfts-Attribute erscheinen, wenn nur Geschäfte ausgewählt sind.</p>}
+        {kinds > 1 && <p className="hint">Attribute erscheinen, wenn nur Objekte einer Art ausgewählt sind.</p>}
       </div>
     </section>
   );
@@ -45,14 +52,14 @@ export function ObjectPanel({ sel }: { sel: SelectionInfo }) {
 function GeometryFields({ pageId, sel }: { pageId: string; sel: SelectionInfo }) {
   const ids = sel.objects.map((o) => o.obj.id);
   const rects = sel.objects.map((o) => roundRect(o.obj));
-  const onlyStands = sel.objects.every((o) => o.kind === 'stand');
-  const min = onlyStands ? LIMITS.stand.min : LIMITS.area.min;
-  const max = onlyStands ? LIMITS.stand.max : LIMITS.area.max;
+  const infraTypes = useStore((s) => s.project.infraTypes);
+  const dims = dimSpec(sel.objects, (id) => infraTypes.find((t) => t.id === id)?.geometry);
+  if (!dims.w && !dims.d && !dims.rot) return null;
   return (
     <div className="fields-3">
-      <NumberField id="sb-w" label="Breite" unit="m" value={common(rects.map((r) => r.w))} min={min} max={max} step={0.1} onCommit={(v) => setRectField(pageId, ids, 'w', v)} />
-      <NumberField id="sb-d" label="Tiefe" unit="m" value={common(rects.map((r) => r.d))} min={min} max={max} step={0.1} onCommit={(v) => setRectField(pageId, ids, 'd', v)} />
-      <NumberField id="sb-rot" label="Drehung" unit="°" value={common(rects.map((r) => r.rot))} min={-360} max={360} step={1} digits={1} onCommit={(v) => setRectField(pageId, ids, 'rot', v)} />
+      {dims.w && <NumberField id="sb-w" label={dims.w.label} unit="m" value={common(rects.map((r) => r.w))} min={dims.w.min} max={dims.w.max} step={0.1} onCommit={(v) => setRectField(pageId, ids, 'w', v)} />}
+      {dims.d && <NumberField id="sb-d" label={dims.d.label} unit="m" value={common(rects.map((r) => r.d))} min={dims.d.min} max={dims.d.max} step={0.1} onCommit={(v) => setRectField(pageId, ids, 'd', v)} />}
+      {dims.rot && <NumberField id="sb-rot" label="Drehung" unit="°" value={common(rects.map((r) => r.rot))} min={-360} max={360} step={1} digits={1} onCommit={(v) => setRectField(pageId, ids, 'rot', v)} />}
     </div>
   );
 }
@@ -110,10 +117,11 @@ function FrontPicker({ pageId, area }: { pageId: string; area: Area }) {
 /** Name eines Stands in Meldungen: „Nr. 12 · Name“, ohne beides „ohne Namen“. */
 const standName = (s: Stand) => [s.nr && `Nr. ${s.nr}`, s.name].filter(Boolean).join(' · ') || 'Stand ohne Namen';
 
-const SUPPRESS: Record<WarningKind, 'suppressOutsideWarning' | 'suppressOverlapWarning' | 'suppressDuplicateWarning'> = {
+const SUPPRESS: Record<WarningKind, 'suppressOutsideWarning' | 'suppressOverlapWarning' | 'suppressDuplicateWarning' | 'suppressInfraWarning'> = {
   outside: 'suppressOutsideWarning',
   overlap: 'suppressOverlapWarning',
   duplicate: 'suppressDuplicateWarning',
+  infra: 'suppressInfraWarning',
 };
 
 /**
@@ -124,13 +132,27 @@ function StandWarnings({ page, stands }: { page: FestplatzPage; stands: Stand[] 
   const settings = useStore((s) => s.project.settings);
   const pages = useStore((s) => s.project.pages);
   const w = cachedPageWarnings(page.areas, page.stands);
+  const infraTypes = useStore((s) => s.project.infraTypes);
+  const iw = cachedInfraWarnings(page, infraTypes, settings.minPassageWidth);
   const dups = cachedDuplicates(pages, settings.numbering.scope);
   const byId = new Map(page.stands.map((s) => [s.id, s]));
   const outside = stands.filter((s) => w.byStand.get(s.id)?.outside);
   const overlap = stands.filter((s) => w.byStand.get(s.id)?.overlaps.length);
   const duplicate = stands.filter((s) => dups.has(s.id));
+  const inInfra = stands.filter((s) => iw.byStand.has(s.id));
   const ids = stands.map((s) => s.id);
+  /** „RTW-Platz „Nord““ für die Objekte, in die der Stand eindringt. */
+  const infraText = (s: Stand) =>
+    iw.byStand
+      .get(s.id)!
+      .map((id) => {
+        const o = page.infra.find((x) => x.id === id);
+        const t = o && infraTypes.find((x) => x.id === o.typeId);
+        return t ? (o.label ? `${t.label} „${o.label}“` : t.label) : 'Infrastruktur';
+      })
+      .join(', ');
   const rows: { kind: WarningKind; label: string; hit: Stand[]; ignored: boolean; enabled: boolean }[] = [
+    { kind: 'infra', label: 'Infrastruktur ignorieren', hit: inInfra, ignored: stands.every((s) => s.suppressInfraWarning), enabled: settings.warnInfra },
     { kind: 'overlap', label: 'Überlappung ignorieren', hit: overlap, ignored: stands.every((s) => s.suppressOverlapWarning), enabled: settings.warnOverlap },
     { kind: 'outside', label: '„außerhalb“ ignorieren', hit: outside, ignored: stands.every((s) => s.suppressOutsideWarning), enabled: settings.warnOutside },
     { kind: 'duplicate', label: 'doppelte Nummer ignorieren', hit: duplicate, ignored: stands.every((s) => s.suppressDuplicateWarning), enabled: settings.warnDuplicateNr },
@@ -156,7 +178,11 @@ function StandWarnings({ page, stands }: { page: FestplatzPage; stands: Stand[] 
         <div key={r.kind} className="form">
           {r.hit.length > 0 && (
             <div className={`warn-chip ${r.kind}`} data-testid={`warn-chip-${r.kind}`}>
-              {r.kind === 'overlap'
+              {r.kind === 'infra'
+                ? single
+                  ? `Steht in: ${infraText(stands[0]!)}`
+                  : `${r.hit.length} in Freihalteflächen`
+                : r.kind === 'overlap'
                 ? single
                   ? `Überlappt mit ${w.byStand.get(stands[0]!.id)!.overlaps.map((id) => standName(byId.get(id)!)).join(', ')}`
                   : `${r.hit.length} überlappen`
@@ -279,5 +305,94 @@ function StandFields({ pageId, stands }: { pageId: string; stands: Stand[] }) {
       />
       <TextField id="st-note" label="Notiz" value={text('note')} multiline onCommit={(note) => set({ note }, 'Notiz ändern')} />
     </>
+  );
+}
+
+/**
+ * Attribute der ausgewählten Infrastruktur-Objekte (M7, spec.md §11): Typ (nur innerhalb derselben Geometrie),
+ * Bezeichnung (beim Marker der Text), Strom und Anschlussart (nur Rechteck-Typen), Notiz.
+ */
+function InfraFields({ pageId, objects }: { pageId: string; objects: InfraObject[] }) {
+  const types = useStore((s) => s.project.infraTypes);
+  const ids = objects.map((o) => o.id);
+  const geos = new Set(objects.map((o) => types.find((t) => t.id === o.typeId)?.geometry));
+  const geometry = geos.size === 1 ? [...geos][0] : undefined;
+  const typeId = common(objects.map((o) => o.typeId));
+  const conn = common(objects.map((o) => o.connection ?? ''));
+  const set = (patch: Parameters<typeof updateInfra>[2], label: string) => updateInfra(pageId, ids, patch, label);
+  const marker = geometry === 'point';
+  return (
+    <>
+      {geometry && (
+        <div className="field">
+          <label htmlFor="in-type">Typ</label>
+          <select id="in-type" value={typeId ?? MIXED} onChange={(e) => setInfraType(pageId, ids, e.target.value)}>
+            {typeId === null && <option value={MIXED} disabled hidden />}
+            {types
+              .filter((t) => t.geometry === geometry)
+              .map((t) => (
+                <option key={t.id} value={t.id}>
+                  {t.label}
+                </option>
+              ))}
+          </select>
+        </div>
+      )}
+      <TextField
+        id="in-label"
+        label={marker ? 'Text' : 'Bezeichnung'}
+        value={common(objects.map((o) => o.label))}
+        placeholder={marker ? 'z. B. Treffpunkt' : 'z. B. Nord'}
+        onCommit={(label) => set({ label: label.trim() }, marker ? 'Text ändern' : 'Bezeichnung ändern')}
+      />
+      {geometry === 'rect' && (
+        <div className="fields-2">
+          <NumberField id="in-power" label="Strom" unit="kW" value={common(objects.map((o) => o.powerKw))} min={0} max={10000} step={0.5} onCommit={(powerKw) => set({ powerKw }, 'Strom ändern')} />
+          <div className="field">
+            <label htmlFor="in-conn">Anschlussart</label>
+            <select id="in-conn" value={conn ?? MIXED} onChange={(e) => set({ connection: (e.target.value || null) as Connection | null }, 'Anschlussart ändern')}>
+              {conn === null && <option value={MIXED} disabled hidden />}
+              {CONNECTIONS.map((c) => (
+                <option key={c ?? ''} value={c ?? ''}>
+                  {c ? CONNECTION_LABEL[c] : 'keine Angabe'}
+                </option>
+              ))}
+            </select>
+          </div>
+        </div>
+      )}
+      <TextField id="in-note" label="Notiz" value={common(objects.map((o) => o.note))} multiline onCommit={(note) => set({ note }, 'Notiz ändern')} />
+    </>
+  );
+}
+
+/** Warnung „Durchfahrt zu eng“ der ausgewählten Durchfahrten mit dem Häkchen „Breite ignorieren“ (M7). */
+function InfraWarnings({ page, objects }: { page: FestplatzPage; objects: InfraObject[] }) {
+  const settings = useStore((s) => s.project.settings);
+  const infraTypes = useStore((s) => s.project.infraTypes);
+  const passages = objects.filter((o) => o.typeId === PASSAGE_TYPE_ID);
+  if (!passages.length || passages.length !== objects.length) return null;
+  const iw = cachedInfraWarnings(page, infraTypes, settings.minPassageWidth);
+  const narrow = passages.filter((o) => iw.narrow.has(o.id));
+  const ignored = passages.every((o) => o.suppressWidthWarning);
+  if (!narrow.length && !passages.some((o) => o.suppressWidthWarning)) return null;
+  return (
+    <div className="field" data-testid="infra-warnings">
+      <label>Warnungen</label>
+      {narrow.length > 0 && (
+        <div className="warn-chip overlap" data-testid="warn-chip-narrow">
+          {passages.length === 1 ? `Lichte Breite ${fmt(passages[0]!.w)} m, Mindestbreite ${fmt(settings.minPassageWidth)} m` : `${narrow.length} zu eng`}
+          {!settings.warnPassageWidth && ' (projektweit ausgeschaltet)'}
+        </div>
+      )}
+      <label className="check">
+        <input
+          type="checkbox"
+          checked={ignored}
+          onChange={(e) => updateInfra(page.id, passages.map((o) => o.id), { suppressWidthWarning: e.target.checked }, e.target.checked ? 'Warnung ignorieren' : 'Warnung wieder anzeigen')}
+        />
+        Breite ignorieren
+      </label>
+    </div>
   );
 }

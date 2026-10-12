@@ -71,7 +71,8 @@ test.describe('M4: Freiflächen', () => {
     const json = await page.evaluate(() => JSON.stringify((window as any).__schelmeStore.getState().project));
     expect(json).not.toContain('Frei 20');
     const layers = page.getByRole('region', { name: 'Ebenen' });
-    await expect(layers.locator('.layer-name')).toHaveText(['Grundflächen', 'Freiflächen', 'Geschäfte', 'Beschriftung']);
+    // seit M7 zusätzlich die Ebene Blatt (angepasst vom Entwickler)
+    await expect(layers.locator('.layer-name')).toHaveText(['Grundflächen', 'Freiflächen', 'Geschäfte', 'Beschriftung', 'Blatt']);
     const n0 = await pastLen(page);
     await page.getByRole('button', { name: 'Freiflächen ausblenden' }).click();
     await expect(page.locator('.free-space')).toHaveCount(0);

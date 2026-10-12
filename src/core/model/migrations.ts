@@ -12,10 +12,14 @@
  *   2  M4: Geschäft `suppressOverlapWarning`, Einstellung `warnOverlap` (Warnungen, Freiflächen).
  *   3  M5: Einstellungen `numbering.digits` und `warnDuplicateNr`, Geschäft `suppressDuplicateWarning`;
  *      `clockwise.startAngle` gilt relativ zur Nordrichtung der Page (vorher ohne Oberfläche, nie gesetzt).
+ *   4  M7: Infrastruktur-Typen mit `id`, Geometrie, Standardmaß, `keepClear`; Infrastruktur-Objekt `typeId`,
+ *      `label`, `note`, Strom, `suppressWidthWarning`; Geschäft `suppressInfraWarning`; Einstellungen `warnInfra`,
+ *      `warnPassageWidth`, `minPassageWidth`; Page `sheet`, `titleBlock` (Anker, ersetzt `titleBlockPos`), `legend`,
+ *      Ebene `sheet`.
  */
 import { UserError } from '../errors';
 
-export const CURRENT_SCHEMA_VERSION = 3;
+export const CURRENT_SCHEMA_VERSION = 4;
 
 type Obj = Record<string, unknown>;
 type Migration = (project: Obj) => Obj;
@@ -40,6 +44,33 @@ export const MIGRATIONS: Record<number, Migration> = {
       : p.settings,
     pages: mapList(p.pages, (pg) => (isObj(pg) ? { ...pg, stands: mapList(pg.stands, (s) => (isObj(s) ? { suppressDuplicateWarning: false, ...s } : s)) } : pg)),
   }),
+  /**
+   * 3 → 4 (M7): Infrastruktur, Blatt, Schriftfeld, Legende.
+   * Die gespeicherten Infrastruktur-Typen hatten bis M6 keine Oberfläche und entsprachen immer den Standards; sie
+   * entfallen, `normalizeProject` setzt die neuen Standards. Objekte (bis M6 nie angelegt) werden umbenannt
+   * (`type` → `typeId`, `text` → `label`). `titleBlockPos` (Meter, nie genutzt) entfällt; Blatt und Anker ergänzt
+   * `normalizeProject` mit Standardwerten.
+   */
+  3: (p) => {
+    const { infraTypes: _old, ...rest } = p;
+    return {
+      ...rest,
+      settings: isObj(p.settings) ? { warnInfra: true, warnPassageWidth: true, minPassageWidth: 3.5, ...p.settings } : p.settings,
+      pages: mapList(p.pages, (pg) => {
+        if (!isObj(pg)) return pg;
+        const { titleBlockPos: _pos, ...page } = pg;
+        return {
+          ...page,
+          stands: mapList(pg.stands, (s) => (isObj(s) ? { suppressInfraWarning: false, ...s } : s)),
+          infra: mapList(pg.infra, (o) => {
+            if (!isObj(o)) return o;
+            const { type, text, ...obj } = o;
+            return { typeId: type, label: typeof text === 'string' ? text : '', ...obj };
+          }),
+        };
+      }),
+    };
+  },
 };
 
 export function migrate(project: unknown, fromVersion: number): unknown {

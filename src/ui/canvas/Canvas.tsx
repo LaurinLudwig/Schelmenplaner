@@ -3,12 +3,13 @@ import { runCommand } from '../../app/commands';
 import { setInteractionKeyHandler } from '../../app/keyboard';
 import { effectivePage } from '../../core/derive';
 import { createFreeSpaceCache, pageFreeSpaces } from '../../core/freeSpace';
+import { markerSize, pageOccupants, typeMap } from '../../core/infra';
 import { fmt } from '../../core/format';
-import type { FestplatzPage, Rect, Vec, View } from '../../core/model/types';
+import type { FestplatzPage, Id, Rect, Vec, View } from '../../core/model/types';
 import { findSnap, rectSnapSource } from '../../core/snap';
 import { defaultView, fitBounds, focusBounds, screenToWorld, worldToScreen, zoomAt, type Bounds } from '../../core/viewport';
 import { cachedDuplicates } from '../../core/numbering';
-import { cachedPageWarnings } from '../../core/warnings';
+import { activeNarrow, cachedInfraWarnings, cachedPageWarnings } from '../../core/warnings';
 import { useStore } from '../../state/store';
 import { IS_MAC } from '../shortcuts/keys';
 import { Icon } from '../icons/Icon';
@@ -16,6 +17,8 @@ import { tip } from '../shortcuts/tip';
 import { BackgroundLayer } from './background/BackgroundLayer';
 import { FpsMeter } from './FpsMeter';
 import { ObjectsLayer } from './objects/ObjectsLayer';
+import { PaperLayer } from './objects/PaperLayer';
+import { pagePaper } from '../../core/paper';
 import { SNAP_PX, type ToolContext, type ToolPointer } from './tools/types';
 import { useCalibrateTool } from './tools/useCalibrateTool';
 import { useCenterTool } from './tools/useCenterTool';
@@ -23,6 +26,8 @@ import { ClockwiseMarker } from './ClockwiseMarker';
 import { useCreateTool } from './tools/useCreateTool';
 import { useMeasureTool } from './tools/useMeasureTool';
 import { useSelectTool } from './tools/useSelectTool';
+import { useInfraTool } from './tools/useInfraTool';
+import { useTitleBlockTool } from './tools/useTitleBlockTool';
 import { interpretWheel } from './wheel';
 
 /** Unter dieser Schrifthöhe (px) wird die Beschriftung ausgeblendet. */
@@ -140,16 +145,40 @@ export function Canvas({ page: storedPage }: { page: FestplatzPage }) {
   const warnOutside = useStore((s) => s.project.settings.warnOutside);
   const warnOverlap = useStore((s) => s.project.settings.warnOverlap);
   const warnDuplicateNr = useStore((s) => s.project.settings.warnDuplicateNr);
-  const warnSettings = useMemo(() => ({ warnOutside, warnOverlap, warnDuplicateNr }), [warnOutside, warnOverlap, warnDuplicateNr]);
+  const warnInfra = useStore((s) => s.project.settings.warnInfra);
+  const warnPassageWidth = useStore((s) => s.project.settings.warnPassageWidth);
+  const minPassageWidth = useStore((s) => s.project.settings.minPassageWidth);
+  const warnSettings = useMemo(
+    () => ({ warnOutside, warnOverlap, warnDuplicateNr, warnInfra, warnPassageWidth }),
+    [warnOutside, warnOverlap, warnDuplicateNr, warnInfra, warnPassageWidth],
+  );
+  const infraTypes = useStore((s) => s.project.infraTypes);
+  const typesById = useMemo(() => typeMap(infraTypes), [infraTypes]);
   // Doppelte Nummern (M5-10) aus dem gespeicherten Projekt: Nummern ändern sich während einer Geste nicht
   const duplicates = useStore((s) => cachedDuplicates(s.project.pages, s.project.settings.numbering.scope));
   // Freiflächen und Warnungen live aus der Page mit Vorschau; der Zwischenspeicher rechnet nur
   // Grundflächen neu, deren Eingaben sich geändert haben (M4-04)
   const [freeCache] = useState(createFreeSpaceCache);
-  const free = useMemo(() => pageFreeSpaces(page.areas, page.stands, minFreeWidth, freeCache), [page.areas, page.stands, minFreeWidth, freeCache]);
+  // Belegende Infrastruktur-Objekte (M7-05) zählen wie Stände
+  const occupants = useMemo(() => pageOccupants(page, infraTypes), [page, infraTypes]);
+  const free = useMemo(() => pageFreeSpaces(page.areas, occupants, minFreeWidth, freeCache), [page.areas, occupants, minFreeWidth, freeCache]);
   const warnings = useMemo(() => cachedPageWarnings(page.areas, page.stands), [page.areas, page.stands]);
+  const infraWarnings = useMemo(() => cachedInfraWarnings(page, infraTypes, minPassageWidth), [page, infraTypes, minPassageWidth]);
+  const infraWarnStands = useMemo(() => new Set(infraWarnings.byStand.keys()), [infraWarnings]);
+  // Blatt, Schriftfeld, Legende (M7-10 bis M7-12)
+  const projectName = useStore((s) => s.project.name);
+  const titleFields = useStore((s) => s.project.titleBlock);
+  const freeShown = free.some((a) => a.free.length > 0);
+  const paper = useMemo(
+    () => pagePaper(page, { name: projectName, categories, infraTypes, titleBlock: titleFields, settings: { minFreeWidth } }, page.layers, freeShown),
+    [page, projectName, categories, infraTypes, titleFields, minFreeWidth, freeShown],
+  );
+  const infraWarnObjects = useMemo(() => new Set(page.infra.filter((o) => activeNarrow(o, infraWarnings, warnSettings)).map((o) => o.id)), [page.infra, infraWarnings, warnSettings]);
   // Von der laufenden Geste bewegte Objekte (gleiche Menge über die ganze Geste, siehe ObjectsLayer)
-  const movingKey = preview?.pageId === storedPage.id ? [...Object.keys(preview.rects), ...(preview.added?.stands.map((s) => s.id) ?? []), ...(preview.added?.areas.map((a) => a.id) ?? [])].join('|') : '';
+  const movingKey =
+    preview?.pageId === storedPage.id
+      ? [...Object.keys(preview.rects), ...(preview.added?.stands.map((s) => s.id) ?? []), ...(preview.added?.areas.map((a) => a.id) ?? []), ...(preview.added?.infra.map((o) => o.id) ?? [])].join('|')
+      : '';
   const movingIds = useMemo(() => (movingKey ? new Set(movingKey.split('|')) : NO_SELECTION), [movingKey]);
   const svgRef = useRef<SVGSVGElement>(null);
   const stageRef = useRef<HTMLElement>(null);
@@ -202,13 +231,18 @@ export function Canvas({ page: storedPage }: { page: FestplatzPage }) {
     view,
     toScreen: (p) => worldToScreen(view, p),
     toWorld: (p) => screenToWorld(view, p),
-    snap: (p) => findSnap(p, [snapSource], SNAP_PX / view.scale),
+    snap: (p, exclude) => findSnap(p, [exclude ? snapSourceWithout(page, exclude) : snapSource], SNAP_PX / view.scale),
+    geometryOf: (typeId) => typesById.get(typeId)?.geometry,
+    markerSize: markerSize(labelFontSize),
+    paper,
   };
   const measureTool = useMeasureTool(ctx, tool === 'measure');
   const calibrateTool = useCalibrateTool(ctx, tool === 'calibrate');
   const selectTool = useSelectTool(ctx, tool === 'select' && !spaceDown);
   const areaTool = useCreateTool(ctx, 'area', tool === 'area' && !spaceDown);
   const standTool = useCreateTool(ctx, 'stand', tool === 'stand' && !spaceDown);
+  const infraTool = useInfraTool(ctx, tool === 'infra' && !spaceDown);
+  const titleBlockTool = useTitleBlockTool(ctx, tool === 'titleBlock' && !spaceDown);
   const centerTool = useCenterTool(ctx, tool === 'numberCenter' && !spaceDown);
   const activeTool =
     tool === 'measure'
@@ -221,9 +255,13 @@ export function Canvas({ page: storedPage }: { page: FestplatzPage }) {
             ? areaTool
             : tool === 'stand'
               ? standTool
-              : tool === 'numberCenter'
-                ? centerTool
-                : null;
+              : tool === 'infra'
+                ? infraTool
+                : tool === 'titleBlock'
+                  ? titleBlockTool
+                : tool === 'numberCenter'
+                  ? centerTool
+                  : null;
   const activeToolRef = useRef(activeTool);
   useLayoutEffect(() => {
     activeToolRef.current = activeTool;
@@ -462,7 +500,21 @@ export function Canvas({ page: storedPage }: { page: FestplatzPage }) {
             duplicates={duplicates}
             baseStands={storedPage.stands}
             movingIds={movingIds}
+            infraTypes={typesById}
+            markerSize={markerSize(labelFontSize)}
+            infraWarnStands={infraWarnStands}
+            infraWarnObjects={infraWarnObjects}
           />
+          {page.layers.sheet.visible && (
+            <PaperLayer
+              paper={paper}
+              sheet={page.sheet}
+              showTitleBlock={page.titleBlock.visible}
+              showLegend={page.legend.visible}
+              selected={selection?.kind === 'paper' ? selection.element : null}
+              locked={page.layers.sheet.locked}
+            />
+          )}
       </WorldLayer>
       <svg className="canvas-layer canvas-overlay" aria-hidden="true">
         <ClockwiseMarker page={storedPage} toScreen={ctx.toScreen} />
@@ -498,6 +550,15 @@ export function Canvas({ page: storedPage }: { page: FestplatzPage }) {
       </div>
     </main>
   );
+}
+
+/** Fangquelle ohne ein Objekt (Endpunkt-Griffe einer Linie fangen nicht an der Linie selbst). */
+function snapSourceWithout(page: FestplatzPage, exclude: Id) {
+  const rects: Rect[] = [];
+  if (page.layers.areas.visible) rects.push(...page.areas);
+  if (page.layers.stands.visible) rects.push(...page.stands);
+  if (page.layers.infra.visible) rects.push(...page.infra.filter((o) => o.id !== exclude));
+  return rectSnapSource(rects.filter((r) => (r as Rect & { id?: Id }).id !== exclude));
 }
 
 /** Nordpfeil oben rechts; `angle` = Richtung Norden in Grad im Uhrzeigersinn ab „oben“. */

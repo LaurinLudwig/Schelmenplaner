@@ -1,5 +1,5 @@
 import { addPage, cyclePage, deletePage, duplicatePage, gotoPage } from '../state/pages';
-import { saveInvertPan, saveTheme, selectCanRedo, selectCanUndo, START_PAGE, useStore, type ToolId } from '../state/store';
+import { saveInvertPan, saveTheme, selectCanRedo, selectCanUndo, START_PAGE, useStore, type PaperElement, type ToolId } from '../state/store';
 import { setGridVisible, setSnap, type SnapKind } from '../state/pageSettings';
 import { copySelection, cutSelection, deleteSelection, duplicateSelection, hasClipboard, nudge, paste, selectAll, selectedIds } from '../state/objects';
 import { importBackground } from './backgroundImport';
@@ -11,6 +11,7 @@ import { fitView, visibleBounds, zoomBy } from './view';
 import { exportCurrentList } from './exportCsv';
 import { openStartTab } from './startPageNav';
 import { useStartPage } from '../state/startPage';
+import { nudgePaper, setPaperVisible } from '../state/paper';
 
 /**
  * Befehle, die über Shortcuts, Menüs und Buttons ausgelöst werden. Der Schlüssel entspricht
@@ -31,8 +32,38 @@ const activePage = () => s().project.pages.find((p) => p.id === s().ui.activePag
 const hasBackground = () => !!activePage()?.background;
 const setTool = (tool: ToolId) => () => s().setUi({ tool });
 const hasObjects = () => onDrawingPage() && selectedIds().length > 0;
+/** Ausgewähltes Papier-Element (Blatt, Schriftfeld, Legende, M7). */
+const paperSelection = () => (onDrawingPage() && s().ui.selection?.kind === 'paper' ? (s().ui.selection as { kind: 'paper'; element: PaperElement }).element : null);
 const snapCmd = (kind: SnapKind): Command => ({ run: () => setSnap(kind, !s().project.settings.snap[kind]), enabled: onDrawingPage });
-const nudgeCmd = (dx: number, dy: number): Command => ({ run: (e) => nudge(dx, dy, !!e?.repeat), enabled: hasObjects });
+/** Pfeiltasten: Objekte um 0,1 m bzw. 1 m, Papier-Elemente um 1 mm bzw. 10 mm (M7). */
+const nudgeCmd = (dx: number, dy: number): Command => ({
+  run: (e) => (paperSelection() ? nudgePaper(dx * 10, dy * 10, !!e?.repeat) : nudge(dx, dy, !!e?.repeat)),
+  enabled: () => hasObjects() || !!paperSelection(),
+});
+
+/** Entf: Objekte löschen; ein ausgewähltes Schriftfeld bzw. eine Legende ausblenden (M7). */
+function deleteOrHide() {
+  const el = paperSelection();
+  const page = activePage();
+  if (el === 'titleBlock' || el === 'legend') {
+    if (page) setPaperVisible(page.id, el, false);
+  } else deleteSelection();
+}
+
+/** Shift+I: nächster Infrastruktur-Typ (zyklisch) und Werkzeug aktivieren (M7, wie die Werkzeuggruppen in Illustrator). */
+function nextInfraType() {
+  const types = s().project.infraTypes;
+  if (!types.length) return;
+  const i = types.findIndex((t) => t.id === s().ui.infraTypeId);
+  const next = s().ui.tool === 'infra' ? types[(i + 1) % types.length]! : (types[i] ?? types[0]!);
+  s().setUi({ tool: 'infra', infraTypeId: next.id });
+}
+
+/** Shift+L: Legende der aktiven Page ein- oder ausblenden (Undo-Schritt, M7). */
+function toggleLegend() {
+  const page = activePage();
+  if (page) setPaperVisible(page.id, 'legend', !page.legend.visible);
+}
 
 export async function confirmDeletePage(id: string) {
   const page = s().project.pages.find((p) => p.id === id);
@@ -66,7 +97,7 @@ export const COMMANDS: Record<string, Command> = {
   'edit.copy': { run: copySelection, enabled: hasObjects },
   'edit.paste': { run: () => paste(visibleBounds()), enabled: () => onDrawingPage() && hasClipboard() },
   'edit.duplicate': { run: duplicateSelection, enabled: hasObjects },
-  'edit.delete': { run: deleteSelection, enabled: hasObjects },
+  'edit.delete': { run: deleteOrHide, enabled: () => hasObjects() || paperSelection() === 'titleBlock' || paperSelection() === 'legend' },
   'edit.selectAll': { run: selectAll, enabled: onDrawingPage },
   'edit.deselect': { run: () => s().setUi({ selection: null }), enabled: () => onDrawingPage() && !!s().ui.selection },
   'edit.nudgeLeft': nudgeCmd(-0.1, 0),
@@ -83,6 +114,10 @@ export const COMMANDS: Record<string, Command> = {
   'tool.zoom': { run: setTool('zoom'), enabled: onDrawingPage },
   'tool.area': { run: setTool('area'), enabled: onDrawingPage },
   'tool.stand': { run: setTool('stand'), enabled: onDrawingPage },
+  'tool.infra': { run: setTool('infra'), enabled: onDrawingPage },
+  'tool.infraNext': { run: nextInfraType, enabled: onDrawingPage },
+  'tool.titleBlock': { run: setTool('titleBlock'), enabled: onDrawingPage },
+  'view.legend': { run: toggleLegend, enabled: onDrawingPage },
   'tool.measure': { run: setTool('measure'), enabled: onDrawingPage },
   'tool.calibrate': {
     run: setTool('calibrate'),
@@ -122,6 +157,7 @@ export const COMMANDS: Record<string, Command> = {
 
   'start.stands': { run: () => openStartTab('stands'), enabled: onStartPage },
   'start.free': { run: () => openStartTab('free'), enabled: onStartPage },
+  'start.infra': { run: () => openStartTab('infra'), enabled: onStartPage },
   'start.settings': { run: () => openStartTab('settings'), enabled: onStartPage },
   'start.search': {
     run: () => {

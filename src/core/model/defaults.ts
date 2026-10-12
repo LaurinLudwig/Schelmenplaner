@@ -5,8 +5,10 @@ import {
   type InfraTypeDef,
   type LayerId,
   type LayerState,
+  type PaperAnchor,
   type Project,
   type ProjectSettings,
+  type Sheet,
 } from './types';
 
 export const DEFAULT_SETTINGS: ProjectSettings = {
@@ -17,19 +19,27 @@ export const DEFAULT_SETTINGS: ProjectSettings = {
   warnOutside: true,
   warnOverlap: true,
   warnDuplicateNr: true,
+  warnInfra: true,
+  warnPassageWidth: true,
+  minPassageWidth: 3.5,
   snap: { front: true, grid: false, neighbors: true },
 };
 
+/** Feste Infrastruktur-Typen (spec.md §11). Reihenfolge = Reihenfolge in Werkzeuggruppe und Legende. */
 export const DEFAULT_INFRA_TYPES: InfraTypeDef[] = [
-  { type: 'barrierMobile', label: 'Mobile Sperre', color: '#e0a526', icon: 'fence', occupiesArea: true },
-  { type: 'barrierFixed', label: 'Feste Sperre', color: '#c0392b', icon: 'fence', occupiesArea: true },
-  { type: 'medical', label: 'Sanitätsdienst', color: '#e74c3c', icon: 'medical_services', occupiesArea: true },
-  { type: 'ambulance', label: 'RTW-Platz', color: '#d35454', icon: 'ambulance', occupiesArea: true },
-  { type: 'toilet', label: 'Toilette', color: '#3a86c8', icon: 'wc', occupiesArea: true },
-  { type: 'waste', label: 'Müllcontainer', color: '#6d7a80', icon: 'delete', occupiesArea: true },
-  { type: 'narrowPassage', label: 'Enge Durchfahrt', color: '#9b59b6', icon: 'signpost', occupiesArea: false },
-  { type: 'marker', label: 'Marker', color: '#16a085', icon: 'location_on', occupiesArea: false },
+  { id: 'barrierMobile', builtin: true, label: 'Mobile Sperre', geometry: 'line', color: '#e0a526', icon: 'fence', defaultW: 3.5, defaultD: 0.3, occupiesArea: false, keepClear: true },
+  { id: 'barrierFixed', builtin: true, label: 'Feste Sperre', geometry: 'line', color: '#c0392b', icon: 'block', defaultW: 4, defaultD: 0.8, occupiesArea: false, keepClear: true },
+  { id: 'medical', builtin: true, label: 'Sanitätsdienst', geometry: 'rect', color: '#e74c3c', icon: 'medical_services', defaultW: 6, defaultD: 3, occupiesArea: true, keepClear: true },
+  { id: 'ambulance', builtin: true, label: 'RTW-Platz', geometry: 'rect', color: '#d35454', icon: 'ambulance', defaultW: 8, defaultD: 3.5, occupiesArea: true, keepClear: true },
+  { id: 'toilet', builtin: true, label: 'Toilette', geometry: 'rect', color: '#3a86c8', icon: 'wc', defaultW: 6, defaultD: 2.5, occupiesArea: true, keepClear: true },
+  { id: 'waste', builtin: true, label: 'Müllcontainer', geometry: 'rect', color: '#6d7a80', icon: 'delete', defaultW: 1.5, defaultD: 1.2, occupiesArea: true, keepClear: true },
+  { id: 'narrowPassage', builtin: true, label: 'Enge Durchfahrt', geometry: 'line', color: '#9b59b6', icon: 'arrow_range', defaultW: 3.5, defaultD: 0, occupiesArea: true, keepClear: true },
+  { id: 'marker', builtin: true, label: 'Marker', geometry: 'point', color: '#16a085', icon: 'location_on', defaultW: 0, defaultD: 0, occupiesArea: false, keepClear: false },
 ];
+
+export const DEFAULT_SHEET: Sheet = { format: 'A3', orientation: 'landscape', scale: null, cx: 0, cy: 0 };
+export const DEFAULT_TITLE_BLOCK_ANCHOR: PaperAnchor = { visible: true, corner: 'br', dx: 10, dy: 10 };
+export const DEFAULT_LEGEND_ANCHOR: PaperAnchor = { visible: true, corner: 'bl', dx: 10, dy: 10 };
 
 export function defaultLayers(): Record<LayerId, LayerState> {
   return Object.fromEntries(LAYER_IDS.map((id) => [id, { visible: true, locked: false }])) as Record<
@@ -53,8 +63,10 @@ export function createPage(name: string): FestplatzPage {
     areas: [],
     stands: [],
     infra: [],
-    titleBlockPos: { x: 0, y: 0 },
+    sheet: { ...DEFAULT_SHEET },
+    titleBlock: { ...DEFAULT_TITLE_BLOCK_ANCHOR },
     titleBlockText: '',
+    legend: { ...DEFAULT_LEGEND_ANCHOR },
     view: null,
   };
 }

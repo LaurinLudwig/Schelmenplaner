@@ -1,6 +1,7 @@
 import { useMemo } from 'react';
 import { freeOf } from '../../app/startPageData';
-import { showWarnings } from '../../app/startPageNav';
+import { showInfraWarnings, showWarnings } from '../../app/startPageNav';
+import { InfraIconView } from '../icons/infraIcons';
 import { fmt } from '../../core/format';
 import { CONNECTION_LABEL } from '../../core/label';
 import { CONNECTION_KEYS, type ConnectionKey } from '../../core/power';
@@ -21,8 +22,9 @@ const CONN_SHORT: Record<ConnectionKey, string> = { ...CONNECTION_LABEL, none: '
 export function StatsBar() {
   const pages = useStore((s) => s.project.pages);
   const settings = useStore((s) => s.project.settings);
+  const infraTypes = useStore((s) => s.project.infraTypes);
   const setUi = useStore((s) => s.setUi);
-  const stats = useMemo(() => projectStats({ pages, settings }, freeOf(settings.minFreeWidth)), [pages, settings]);
+  const stats = useMemo(() => projectStats({ pages, settings, infraTypes }, freeOf(settings.minFreeWidth, infraTypes)), [pages, settings, infraTypes]);
   const t = stats.total;
   return (
     <div className="sp-stats" data-testid="stats">
@@ -33,6 +35,7 @@ export function StatsBar() {
           <Icon name="bolt" size={14} /> {fmt(t.sumKw)} kW
         </div>
         <Connections by={t.byConnection} />
+        <InfraCounts byType={t.infraByType} infraKw={t.infraKw} />
         <Warn count={t.warnings} pageId={null} />
       </article>
       {stats.pages.map((p) => (
@@ -51,6 +54,7 @@ export function StatsBar() {
             <PowerMeter power={p.power} compact />
           )}
           <Connections by={p.power.byConnection} />
+          <InfraCounts byType={p.infraByType} infraKw={p.power.infraKw} />
           <Warn count={p.warnings} pageId={p.pageId} />
         </article>
       ))}
@@ -99,22 +103,59 @@ function Connections({ by }: { by: Record<ConnectionKey, { count: number; kw: nu
   );
 }
 
+/** Anzahl je Infrastruktur-Typ (nur vorkommende, mit Symbol) und Strom der Infrastruktur (M7-09). */
+function InfraCounts({ byType, infraKw }: { byType: Record<string, number>; infraKw: number }) {
+  const types = useStore((s) => s.project.infraTypes);
+  const used = types.filter((t) => byType[t.id]);
+  if (!used.length) return null;
+  return (
+    <div className="stat-infra" data-testid="stat-infra">
+      {used.map((t) => (
+        <span key={t.id} data-type={t.id} {...tip({ label: `${byType[t.id]} × ${t.label}`, side: 'bottom' })}>
+          <span style={{ color: t.color }}>
+            <InfraIconView name={t.icon} size={13} />
+          </span>
+          {byType[t.id]}
+        </span>
+      ))}
+      {infraKw > 0 && <span className="muted">davon Infrastruktur {fmt(infraKw)} kW</span>}
+    </div>
+  );
+}
+
 function Warn({ count, pageId }: { count: WarningCount; pageId: string | null }) {
-  if (!count.stands) return <div className="stat-ok">keine Warnungen</div>;
+  if (!count.stands && !count.narrow) return <div className="stat-ok">keine Warnungen</div>;
   const parts = [
+    count.infra ? `${count.infra} in Freihalteflächen` : '',
     count.overlap ? `${count.overlap} Überlappung${count.overlap === 1 ? '' : 'en'}` : '',
     count.outside ? `${count.outside} außerhalb` : '',
     count.duplicate ? `${count.duplicate} mit doppelter Nummer` : '',
   ].filter(Boolean);
+  const severe = count.overlap > 0 || count.infra > 0;
   return (
-    <button
-      type="button"
-      className={`stat-warn${count.overlap ? ' overlap' : ''}`}
-      data-testid="stat-warn"
-      onClick={() => showWarnings(pageId)}
-      {...tip({ label: `${parts.join(', ')} – in der Tabelle zeigen`, side: 'bottom', ariaLabel: false })}
-    >
-      <Icon name="warning" size={14} /> {count.stands} {count.stands === 1 ? 'Warnung' : 'Warnungen'}
-    </button>
+    <div className="stat-warn-row">
+      {count.stands > 0 && (
+        <button
+          type="button"
+          className={`stat-warn${severe ? ' overlap' : ''}`}
+          data-testid="stat-warn"
+          onClick={() => showWarnings(pageId)}
+          {...tip({ label: `${parts.join(', ')} – in der Tabelle zeigen`, side: 'bottom', ariaLabel: false })}
+        >
+          <Icon name="warning" size={14} /> {count.stands} {count.stands === 1 ? 'Warnung' : 'Warnungen'}
+        </button>
+      )}
+      {count.narrow > 0 && (
+        <button
+          type="button"
+          className="stat-warn overlap"
+          data-testid="stat-warn-infra"
+          onClick={() => showInfraWarnings(pageId)}
+          {...tip({ label: `${count.narrow} Durchfahrt${count.narrow === 1 ? '' : 'en'} zu eng – in der Infrastrukturliste zeigen`, side: 'bottom', ariaLabel: false })}
+        >
+          <Icon name="warning" size={14} /> {count.narrow} Infrastruktur
+        </button>
+      )}
+    </div>
   );
 }

@@ -1,7 +1,9 @@
 import { createFreeSpaceCache, pageFreeSpaces, type FreeSpaceCache } from '../core/freeSpace';
 import { defaultFreeSort, filterFreeSpaces, freeSpaceRows, isFitFilterActive, sortFreeSpaces, type FreeSpaceRow } from '../core/freeSpaceList';
 import { CONNECTION_LABEL } from '../core/label';
-import type { FestplatzPage, Id, Project } from '../core/model/types';
+import { pageOccupants } from '../core/infra';
+import { filterInfraRows, infraRows, sortInfraRows, type InfraRow } from '../core/infraTable';
+import type { FestplatzPage, Id, InfraTypeDef, Project } from '../core/model/types';
 import { filterRows, sortRows, standRows, type StandRow } from '../core/standTable';
 import type { useStartPage } from '../state/startPage';
 
@@ -33,25 +35,30 @@ export function displayedStandRows(project: Project, st: Pick<StartState, 'stand
 
 /** Zwischenspeicher der Freiflächen je Page: nur geänderte Grundflächen werden neu berechnet. */
 const freeCaches = new Map<Id, FreeSpaceCache>();
-export function freeOf(minWidth: number) {
+export function freeOf(minWidth: number, types: readonly InfraTypeDef[]) {
   return (page: FestplatzPage) => {
     let c = freeCaches.get(page.id);
     if (!c) freeCaches.set(page.id, (c = createFreeSpaceCache()));
-    return pageFreeSpaces(page.areas, page.stands, minWidth, c);
+    return pageFreeSpaces(page.areas, pageOccupants(page, types), minWidth, c);
   };
 }
 
 export function allFreeRows(project: Project): FreeSpaceRow[] {
-  return freeSpaceRows(project, freeOf(project.settings.minFreeWidth));
+  return freeSpaceRows(project, freeOf(project.settings.minFreeWidth, project.infraTypes));
 }
 
 export function displayedFreeRows(all: readonly FreeSpaceRow[], st: Pick<StartState, 'freeFilter' | 'freeSort'>): FreeSpaceRow[] {
   return sortFreeSpaces(filterFreeSpaces(all, st.freeFilter), st.freeSort ?? defaultFreeSort(isFitFilterActive(st.freeFilter)));
 }
 
+export function displayedInfraRows(project: Project, st: Pick<StartState, 'infraFilter' | 'infraSort'>): { all: InfraRow[]; rows: InfraRow[] } {
+  const all = infraRows(project);
+  return { all, rows: sortInfraRows(filterInfraRows(all, st.infraFilter), st.infraSort) };
+}
+
 export const connectionText = (r: StandRow) => (r.stand.connection ? CONNECTION_LABEL[r.stand.connection] : '');
 
 export function warningText(r: StandRow): string {
   const w = r.warnings;
-  return [w.overlap && 'Überlappung', w.outside && 'außerhalb', w.duplicate && 'doppelte Nummer'].filter(Boolean).join(', ');
+  return [w.infra && 'Infrastruktur', w.overlap && 'Überlappung', w.outside && 'außerhalb', w.duplicate && 'doppelte Nummer'].filter(Boolean).join(', ');
 }

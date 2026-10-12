@@ -1,10 +1,30 @@
 import { normAngle } from '../geometry/rect';
 import { newId } from '../id';
 import { UserError } from '../errors';
-import { createPage, defaultLayers, DEFAULT_INFRA_TYPES, DEFAULT_SETTINGS } from './defaults';
+import { createPage, defaultLayers, DEFAULT_INFRA_TYPES, DEFAULT_LEGEND_ANCHOR, DEFAULT_SETTINGS, DEFAULT_SHEET, DEFAULT_TITLE_BLOCK_ANCHOR } from './defaults';
+import { clampToLimits, GEOMETRIES, INFRA_LIMITS, isInfraIcon } from '../infra';
 import { CURRENT_SCHEMA_VERSION, migrate } from './migrations';
 import { clampDigits, clampStart } from '../numbering';
-import { LAYER_IDS, type Area, type Background, type Category, type Connection, type FestplatzPage, type Project, type ProjectFile, type Stand, type Vec } from './types';
+import {
+  LAYER_IDS,
+  PAPER_FORMATS,
+  type Area,
+  type Background,
+  type Category,
+  type Connection,
+  type Corner,
+  type FestplatzPage,
+  type InfraGeometry,
+  type InfraObject,
+  type InfraTypeDef,
+  type PaperAnchor,
+  type PaperFormat,
+  type Project,
+  type ProjectFile,
+  type Sheet,
+  type Stand,
+  type Vec,
+} from './types';
 
 export class ProjectFileError extends UserError {
   override name = 'ProjectFileError';
@@ -55,6 +75,7 @@ function normalizeProject(p: Obj): Project {
   const objectIds = new Set<string>();
   const categories = normalizeCategories(p.categories);
   const categoryIds = new Set(categories.map((c) => c.id));
+  const infraTypes = normalizeInfraTypes(p.infraTypes);
   return {
     id: p.id,
     name: str(p.name, 'Projekt'),
@@ -70,22 +91,25 @@ function normalizeProject(p: Obj): Project {
       warnOutside: bool(s.warnOutside, DEFAULT_SETTINGS.warnOutside),
       warnOverlap: bool(s.warnOverlap, DEFAULT_SETTINGS.warnOverlap),
       warnDuplicateNr: bool(s.warnDuplicateNr, DEFAULT_SETTINGS.warnDuplicateNr),
+      warnInfra: bool(s.warnInfra, DEFAULT_SETTINGS.warnInfra),
+      warnPassageWidth: bool(s.warnPassageWidth, DEFAULT_SETTINGS.warnPassageWidth),
+      minPassageWidth: clampMinPassage(num(s.minPassageWidth, DEFAULT_SETTINGS.minPassageWidth)),
       snap: {
         front: bool(snap.front, DEFAULT_SETTINGS.snap.front),
         grid: bool(snap.grid, DEFAULT_SETTINGS.snap.grid),
         neighbors: bool(snap.neighbors, DEFAULT_SETTINGS.snap.neighbors),
       },
     },
-    pages: p.pages.map((pg, i) => normalizePage(pg, i, ids, objectIds, categoryIds)),
+    pages: p.pages.map((pg, i) => normalizePage(pg, i, ids, objectIds, categoryIds, infraTypes)),
     categories,
-    infraTypes: Array.isArray(p.infraTypes) && p.infraTypes.length ? (p.infraTypes as Project['infraTypes']) : structuredClone(DEFAULT_INFRA_TYPES),
+    infraTypes,
     exportProfiles: arr(p.exportProfiles),
     titleBlock: { dateText: str(tb.dateText, ''), version: str(tb.version, '') },
     unplaced: arr(p.unplaced),
   };
 }
 
-function normalizePage(raw: unknown, index: number, ids: Set<string>, objectIds: Set<string>, categoryIds: Set<string>): FestplatzPage {
+function normalizePage(raw: unknown, index: number, ids: Set<string>, objectIds: Set<string>, categoryIds: Set<string>, types: readonly InfraTypeDef[]): FestplatzPage {
   if (!isObj(raw) || typeof raw.id !== 'string' || ids.has(raw.id)) {
     throw new ProjectFileError(`Festplatz-Page Nr. ${index + 1} ist beschädigt (fehlende oder doppelte ID).`);
   }
@@ -99,7 +123,6 @@ function normalizePage(raw: unknown, index: number, ids: Set<string>, objectIds:
   }
   const grid = isObj(raw.grid) ? raw.grid : {};
   const view = isObj(raw.view) ? raw.view : null;
-  const tbp = isObj(raw.titleBlockPos) ? raw.titleBlockPos : {};
   const mode = raw.numberingMode;
   const background = normalizeBackground(raw.background);
   // E-13: Es gibt nur eine Hintergrund-Sperre (`background.locked`); eine alte Ebenen-Sperre wird übernommen.
@@ -119,9 +142,11 @@ function normalizePage(raw: unknown, index: number, ids: Set<string>, objectIds:
     background,
     areas: arr(raw.areas).map((a) => normalizeArea(a, objectIds)).filter((a): a is Area => !!a),
     stands: arr(raw.stands).map((st) => normalizeStand(st, objectIds, categoryIds)).filter((st): st is Stand => !!st),
-    infra: arr(raw.infra),
-    titleBlockPos: { x: num(tbp.x, 0), y: num(tbp.y, 0) },
+    infra: arr(raw.infra).map((o) => normalizeInfra(o, objectIds, types)).filter((o): o is InfraObject => !!o),
+    sheet: normalizeSheet(raw.sheet),
+    titleBlock: normalizeAnchor(raw.titleBlock, DEFAULT_TITLE_BLOCK_ANCHOR),
     titleBlockText: str(raw.titleBlockText, ''),
+    legend: normalizeAnchor(raw.legend, DEFAULT_LEGEND_ANCHOR),
     view: view ? { scale: num(view.scale, 10), tx: num(view.tx, 0), ty: num(view.ty, 0) } : null,
   };
 }
@@ -224,6 +249,100 @@ function normalizeStand(raw: unknown, ids: Set<string>, categoryIds: Set<string>
     suppressOutsideWarning: bool(raw.suppressOutsideWarning, false),
     suppressOverlapWarning: bool(raw.suppressOverlapWarning, false),
     suppressDuplicateWarning: bool(raw.suppressDuplicateWarning, false),
+    suppressInfraWarning: bool(raw.suppressInfraWarning, false),
     ...r,
+  };
+}
+
+export const MIN_PASSAGE_LIMITS = { min: 0.5, max: 50 } as const;
+export const clampMinPassage = (v: number) => clampToLimits(v, MIN_PASSAGE_LIMITS);
+
+/**
+ * Infrastruktur-Typen prüfen (§11). Feste Typen sind immer vorhanden (fehlende werden an ihrer Stelle
+ * ergänzt); Geometrie und Symbol fester Typen sind fest. Eigene Typen mit unbrauchbaren Angaben entfallen.
+ */
+function normalizeInfraTypes(raw: unknown): InfraTypeDef[] {
+  const builtin = new Map(DEFAULT_INFRA_TYPES.map((t) => [t.id, t]));
+  const seen = new Set<string>();
+  const out: InfraTypeDef[] = [];
+  for (const t of arr(raw)) {
+    if (!isObj(t) || typeof t.id !== 'string' || !t.id || seen.has(t.id)) continue;
+    const def = builtin.get(t.id);
+    const geometry: InfraGeometry | null = def ? def.geometry : GEOMETRIES.includes(t.geometry as InfraGeometry) ? (t.geometry as InfraGeometry) : null;
+    if (!geometry) continue;
+    seen.add(t.id);
+    const lim = INFRA_LIMITS[geometry];
+    const base = def ?? { defaultW: geometry === 'point' ? 0 : 3, defaultD: geometry === 'rect' ? 3 : geometry === 'line' ? 0.3 : 0, occupiesArea: false, keepClear: false, color: '#a7adb3' };
+    out.push({
+      id: t.id,
+      builtin: !!def,
+      label: str(t.label, def?.label ?? 'Infrastruktur') || (def?.label ?? 'Infrastruktur'),
+      geometry,
+      color: isColor(t.color) ? t.color : base.color,
+      icon: def ? def.icon : isInfraIcon(t.icon) ? t.icon : 'info',
+      defaultW: clampToLimits(num(t.defaultW, base.defaultW), lim.w),
+      defaultD: clampToLimits(num(t.defaultD, base.defaultD), lim.d),
+      occupiesArea: geometry !== 'point' && bool(t.occupiesArea, base.occupiesArea),
+      keepClear: geometry !== 'point' && bool(t.keepClear, base.keepClear),
+    });
+  }
+  // fehlende feste Typen an ihrer Standardposition einfügen
+  DEFAULT_INFRA_TYPES.forEach((d, i) => {
+    if (!seen.has(d.id)) out.splice(Math.min(i, out.length), 0, structuredClone(d));
+  });
+  return out;
+}
+
+/** Infrastruktur-Objekt prüfen; unbekannter Typ oder unbrauchbare Lage → verworfen. */
+function normalizeInfra(raw: unknown, ids: Set<string>, types: readonly InfraTypeDef[]): InfraObject | null {
+  if (!isObj(raw)) return null;
+  const type = types.find((t) => t.id === raw.typeId);
+  const cx = num(raw.cx, NaN);
+  const cy = num(raw.cy, NaN);
+  if (!type || ![cx, cy].every(Number.isFinite)) return null;
+  const lim = INFRA_LIMITS[type.geometry];
+  const w = num(raw.w, NaN);
+  const d = num(raw.d, NaN);
+  if (type.geometry !== 'point' && (!(w >= lim.w.min) || !(d >= lim.d.min))) return null;
+  const rect = type.geometry === 'rect';
+  return {
+    id: objectId(raw.id, ids),
+    typeId: type.id,
+    label: str(raw.label, ''),
+    note: str(raw.note, ''),
+    powerKw: rect ? Math.max(0, num(raw.powerKw, 0)) : 0,
+    connection: rect && CONNECTIONS.includes(raw.connection as Connection) ? (raw.connection as Connection) : null,
+    suppressWidthWarning: bool(raw.suppressWidthWarning, false),
+    cx,
+    cy,
+    w: type.geometry === 'point' ? 0 : Math.min(lim.w.max, w),
+    d: type.geometry === 'point' ? 0 : Math.min(lim.d.max, d),
+    rot: type.geometry === 'point' ? 0 : normAngle(num(raw.rot, 0)),
+  };
+}
+
+export const SCALE_LIMITS = { min: 10, max: 100000 } as const;
+
+function normalizeSheet(raw: unknown): Sheet {
+  const s = isObj(raw) ? raw : {};
+  const scale = typeof s.scale === 'number' && Number.isFinite(s.scale) ? Math.round(clampToLimits(s.scale, SCALE_LIMITS)) : null;
+  return {
+    format: PAPER_FORMATS.includes(s.format as PaperFormat) ? (s.format as PaperFormat) : DEFAULT_SHEET.format,
+    orientation: s.orientation === 'portrait' || s.orientation === 'landscape' ? s.orientation : DEFAULT_SHEET.orientation,
+    scale,
+    cx: num(s.cx, DEFAULT_SHEET.cx),
+    cy: num(s.cy, DEFAULT_SHEET.cy),
+  };
+}
+
+const CORNERS: readonly Corner[] = ['tl', 'tr', 'bl', 'br'];
+
+function normalizeAnchor(raw: unknown, fallback: PaperAnchor): PaperAnchor {
+  const a = isObj(raw) ? raw : {};
+  return {
+    visible: bool(a.visible, fallback.visible),
+    corner: CORNERS.includes(a.corner as Corner) ? (a.corner as Corner) : fallback.corner,
+    dx: Math.max(0, num(a.dx, fallback.dx)),
+    dy: Math.max(0, num(a.dy, fallback.dy)),
   };
 }

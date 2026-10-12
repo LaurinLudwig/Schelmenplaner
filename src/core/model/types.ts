@@ -28,7 +28,7 @@ export interface Rect {
   rot: number;
 }
 
-export const LAYER_IDS = ['background', 'areas', 'free', 'stands', 'infra', 'labels'] as const;
+export const LAYER_IDS = ['background', 'areas', 'free', 'stands', 'infra', 'labels', 'sheet'] as const;
 export type LayerId = (typeof LAYER_IDS)[number];
 
 export interface LayerState {
@@ -42,7 +42,8 @@ export interface Category {
   color: string;
 }
 
-export const INFRA_TYPES = [
+/** IDs der festen Infrastruktur-Typen (spec.md §11). Eigene Typen haben eine zufällige ID. */
+export const BUILTIN_INFRA_IDS = [
   'barrierMobile',
   'barrierFixed',
   'medical',
@@ -52,15 +53,27 @@ export const INFRA_TYPES = [
   'narrowPassage',
   'marker',
 ] as const;
-export type InfraType = (typeof INFRA_TYPES)[number];
+export type BuiltinInfraId = (typeof BUILTIN_INFRA_IDS)[number];
+
+/** Geometrie eines Infrastruktur-Typs. Gespeichert wird immer ein Rechteck (siehe `InfraObject`). */
+export type InfraGeometry = 'rect' | 'line' | 'point';
 
 export interface InfraTypeDef {
-  type: InfraType;
+  /** Bei festen Typen eine der `BUILTIN_INFRA_IDS`. */
+  id: Id;
+  builtin: boolean;
   label: string;
+  geometry: InfraGeometry;
   color: string;
+  /** Name eines Symbols aus `INFRA_ICONS` (core/infra.ts). */
   icon: string;
-  /** Belegt die Achse einer Grundfläche wie ein Geschäft (dort keine Freifläche). */
+  /** Standardmaß beim Anlegen: Rechteck B × T, Linie Länge × Stärke, Punkt 0 × 0. */
+  defaultW: number;
+  defaultD: number;
+  /** Belegt die Achse einer Grundfläche wie ein Geschäft (dort keine Freifläche, spec.md §4). */
   occupiesArea: boolean;
+  /** Ein Stand darin bekommt die Warnung „Infrastruktur“ (spec.md §3, §11). */
+  keepClear: boolean;
 }
 
 /** Index einer Rechteckkante (lokal, ungedreht): 0 oben, 1 rechts, 2 unten, 3 links. */
@@ -93,13 +106,50 @@ export interface Stand extends Rect {
   suppressOverlapWarning: boolean;
   /** Warnung „doppelte Nummer“ für diesen Stand ignorieren. */
   suppressDuplicateWarning: boolean;
+  /** Warnung „Infrastruktur“ für diesen Stand ignorieren. */
+  suppressInfraWarning: boolean;
 }
 
+/**
+ * Infrastruktur-Objekt (spec.md §11). Rechteck wie ein Stand; bei Linien ist `w` die Länge (entlang der lokalen
+ * x-Achse, Richtung = `rot`) und `d` die Strichstärke (auch 0), bei Punkten sind `w` und `d` 0.
+ * Bei der engen Durchfahrt ist `w` die lichte Breite.
+ */
 export interface InfraObject extends Rect {
   id: Id;
-  type: InfraType;
-  /** Text des freien Markers. Bei der engen Durchfahrt ist `w` die lichte Breite. */
-  text?: string;
+  typeId: Id;
+  /** Bezeichnung; beim Marker der angezeigte Text. */
+  label: string;
+  note: string;
+  /** Nur bei Rechteck-Typen; sonst 0 bzw. null. */
+  powerKw: number;
+  connection: Connection | null;
+  /** Warnung „Durchfahrt zu eng“ für dieses Objekt ignorieren. */
+  suppressWidthWarning: boolean;
+}
+
+export const PAPER_FORMATS = ['A4', 'A3', 'A2', 'A1', 'A0'] as const;
+export type PaperFormat = (typeof PAPER_FORMATS)[number];
+
+/** Blatt einer Festplatz-Page (spec.md §8): Papier für Druck und PDF. */
+export interface Sheet {
+  format: PaperFormat;
+  orientation: 'portrait' | 'landscape';
+  /** Maßstab 1:n; null = an Seite anpassen. */
+  scale: number | null;
+  /** Mitte des Blatts in Metern (nur bei festem Maßstab maßgeblich). */
+  cx: number;
+  cy: number;
+}
+
+export type Corner = 'tl' | 'tr' | 'bl' | 'br';
+
+/** Lage eines Papier-Elements: Ecke des Blatts und Abstand in mm von deren beiden Rändern. */
+export interface PaperAnchor {
+  visible: boolean;
+  corner: Corner;
+  dx: number;
+  dy: number;
 }
 
 export type BackgroundKind = 'pdf' | 'svg' | 'image';
@@ -158,8 +208,12 @@ export interface FestplatzPage {
   areas: Area[];
   stands: Stand[];
   infra: InfraObject[];
-  titleBlockPos: Vec;
+  sheet: Sheet;
+  /** Lage des Schriftfelds auf dem Blatt; die Felder stehen projektweit in `Project.titleBlock`. */
+  titleBlock: PaperAnchor;
+  /** Freitext des Schriftfelds dieser Page. */
   titleBlockText: string;
+  legend: PaperAnchor;
   /** Zuletzt verwendete Ansicht; wird beim Speichern geschrieben, gehört nicht zur Undo-Historie. */
   view: View | null;
 }
@@ -174,6 +228,11 @@ export interface ProjectSettings {
   warnOutside: boolean;
   warnOverlap: boolean;
   warnDuplicateNr: boolean;
+  /** Warnung „Infrastruktur“: Stand in einem Objekt mit „freihalten“ (§11). */
+  warnInfra: boolean;
+  /** Warnung „Durchfahrt zu eng“ und die Mindestbreite in Metern (§11). */
+  warnPassageWidth: boolean;
+  minPassageWidth: number;
   /** Fang-Umschalter: Ansichtseinstellung (kein Undo-Schritt), wird aber mitgespeichert. */
   snap: { front: boolean; grid: boolean; neighbors: boolean };
 }
@@ -206,6 +265,7 @@ export interface Project {
   categories: Category[];
   infraTypes: InfraTypeDef[];
   exportProfiles: ExportProfile[];
+  /** Projektweite Felder des Schriftfelds (§8). */
   titleBlock: { dateText: string; version: string };
   unplaced: Vendor[];
 }

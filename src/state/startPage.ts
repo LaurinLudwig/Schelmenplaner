@@ -3,6 +3,7 @@ import type { FreeSortColumn, FreeSpaceFilter } from '../core/freeSpaceList';
 import { EMPTY_FREE_FILTER } from '../core/freeSpaceList';
 import type { Id } from '../core/model/types';
 import { DEFAULT_STAND_SORT, EMPTY_STAND_FILTER, type SortKey, type StandFilter } from '../core/standTable';
+import { DEFAULT_INFRA_SORT, EMPTY_INFRA_FILTER, type InfraFilter, type InfraSortColumn } from '../core/infraTable';
 import { useStore } from './store';
 
 /**
@@ -11,7 +12,7 @@ import { useStore } from './store';
  * Die Spaltenauswahl gilt pro Rechner (localStorage).
  */
 
-export type StartTab = 'stands' | 'free' | 'settings';
+export type StartTab = 'stands' | 'free' | 'infra' | 'settings';
 
 /** Spalten der Geschäftstabelle, die sich ausblenden lassen (Sprung und Name sind immer sichtbar). */
 export type StandColumn = 'page' | 'nr' | 'name' | 'owner' | 'ware' | 'category' | 'w' | 'd' | 'power' | 'connection' | 'warnings' | 'note';
@@ -62,6 +63,9 @@ interface StartPageState {
   freeScroll: number;
   /** Zähler: Die Suche soll den Fokus bekommen (Cmd/Strg+F). */
   focusSearch: number;
+  /** Infrastrukturliste (M7-09). */
+  infraFilter: InfraFilter;
+  infraSort: SortKey<InfraSortColumn>[];
 
   setTab: (tab: StartTab) => void;
   setStandFilter: (patch: Partial<StandFilter>) => void;
@@ -72,6 +76,8 @@ interface StartPageState {
   setCell: (cell: ActiveCell | null) => void;
   setFreeFilter: (patch: Partial<FreeSpaceFilter>) => void;
   setFreeSort: (sort: SortKey<FreeSortColumn>[] | null) => void;
+  setInfraFilter: (patch: Partial<InfraFilter>) => void;
+  setInfraSort: (sort: SortKey<InfraSortColumn>[]) => void;
   set: (patch: Partial<Pick<StartPageState, 'standScroll' | 'freeScroll' | 'freeActive' | 'freeActivePage' | 'focusSearch'>>) => void;
   reset: () => void;
 }
@@ -89,6 +95,8 @@ const initial = () => ({
   freeActivePage: null,
   freeScroll: 0,
   focusSearch: 0,
+  infraFilter: EMPTY_INFRA_FILTER,
+  infraSort: DEFAULT_INFRA_SORT,
 });
 
 export const useStartPage = create<StartPageState>()((set, get) => ({
@@ -107,6 +115,8 @@ export const useStartPage = create<StartPageState>()((set, get) => ({
   setCell: (cell) => set({ cell }),
   setFreeFilter: (patch) => set({ freeFilter: { ...get().freeFilter, ...patch }, freeScroll: 0 }),
   setFreeSort: (freeSort) => set({ freeSort }),
+  setInfraFilter: (patch) => set({ infraFilter: { ...get().infraFilter, ...patch } }),
+  setInfraSort: (infraSort) => set({ infraSort }),
   set: (patch) => set(patch),
   reset: () => set(initial()),
 }));

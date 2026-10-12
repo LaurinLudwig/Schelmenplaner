@@ -1,12 +1,12 @@
 import { runCommand } from '../../app/commands';
 import { roundRect } from '../../core/geometry/rect';
-import { LIMITS } from '../../core/objects';
+import { typeMap } from '../../core/infra';
 import { groupCenter } from '../../core/transform';
 import { moveGroupTo, setRectField } from '../../state/objects';
 import { useStore } from '../../state/store';
 import { Icon } from '../icons/Icon';
 import { NumberField } from '../panels/NumberField';
-import { common, selectionTitle, useSelectedObjects } from '../panels/selection';
+import { common, dimSpec, selectionTitle, useSelectedObjects } from '../panels/selection';
 import { tip } from '../shortcuts/tip';
 
 /**
@@ -42,17 +42,17 @@ function SelectionFields({ sel }: { sel: NonNullable<ReturnType<typeof useSelect
   const ids = objects.map((o) => o.obj.id);
   const rects = objects.map((o) => roundRect(o.obj));
   const c = groupCenter(rects)!;
-  const onlyStands = objects.every((o) => o.kind === 'stand');
-  const min = onlyStands ? LIMITS.stand.min : LIMITS.area.min;
-  const max = objects.some((o) => o.kind === 'area') ? LIMITS.area.max : LIMITS.stand.max;
+  const infraTypes = useStore((s) => s.project.infraTypes);
+  const types = typeMap(infraTypes);
+  const dims = dimSpec(objects, (id) => types.get(id)?.geometry);
   return (
     <div className="cb-fields" aria-label="Steuerungsleiste">
-      <span className="cb-kind">{selectionTitle(objects)}</span>
+      <span className="cb-kind">{selectionTitle(objects, types)}</span>
       <NumberField className="inline" id="cb-x" label="X" unit="m" value={c.x} step={0.1} onCommit={(x) => moveGroupTo(page.id, ids, { x })} />
       <NumberField className="inline" id="cb-y" label="Y" unit="m" value={c.y} step={0.1} onCommit={(y) => moveGroupTo(page.id, ids, { y })} />
-      <NumberField className="inline" id="cb-w" label="Breite" unit="m" value={common(rects.map((r) => r.w))} min={min} max={max} step={0.1} onCommit={(v) => setRectField(page.id, ids, 'w', v)} />
-      <NumberField className="inline" id="cb-d" label="Tiefe" unit="m" value={common(rects.map((r) => r.d))} min={min} max={max} step={0.1} onCommit={(v) => setRectField(page.id, ids, 'd', v)} />
-      <NumberField className="inline" id="cb-rot" label="Drehung" unit="°" value={common(rects.map((r) => r.rot))} min={-360} max={360} step={1} digits={1} onCommit={(v) => setRectField(page.id, ids, 'rot', v)} />
+      {dims.w && <NumberField className="inline" id="cb-w" label={dims.w.label} unit="m" value={common(rects.map((r) => r.w))} min={dims.w.min} max={dims.w.max} step={0.1} onCommit={(v) => setRectField(page.id, ids, 'w', v)} />}
+      {dims.d && <NumberField className="inline" id="cb-d" label={dims.d.label} unit="m" value={common(rects.map((r) => r.d))} min={dims.d.min} max={dims.d.max} step={0.1} onCommit={(v) => setRectField(page.id, ids, 'd', v)} />}
+      {dims.rot && <NumberField className="inline" id="cb-rot" label="Drehung" unit="°" value={common(rects.map((r) => r.rot))} min={-360} max={360} step={1} digits={1} onCommit={(v) => setRectField(page.id, ids, 'rot', v)} />}
     </div>
   );
 }

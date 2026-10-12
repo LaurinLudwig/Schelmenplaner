@@ -127,6 +127,7 @@ const LAYER_LABEL: Record<LayerId, string> = {
   stands: 'Geschäfte',
   infra: 'Infrastruktur',
   labels: 'Beschriftung',
+  sheet: 'Blatt',
 };
 
 /** Ebenen der Page: ein-/ausblenden und sperren (Ansichtseinstellung; Hintergrund-Sperre wie in §1). */
@@ -137,7 +138,9 @@ export function LayersPanel({ page }: { page: FestplatzPage }) {
   if (page.areas.length) present.push('free');
   if (page.stands.length) present.push('stands');
   if (page.infra.length) present.push('infra');
-  if (page.areas.length || page.stands.length) present.push('labels');
+  if (page.areas.length || page.stands.length || page.infra.length) present.push('labels');
+  // Das Blatt (M7) gibt es auf jeder Page; die Liste erscheint ab dem ersten Objekt
+  if (present.length) present.push('sheet');
   return (
     <section className="panel" aria-label="Ebenen">
       <div className="panel-head">Ebenen</div>

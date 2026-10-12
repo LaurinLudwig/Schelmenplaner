@@ -895,8 +895,8 @@ test.describe('QA M4-22: Dateiformat', () => {
     const { readFileSync } = await import('node:fs');
     const { unzipSync, strFromU8 } = await import('fflate');
     const json = JSON.parse(strFromU8(unzipSync(new Uint8Array(readFileSync(file)))['project.json']!));
-    // Seit M5 Formatversion 3 (Speichern schreibt die aktuelle Version), angepasst vom Entwickler, siehe qa/M4.md
-    expect(json.schemaVersion).toBe(3);
+    // Seit M7 Formatversion 4 (Speichern schreibt die aktuelle Version), angepasst vom Entwickler (vorher 3), siehe qa/M4.md
+    expect(json.schemaVersion).toBe(4);
     expect(errors).toEqual([]);
   });
 
@@ -910,8 +910,8 @@ test.describe('QA M4-22: Dateiformat', () => {
     const { unzipSync, zipSync, strFromU8, strToU8 } = await import('fflate');
     const files = unzipSync(new Uint8Array(readFileSync('tests/fixtures/format-v1-m3.schelme')));
     const json = JSON.parse(strFromU8(files['project.json']!));
-    // Version 3 ist seit M5 die aktuelle; „neuer“ ist jetzt 4 (angepasst vom Entwickler, siehe qa/M4.md)
-    json.schemaVersion = 4;
+    // Version 4 ist seit M7 die aktuelle; „neuer“ ist jetzt 5 (angepasst vom Entwickler, vorher 4, siehe qa/M4.md)
+    json.schemaVersion = 5;
     files['project.json'] = strToU8(JSON.stringify(json));
     mkdirSync('test-artifacts/qa-m4', { recursive: true });
     const path = `test-artifacts/qa-m4/format-v4-${info.project.name}.schelme`;

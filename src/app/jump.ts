@@ -1,5 +1,6 @@
 import { createFreeSpaceCache, pageFreeSpaces, resolveFreeSpace, type FreeSpaceRef } from '../core/freeSpace';
 import { rectGeo } from '../core/geometry/polygon';
+import { pageOccupants } from '../core/infra';
 import type { Id, Vec } from '../core/model/types';
 import type { Bounds } from '../core/viewport';
 import { useStore } from '../state/store';
@@ -42,6 +43,20 @@ export function jumpToStand(pageId: Id, standId: Id): boolean {
   return true;
 }
 
+/** Sprung zu einem Infrastruktur-Objekt (M7-09); Punkte und Linien mit einem kleinen Rahmen um sich. */
+export function jumpToInfra(pageId: Id, objId: Id): boolean {
+  const page = useStore.getState().project.pages.find((p) => p.id === pageId);
+  const o = page?.infra.find((x) => x.id === objId);
+  if (!page || !o) {
+    notify('Dieses Objekt gibt es nicht mehr.', 'error');
+    return false;
+  }
+  const r = { ...o, w: Math.max(o.w, 2), d: Math.max(o.d, 2) };
+  const selectable = page.layers.infra.visible && !page.layers.infra.locked;
+  go(pageId, [rectGeo(r).poly], selectable ? [o.id] : null);
+  return true;
+}
+
 export function jumpToArea(pageId: Id, areaId: Id): boolean {
   const area = useStore.getState().project.pages.find((p) => p.id === pageId)?.areas.find((a) => a.id === areaId);
   if (!area) return false;
@@ -60,7 +75,7 @@ export function jumpToFreeSpace(ref: FreeSpaceRef): boolean {
     notify('Diesen Festplatz gibt es nicht mehr.', 'error');
     return false;
   }
-  const all = pageFreeSpaces(page.areas, page.stands, project.settings.minFreeWidth, createFreeSpaceCache());
+  const all = pageFreeSpaces(page.areas, pageOccupants(page, project.infraTypes), project.settings.minFreeWidth, createFreeSpaceCache());
   const free = resolveFreeSpace(all, ref);
   if (free) {
     go(page.id, free.polygons, null);

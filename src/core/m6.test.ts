@@ -36,9 +36,9 @@ describe('M6 Kennzahlen', () => {
     const a = area('G', 10, 20, 5);
     const p1 = pg('A', [st(2, 3, { nr: '1' }), st(3, 3, { nr: '2' }), st(50, 3, { nr: '1' })], [a]);
     const s = projectStats(proj([p1]), noFree);
-    expect(s.pages[0]!.warnings).toEqual({ stands: 3, overlap: 2, outside: 1, duplicate: 2 });
+    expect(s.pages[0]!.warnings).toEqual({ stands: 3, overlap: 2, outside: 1, duplicate: 2, infra: 0, narrow: 0 });
     const off = projectStats(proj([p1], { settings: { ...createProject().settings, warnOverlap: false, warnDuplicateNr: false } }), noFree);
-    expect(off.total.warnings).toEqual({ stands: 1, overlap: 0, outside: 1, duplicate: 0 });
+    expect(off.total.warnings).toEqual({ stands: 1, overlap: 0, outside: 1, duplicate: 0, infra: 0, narrow: 0 });
   });
 });
 

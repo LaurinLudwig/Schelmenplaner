@@ -619,10 +619,12 @@ kbd {
 /* Griffe und Auswahl in Bildschirmkoordinaten */
 .selection-overlay .rotate-line { stroke: var(--select); stroke-width: 1; pointer-events: none; }
 .selection-overlay .rotate-handle { fill: var(--panel-raised); stroke: var(--select); stroke-width: 1.5; pointer-events: none; }
+.selection-overlay .end-handle { fill: var(--panel-raised); stroke: var(--select); stroke-width: 1.5; pointer-events: none; }
 .selection-overlay .resize-handle { fill: var(--panel-raised); stroke: var(--select); stroke-width: 1.2; pointer-events: none; }
 .selection-overlay .edge-hit { stroke: transparent; stroke-width: 10; stroke-linecap: round; pointer-events: stroke; }
 .selection-overlay .edge-hit.hover { stroke: color-mix(in srgb, var(--front) 55%, transparent); stroke-width: 6; }
 .selection-overlay .group-box { fill: none; stroke: var(--select); stroke-width: 1; stroke-dasharray: 4 3; pointer-events: none; }
+.selection-overlay .paper-ghost { fill: none; stroke: var(--select); stroke-width: 1.5; stroke-dasharray: 6 3; pointer-events: none; }
 .selection-overlay .marquee { fill: color-mix(in srgb, var(--select) 12%, transparent); stroke: var(--select); stroke-width: 1; stroke-dasharray: 3 2; pointer-events: none; }
 .create-overlay .create-ghost { fill: color-mix(in srgb, var(--select) 15%, transparent); stroke: var(--select); stroke-width: 1.2; stroke-dasharray: 5 3; pointer-events: none; }
 .create-overlay.stand .create-ghost { fill: rgba(167, 173, 179, 0.5); }
@@ -713,6 +715,30 @@ kbd {
 .world .warn-icon.overlap { fill: var(--err); }
 .world .warn-icon-mark { fill: #fff; }
 .world .layer-warnings.tiny .warn-icon-group { display: none; }
+.world .sheet-frame { fill: none; stroke: var(--muted); stroke-width: 1.2; stroke-dasharray: 8 5; vector-effect: non-scaling-stroke; }
+.world .sheet-frame.selected { stroke: var(--select); stroke-width: 2; }
+.world .sheet-label { fill: var(--muted); font-family: var(--f-ui); font-weight: 500; }
+.world .paper-box { fill: #ffffff; stroke: #1a1a1a; stroke-width: 0.35; }
+.world .paper-rule { stroke: #1a1a1a; stroke-width: 0.25; }
+.world .paper-text { fill: #1a1a1a; font-family: var(--f-ui); }
+.world .paper-el.selected .paper-box { stroke: var(--select); stroke-width: 1; }
+/* Farbfelder der Legende in Papierfarben (unabhängig vom Design der Oberfläche) */
+.world .sw-area { fill: #e3e6e9; stroke: #6b7178; stroke-width: 0.3; stroke-dasharray: 1 0.6; }
+.world .sw-free { fill: #d6f0d2; stroke: #6bb562; stroke-width: 0.3; }
+.world .infra { fill: currentColor; stroke: currentColor; }
+.world .infra-body { fill-opacity: 0.3; stroke-width: 1.5; vector-effect: non-scaling-stroke; }
+.world .infra-icon { stroke: none; }
+.world .infra-rect .infra-icon { fill-opacity: 0.9; }
+.world .infra-stroke { fill: none; stroke-opacity: 0.55; stroke-linecap: butt; }
+.world .infra-hair { fill: none; stroke-width: 2; vector-effect: non-scaling-stroke; }
+.world .infra-hair.dashed { stroke-dasharray: 6 4; }
+.world .infra-dim { fill: none; stroke-width: 1.5; vector-effect: non-scaling-stroke; }
+.world .infra-hit { stroke: none; }
+.world .infra.selected .infra-body, .world .infra.selected .infra-hair, .world .infra.selected .infra-dim { stroke: var(--select); stroke-width: 2.5; }
+.world .infra-point.selected .infra-icon { stroke: var(--select); stroke-width: 40; paint-order: stroke; }
+.world .infra.warn-narrow .infra-dim { stroke: var(--err); stroke-width: 3; }
+.world .infra-label { fill: var(--area-label-ink); }
+.world .layer-labels.halo .infra-label { stroke: var(--area-label-halo); }
 .snap-guides line { stroke: var(--snap-guide); stroke-width: 1; pointer-events: none; }
 .snap-guides line.front { stroke-width: 3; }
 .snap-guides line.align { stroke-dasharray: 4 3; }
@@ -779,3 +805,31 @@ kbd {
 .dialog.renumber .renumber-modes .check { align-items: flex-start; }
 .dialog.renumber .renumber-modes .check input { margin-top: 2px; }
 .dialog.renumber .renumber-modes .hint { padding: 0; }
+
+/* Aufklappbare Werkzeuggruppe (M7-04) */
+.toolbar .tool-group { position: relative; width: 32px; height: 30px; }
+.toolbar .tool-flyout-toggle { position: absolute; right: 0; bottom: 0; width: 10px; height: 10px; padding: 0; border: 0; background: none; cursor: pointer; }
+.toolbar .tool-flyout-toggle::after { content: ''; position: absolute; right: 1px; bottom: 1px; border-style: solid; border-width: 0 0 5px 5px; border-color: transparent transparent var(--muted) transparent; }
+.toolbar .tool-flyout { position: absolute; left: 100%; top: 0; margin-left: 6px; z-index: 50; min-width: 190px; padding: 4px; background: var(--panel-raised); border: 1px solid var(--border); border-radius: 4px; box-shadow: 0 6px 18px rgba(0, 0, 0, 0.35); display: flex; flex-direction: column; }
+.toolbar .tool-flyout-item { display: flex; align-items: center; gap: 8px; padding: 5px 8px; border: 0; background: none; color: var(--text); text-align: left; font: inherit; font-size: 12px; border-radius: 3px; cursor: pointer; }
+.toolbar .tool-flyout-item:hover { background: color-mix(in srgb, var(--select) 18%, transparent); }
+.toolbar .tool-flyout-item[aria-checked='true'] { background: color-mix(in srgb, var(--select) 30%, transparent); }
+.toolbar .tool-flyout-hint { padding: 4px 8px 2px; color: var(--muted); font-size: 11px; }
+
+/* Infrastruktur-Typen in den Projekteinstellungen (M7-08) */
+.infra-type-row { display: flex; flex-direction: column; gap: 4px; padding: 6px 0; border-bottom: 1px solid var(--border-soft); }
+.infra-type-row .it-icon { display: grid; place-items: center; width: 22px; }
+.infra-type-row .it-fields { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 6px; }
+.infra-type-row .it-checks { display: flex; gap: 14px; }
+.icon-btn-placeholder { display: inline-block; width: 24px; }
+
+/* Infrastrukturliste der Start-Page (M7-09): wenige Zeilen, ohne Virtualisierung */
+.vt-row.static { position: relative; }
+.vt-empty.static { position: static; padding: 14px; }
+.it-table .cell-input { width: 100%; min-width: 0; height: calc(var(--row-h) - 6px); align-self: center; padding: 0 4px; border: 1px solid transparent; border-radius: 2px; background: transparent; color: inherit; font: inherit; }
+.it-table .cell-input:hover, .it-table .cell-input:focus { border-color: var(--border); background: var(--panel-sunken); }
+.it-table .cell-input.num { text-align: right; font-family: var(--f-num); }
+.it-type { display: inline-grid; vertical-align: -2px; }
+.stat-infra { display: flex; flex-wrap: wrap; gap: 4px 10px; font: 11px var(--f-num); }
+.stat-infra > span { display: inline-flex; align-items: center; gap: 3px; }
+.stat-warn-row { display: flex; flex-wrap: wrap; gap: 4px; }

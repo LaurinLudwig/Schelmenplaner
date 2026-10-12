@@ -1,7 +1,7 @@
 import { fmt } from '../../core/format';
 import { CONNECTION_LABEL } from '../../core/label';
 import type { FestplatzPage } from '../../core/model/types';
-import { CONNECTION_KEYS, pagePower, POWER_LIMIT } from '../../core/power';
+import { CONNECTION_KEYS, pagePower, POWER_LIMIT, poweredInfra } from '../../core/power';
 import { setBlockOverLimit, setPowerLimit } from '../../state/pageSettings';
 import { NumberField } from './NumberField';
 import { PowerMeter } from './PowerMeter';
@@ -12,6 +12,9 @@ import { PowerMeter } from './PowerMeter';
  */
 export function PowerPanel({ page }: { page: FestplatzPage }) {
   const p = pagePower(page);
+  // Mit Infrastruktur-Objekten (M7) zählt die Tabelle Objekte statt nur Stände
+  const withInfra = poweredInfra(page.infra).length > 0;
+  const noun = (n: number) => (withInfra ? (n === 1 ? 'Objekt' : 'Objekte') : n === 1 ? 'Stand' : 'Stände');
   return (
     <section className="panel" aria-label="Strom">
       <div className="panel-head">
@@ -46,14 +49,19 @@ export function PowerPanel({ page }: { page: FestplatzPage }) {
               <tr key={k} className={p.byConnection[k].count ? '' : 'empty'}>
                 <th>{k === 'none' ? 'ohne Angabe' : CONNECTION_LABEL[k]}</th>
                 <td>
-                  {p.byConnection[k].count} {p.byConnection[k].count === 1 ? 'Stand' : 'Stände'}
+                  {p.byConnection[k].count} {noun(p.byConnection[k].count)}
                 </td>
                 <td>{fmt(p.byConnection[k].kw)} kW</td>
               </tr>
             ))}
           </tbody>
         </table>
-        <p className="hint">Es zählen alle Geschäfte des Festplatzes. Leeres Limit = kein Limit.</p>
+        {withInfra && (
+          <p className="hint" data-testid="power-infra">
+            davon Infrastruktur {fmt(p.infraKw)} kW
+          </p>
+        )}
+        <p className="hint">Es zählen alle Geschäfte und Infrastruktur-Objekte mit Strom des Festplatzes. Leeres Limit = kein Limit.</p>
       </div>
     </section>
   );

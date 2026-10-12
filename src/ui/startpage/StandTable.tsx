@@ -445,6 +445,7 @@ function WarnChips({ row }: { row: StandRow }) {
     .join(', ');
   return (
     <span className="warn-chips" data-testid="row-warnings">
+      {w.infra && <span className="chip overlap">Infrastruktur</span>}
       {w.overlap && <span className="chip overlap">Überlappung</span>}
       {w.outside && <span className="chip">außerhalb</span>}
       {w.duplicate && (
