@@ -52,6 +52,8 @@ Erledigte Einträge stehen in `docs/archiv/eingang-erledigt.md` bzw. im Archiv d
 - E-08 (Hinweis) Browser-Autosave nutzt localStorage (ca. 5 MB). Mit eingebetteten Hintergründen (M2) reicht das nicht; betrifft nur den Browser-Dev-Modus.
 - [QA] QA-M1-11 (gering, Dokumentation/Prozess) Die Entwicklung hat QA-Artefakte geändert: Abschnitt „Behoben“ an `qa/M1.md` angehängt und die Erwartung des QA-Tests „M1-24: Zwei-Finger-Wischen“ umgedreht (`tests/e2e/m1-canvas.spec.ts:104-107`, begründet). Dazu Widersprüche: QA-M1-02 steht hier als „erledigt“, in `qa/M1.md` als „teilweise“; die Einträge QA-M1-03/-04 nennen noch `test.fail`, obwohl die Markierungen entfernt sind.
 - [QA] QA-M5-05 (gering, Prozess, wiederholt QA-M1-11) Die Entwicklung hat in den Commits `68ab8cb`/`da424cd` bei M5-01, M5-02, M5-08, M5-14, QA-M5-03 und QA-M5-04 selbst den Vermerk „(QA ✓ M5 Nachtest 2026-10-12)“ in `BACKLOG.md` eingetragen, bevor die QA den Nachtest durchgeführt hat. Der Nachtest (`qa/M5.md`, Abschnitt „Nachtest“) hat die Vermerke inhaltlich bestätigt, trotzdem sollte nur die QA „(QA ✓ …)“ setzen. Siehe `qa/M5.md`.
+- [QA] QA-M6-01 (gering, Dokumentation) „Abschluss M6“ nennt 260 Unit-Tests; `npx vitest run` meldet tatsächlich 262 bestandene Tests (20 Testdateien). Keine Funktionsauswirkung. Siehe `qa/M6.md`.
+- [QA] QA-M6-02 (gering, Dokumentation) „Abschluss M6“ nennt für M6-10 „Tabelle öffnen 42–60 ms“; ein eigener Lauf misst in Chromium 62 ms (WebKit 45 ms, innerhalb der Spanne). Kein Abnahmekriterium aus spec.md betroffen (das NFA verlangt ≥ 50 Bilder/s Median beim Scrollen und kein Bild über 100 ms; beide werden deutlich eingehalten), vermutlich normale Lauf-zu-Lauf-Streuung einer Einzelmessung. Siehe `qa/M6.md`.
 
 ---
 
@@ -73,18 +75,18 @@ Aufgabenlisten, erledigte QA-Befunde und Abschlüsse: `docs/archiv/M1.md`, `docs
 ## M6 – Start-Page: Statistik, Listen, Tabelle, Einstellungen
 Entscheidungen aus der Planung (2026-10-12) stehen in `spec.md` §7 (dazu §3, §4, §5, §6, Tastaturkürzel).
 Keine Formatänderung (Formatversion bleibt 3).
-- [x] M6-01 Kennzahlen-Leiste „Gesamt“ und je Festplatz: Anzahl Geschäfte, Frontmeter (= belegte Fläche), Strom mit Balken gegen das Limit, Anzahl/kW je Anschlussart, Warnzahl; Klick öffnet die Page bzw. die gefilterte Tabelle (§6, §7). Rechnung in `src/core/stats.ts`
-- [x] M6-02 Freiflächenliste (Festplatz, Grundfläche, B × T, m², „angeschnitten“), Filter Festplatz und „passt für B × T“ (Toleranz 0,01 m, angeschnittene mit kleinster durchgehender Tiefe), sortierbar; Sprung über `FreeSpaceRef`/`resolveFreeSpace`, Rückfall auf die Grundfläche mit Hinweis (§4, §7). Rechnung in `src/core/freeSpaceList.ts`
-- [x] M6-03 Geschäftstabelle über alle Festplätze: Spalten ein-/ausblendbar (pro Rechner), Sortierung (natürliche Nummern, zweite Stufe, eingefroren nach Zelländerung), Freitextsuche, Filter Festplatz/Kategorie/Anschlussart/„mit Warnung“/„ohne Nummer“, Summenzeile (§7). Rechnung in `src/core/standTable.ts`
-- [x] M6-04 Tabelle direkt editierbar mit den Regeln der Seitenleiste (Grenzen, Zahlenformat, Fixierung, Stromlimit-Blockieren), jede Zelländerung ein Undo-Schritt (§7)
-- [x] M6-05 Projekteinstellungen (Unter-Tab „Einstellungen“): Projektname, Nummernkreis, Beschriftung, Mindestbreite und Warnungsschalter, Kategorien (§7)
-- [x] M6-06 CSV-Export von Geschäftstabelle und Freiflächenliste (UTF-8 mit BOM, Semikolon, Komma-Zahlen, Formelschutz) über `platform.saveFile` (§7)
-- [x] M6-07 Projektweite Bereiche ziehen aus der Seitenleiste auf die Start-Page um (Beschriftung, Freiflächen & Warnungen, Kategorien, Nummernkreis); Seitenleiste zeigt den Nummernkreis mit Link (§3, §4, §5)
-- [x] M6-08 Tastaturbedienung der Tabelle (Pfeile, Pos1/Ende, Bild↑/↓, Enter/F2, Tippen, Esc, Tab, Leertaste, Entf, Cmd/Strg+Enter) ohne Kurzbefehle der Zeichenfläche; Tab springt auf der Start-Page zwischen Bedienelementen; Unter-Tabs Cmd/Strg+1/2/3, Suche Cmd/Strg+F (§7, Tastaturkürzel)
-- [x] M6-09 Sprung zu Stand bzw. Freifläche: Page wechseln, zoomen (mindestens 30 m), Stand auswählen, etwa 1,5 s hervorheben (§7)
-- [x] M6-10 Leistung: Tabelle mit 500+ Zeilen flüssig (Virtualisierung), Lasttest mit `last-500-staende.schelme` (NFA, §7)
-- [x] M6-11 Kennzahlen zeigen zusätzlich die freien Frontmeter (Summe der Breiten der angezeigten Freiflächen), gesamt und je Festplatz (§7; Entscheidung Laurin 2026-10-12)
-- [x] M6-12 E-39 beheben: „M1-16: Mittlere Maustaste“ in WebKit unter Last robust (10 Wiederholungen grün, auch im vollen Lauf) (Auftrag Laurin 2026-10-12)
+- [x] M6-01 Kennzahlen-Leiste „Gesamt“ und je Festplatz: Anzahl Geschäfte, Frontmeter (= belegte Fläche), Strom mit Balken gegen das Limit, Anzahl/kW je Anschlussart, Warnzahl; Klick öffnet die Page bzw. die gefilterte Tabelle (§6, §7). Rechnung in `src/core/stats.ts` (QA ✓ M6)
+- [x] M6-02 Freiflächenliste (Festplatz, Grundfläche, B × T, m², „angeschnitten“), Filter Festplatz und „passt für B × T“ (Toleranz 0,01 m, angeschnittene mit kleinster durchgehender Tiefe), sortierbar; Sprung über `FreeSpaceRef`/`resolveFreeSpace`, Rückfall auf die Grundfläche mit Hinweis (§4, §7). Rechnung in `src/core/freeSpaceList.ts` (QA ✓ M6)
+- [x] M6-03 Geschäftstabelle über alle Festplätze: Spalten ein-/ausblendbar (pro Rechner), Sortierung (natürliche Nummern, zweite Stufe, eingefroren nach Zelländerung), Freitextsuche, Filter Festplatz/Kategorie/Anschlussart/„mit Warnung“/„ohne Nummer“, Summenzeile (§7). Rechnung in `src/core/standTable.ts` (QA ✓ M6)
+- [x] M6-04 Tabelle direkt editierbar mit den Regeln der Seitenleiste (Grenzen, Zahlenformat, Fixierung, Stromlimit-Blockieren), jede Zelländerung ein Undo-Schritt (§7) (QA ✓ M6)
+- [x] M6-05 Projekteinstellungen (Unter-Tab „Einstellungen“): Projektname, Nummernkreis, Beschriftung, Mindestbreite und Warnungsschalter, Kategorien (§7) (QA ✓ M6)
+- [x] M6-06 CSV-Export von Geschäftstabelle und Freiflächenliste (UTF-8 mit BOM, Semikolon, Komma-Zahlen, Formelschutz) über `platform.saveFile` (§7) (QA ✓ M6)
+- [x] M6-07 Projektweite Bereiche ziehen aus der Seitenleiste auf die Start-Page um (Beschriftung, Freiflächen & Warnungen, Kategorien, Nummernkreis); Seitenleiste zeigt den Nummernkreis mit Link (§3, §4, §5) (QA ✓ M6, inkl. Prüfung der 19 angepassten Bestandstests)
+- [x] M6-08 Tastaturbedienung der Tabelle (Pfeile, Pos1/Ende, Bild↑/↓, Enter/F2, Tippen, Esc, Tab, Leertaste, Entf, Cmd/Strg+Enter) ohne Kurzbefehle der Zeichenfläche; Tab springt auf der Start-Page zwischen Bedienelementen; Unter-Tabs Cmd/Strg+1/2/3, Suche Cmd/Strg+F (§7, Tastaturkürzel) (QA ✓ M6)
+- [x] M6-09 Sprung zu Stand bzw. Freifläche: Page wechseln, zoomen (mindestens 30 m), Stand auswählen, etwa 1,5 s hervorheben (§7) (QA ✓ M6)
+- [x] M6-10 Leistung: Tabelle mit 500+ Zeilen flüssig (Virtualisierung), Lasttest mit `last-500-staende.schelme` (NFA, §7) (QA ✓ M6, siehe `qa/M6.md` QA-M6-02 zur „öffnen“-Zeit)
+- [x] M6-11 Kennzahlen zeigen zusätzlich die freien Frontmeter (Summe der Breiten der angezeigten Freiflächen), gesamt und je Festplatz (§7; Entscheidung Laurin 2026-10-12) (QA ✓ M6, inkl. angeschnittener Freiflächen)
+- [x] M6-12 E-39 beheben: „M1-16: Mittlere Maustaste“ in WebKit unter Last robust (10 Wiederholungen grün, auch im vollen Lauf) (Auftrag Laurin 2026-10-12) (QA ✓ M6, App-Code unverändert bestätigt)
 
 ## Abschluss M6 (2026-10-12)
 
