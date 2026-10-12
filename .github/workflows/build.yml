@@ -29,7 +29,7 @@ jobs:
       - run: npm run test:e2e -- --project=chromium
       - name: Playwright-Bericht bei Fehlern sichern
         if: failure()
-        uses: actions/upload-artifact@v5
+        uses: actions/upload-artifact@v7
         with:
           name: playwright-report
           path: |
@@ -78,7 +78,7 @@ jobs:
         env:
           # Nur Ad-hoc-Signatur (ohne Zertifikat), damit macOS die unsignierte App nicht als „beschädigt“ ablehnt.
           APPLE_SIGNING_IDENTITY: '-'
-      - uses: actions/upload-artifact@v5
+      - uses: actions/upload-artifact@v7
         with:
           name: schelmeplaner-${{ matrix.artifact }}-${{ github.sha }}
           path: ${{ matrix.artifact-paths }}
