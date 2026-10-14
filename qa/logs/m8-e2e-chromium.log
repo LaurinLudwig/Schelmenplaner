@@ -1,0 +1,231 @@
+npm notice run schelmeplaner@0.1.0 npx
+npm notice run 'playwright' test --project=chromium --reporter=dot
+[WebServer] npm notice run schelmeplaner@0.1.0 predev
+[WebServer] npm notice run node scripts/copy-pdfjs-assets.mjs
+[WebServer] npm notice run schelmeplaner@0.1.0 dev
+[WebServer] npm notice run vite
+
+Running 338 tests using 5 workers
+···········°····································································
+·················································[WebServer] 8:23:15 AM [vite] (client) [console.warn] PDF-Fehler InvalidPDFException: Invalid PDF structure.
+[WebServer] 8:23:15 AM [vite] (client) [console.warn] Warning: Indexing all PDF objects
+·······························
+················································································
+························································[WebServer] 8:23:58 AM [vite] (client) [console.error] Received NaN for the `x` attribute. If this is expected, cast the value to a string.
+[WebServer] 8:23:58 AM [vite] (client) [console.error] Received NaN for the `y` attribute. If this is expected, cast the value to a string.
+[WebServer] 8:23:58 AM [vite] (client) [console.error] Received NaN for the `width` attribute. If this is expected, cast the value to a string.
+[WebServer] 8:23:58 AM [vite] (client) [console.error] Received NaN for the `height` attribute. If this is expected, cast the value to a string.
+························
+··········TTTT···T
+
+  1) [chromium] › tests/e2e/m8-export.spec.ts:44:3 › M8: PDF-Export › Cmd/Strg+P: Dialog mit echter Vorschau; Gesamtplan „Intern“ mit Anhang, Seiten exakt in mm 
+
+    Test timeout of 30000ms exceeded.
+
+    Error: expect(locator).toHaveAttribute(expected) failed
+
+    Locator: getByTestId('export-preview')
+    Expected: "ok"
+    Error: element(s) not found
+
+    Call log:
+      - Expect "toHaveAttribute" getByTestId('export-preview') with timeout 30000ms
+      - waiting for getByTestId('export-preview')
+        6 × locator resolved to <div data-state="busy" aria-label="Vorschau" class="export-preview" data-testid="export-preview">…</div>
+          - unexpected value "busy"
+      - Test timeout of 30000ms exceeded.
+
+
+      30 |   await page.keyboard.press(`${MOD}+p`);
+      31 |   await expect(dialog(page)).toBeVisible();
+    > 32 |   await expect(page.getByTestId('export-preview')).toHaveAttribute('data-state', 'ok', { timeout: 30_000 });
+         |                                                    ^
+      33 | }
+      34 |
+      35 | async function exportAndRead(page: Page) {
+        at openExport (/Users/laurin/Desktop/Schelmeplaner/tests/e2e/m8-export.spec.ts:32:52)
+        at /Users/laurin/Desktop/Schelmeplaner/tests/e2e/m8-export.spec.ts:47:5
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/m8-export-M8-PDF-Export-Cm-ab4c3-t-Anhang-Seiten-exakt-in-mm-chromium/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/m8-export-M8-PDF-Export-Cm-ab4c3-t-Anhang-Seiten-exakt-in-mm-chromium/error-context.md
+
+    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results/m8-export-M8-PDF-Export-Cm-ab4c3-t-Anhang-Seiten-exakt-in-mm-chromium/trace.zip
+    Usage:
+
+        npx playwright show-trace test-results/m8-export-M8-PDF-Export-Cm-ab4c3-t-Anhang-Seiten-exakt-in-mm-chromium/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  2) [chromium] › tests/e2e/m8-export.spec.ts:69:3 › M8: PDF-Export › „Sanität/Ordnungsamt“: kein Eigentümer im PDF; Dateiname ohne Schrägstrich 
+
+    Test timeout of 30000ms exceeded.
+
+    Error: expect(locator).toHaveAttribute(expected) failed
+
+    Locator: getByTestId('export-preview')
+    Expected: "ok"
+    Error: element(s) not found
+
+    Call log:
+      - Expect "toHaveAttribute" getByTestId('export-preview') with timeout 30000ms
+      - waiting for getByTestId('export-preview')
+        5 × locator resolved to <div data-state="busy" aria-label="Vorschau" class="export-preview" data-testid="export-preview">…</div>
+          - unexpected value "busy"
+      - Test timeout of 30000ms exceeded.
+
+
+      30 |   await page.keyboard.press(`${MOD}+p`);
+      31 |   await expect(dialog(page)).toBeVisible();
+    > 32 |   await expect(page.getByTestId('export-preview')).toHaveAttribute('data-state', 'ok', { timeout: 30_000 });
+         |                                                    ^
+      33 | }
+      34 |
+      35 | async function exportAndRead(page: Page) {
+        at openExport (/Users/laurin/Desktop/Schelmeplaner/tests/e2e/m8-export.spec.ts:32:52)
+        at /Users/laurin/Desktop/Schelmeplaner/tests/e2e/m8-export.spec.ts:71:5
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/m8-export-M8-PDF-Export-„S-5ac4a-Dateiname-ohne-Schrägstrich-chromium/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/m8-export-M8-PDF-Export-„S-5ac4a-Dateiname-ohne-Schrägstrich-chromium/error-context.md
+
+    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results/m8-export-M8-PDF-Export-„S-5ac4a-Dateiname-ohne-Schrägstrich-chromium/trace.zip
+    Usage:
+
+        npx playwright show-trace test-results/m8-export-M8-PDF-Export-„S-5ac4a-Dateiname-ohne-Schrägstrich-chromium/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  3) [chromium] › tests/e2e/m8-export.spec.ts:83:3 › M8: PDF-Export › Profile verwalten: Kopie ohne Name, bleibt nach Neuladen; Auswahl einer Page mit Festplatz im Dateinamen 
+
+    Test timeout of 30000ms exceeded.
+
+    Error: expect(locator).toHaveAttribute(expected) failed
+
+    Locator: getByTestId('export-preview')
+    Expected: "ok"
+    Error: element(s) not found
+
+    Call log:
+      - Expect "toHaveAttribute" getByTestId('export-preview') with timeout 30000ms
+      - waiting for getByTestId('export-preview')
+        5 × locator resolved to <div data-state="busy" aria-label="Vorschau" class="export-preview" data-testid="export-preview">…</div>
+          - unexpected value "busy"
+      - Test timeout of 30000ms exceeded.
+
+
+      30 |   await page.keyboard.press(`${MOD}+p`);
+      31 |   await expect(dialog(page)).toBeVisible();
+    > 32 |   await expect(page.getByTestId('export-preview')).toHaveAttribute('data-state', 'ok', { timeout: 30_000 });
+         |                                                    ^
+      33 | }
+      34 |
+      35 | async function exportAndRead(page: Page) {
+        at openExport (/Users/laurin/Desktop/Schelmeplaner/tests/e2e/m8-export.spec.ts:32:52)
+        at /Users/laurin/Desktop/Schelmeplaner/tests/e2e/m8-export.spec.ts:85:5
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/m8-export-M8-PDF-Export-Pr-ff3cb-mit-Festplatz-im-Dateinamen-chromium/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/m8-export-M8-PDF-Export-Pr-ff3cb-mit-Festplatz-im-Dateinamen-chromium/error-context.md
+
+    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results/m8-export-M8-PDF-Export-Pr-ff3cb-mit-Festplatz-im-Dateinamen-chromium/trace.zip
+    Usage:
+
+        npx playwright show-trace test-results/m8-export-M8-PDF-Export-Pr-ff3cb-mit-Festplatz-im-Dateinamen-chromium/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  4) [chromium] › tests/e2e/m8-export.spec.ts:112:3 › M8: PDF-Export › Blatt im Dialog ändern gilt für die Page und ist ein Undo-Schritt 
+
+    Test timeout of 30000ms exceeded.
+
+    Error: expect(locator).toHaveAttribute(expected) failed
+
+    Locator: getByTestId('export-preview')
+    Expected: "ok"
+    Error: element(s) not found
+
+    Call log:
+      - Expect "toHaveAttribute" getByTestId('export-preview') with timeout 30000ms
+      - waiting for getByTestId('export-preview')
+        3 × locator resolved to <div data-state="busy" aria-label="Vorschau" class="export-preview" data-testid="export-preview">…</div>
+          - unexpected value "busy"
+        - waiting for "http://localhost:1420/" navigation to finish...
+        - navigated to "http://localhost:1420/"
+      - Test timeout of 30000ms exceeded.
+
+
+      30 |   await page.keyboard.press(`${MOD}+p`);
+      31 |   await expect(dialog(page)).toBeVisible();
+    > 32 |   await expect(page.getByTestId('export-preview')).toHaveAttribute('data-state', 'ok', { timeout: 30_000 });
+         |                                                    ^
+      33 | }
+      34 |
+      35 | async function exportAndRead(page: Page) {
+        at openExport (/Users/laurin/Desktop/Schelmeplaner/tests/e2e/m8-export.spec.ts:32:52)
+        at /Users/laurin/Desktop/Schelmeplaner/tests/e2e/m8-export.spec.ts:114:5
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/m8-export-M8-PDF-Export-Bl-7c9e8-ge-und-ist-ein-Undo-Schritt-chromium/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/m8-export-M8-PDF-Export-Bl-7c9e8-ge-und-ist-ein-Undo-Schritt-chromium/error-context.md
+
+    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results/m8-export-M8-PDF-Export-Bl-7c9e8-ge-und-ist-ein-Undo-Schritt-chromium/trace.zip
+    Usage:
+
+        npx playwright show-trace test-results/m8-export-M8-PDF-Export-Bl-7c9e8-ge-und-ist-ein-Undo-Schritt-chromium/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  5) [chromium] › tests/e2e/m8-export.spec.ts:123:3 › M8: PDF-Export › Fortschritt, Abbrechen; die Oberfläche bleibt währenddessen bedienbar 
+
+    Test timeout of 30000ms exceeded.
+
+    Error: page.waitForEvent: Test timeout of 30000ms exceeded.
+    =========================== logs ===========================
+    waiting for event "filechooser"
+    ============================================================
+
+      162 |     return c.toDataURL('image/jpeg', 0.85).split(',')[1]!;
+      163 |   });
+    > 164 |   const chooser = page.waitForEvent('filechooser');
+          |                        ^
+      165 |   await page.keyboard.press(`${MOD}+Shift+P`);
+      166 |   await (await chooser).setFiles({ name: 'grossplan.jpg', mimeType: 'image/jpeg', buffer: Buffer.from(jpg, 'base64') });
+      167 |   await expect.poll(() => store(page, 's.project.pages[0].background?.kind'), { timeout: 30_000 }).toBe('image');
+        at importBigJpeg (/Users/laurin/Desktop/Schelmeplaner/tests/e2e/m8-export.spec.ts:164:24)
+        at /Users/laurin/Desktop/Schelmeplaner/tests/e2e/m8-export.spec.ts:125:5
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/m8-export-M8-PDF-Export-Fo-37a63-ibt-währenddessen-bedienbar-chromium/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/m8-export-M8-PDF-Export-Fo-37a63-ibt-währenddessen-bedienbar-chromium/error-context.md
+
+    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results/m8-export-M8-PDF-Export-Fo-37a63-ibt-währenddessen-bedienbar-chromium/trace.zip
+    Usage:
+
+        npx playwright show-trace test-results/m8-export-M8-PDF-Export-Fo-37a63-ibt-währenddessen-bedienbar-chromium/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  5 failed
+    [chromium] › tests/e2e/m8-export.spec.ts:44:3 › M8: PDF-Export › Cmd/Strg+P: Dialog mit echter Vorschau; Gesamtplan „Intern“ mit Anhang, Seiten exakt in mm 
+    [chromium] › tests/e2e/m8-export.spec.ts:69:3 › M8: PDF-Export › „Sanität/Ordnungsamt“: kein Eigentümer im PDF; Dateiname ohne Schrägstrich 
+    [chromium] › tests/e2e/m8-export.spec.ts:83:3 › M8: PDF-Export › Profile verwalten: Kopie ohne Name, bleibt nach Neuladen; Auswahl einer Page mit Festplatz im Dateinamen 
+    [chromium] › tests/e2e/m8-export.spec.ts:112:3 › M8: PDF-Export › Blatt im Dialog ändern gilt für die Page und ist ein Undo-Schritt 
+    [chromium] › tests/e2e/m8-export.spec.ts:123:3 › M8: PDF-Export › Fortschritt, Abbrechen; die Oberfläche bleibt währenddessen bedienbar 
+  1 skipped
+  332 passed (1.8m)

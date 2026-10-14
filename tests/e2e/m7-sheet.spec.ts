@@ -42,7 +42,8 @@ test.describe('M7: Blatt und Papier-Elemente', () => {
     await expect(page.getByTestId('sheet-frame')).toBeVisible();
     await expect(page.getByTestId('sheet-label')).toHaveText('A3 quer · 1:440 (angepasst)');
     await expect(page.getByTestId('title-block')).toContainText('Festplatz 1');
-    await expect(page.getByTestId('title-block')).toContainText('Maßstab 1:440 · A3 quer');
+    // Seit M8: „bei Druck in Originalgröße (Format)“ (spec.md §8), angepasst vom Entwickler (vorher „Maßstab 1:440 · A3 quer“)
+    await expect(page.getByTestId('title-block')).toContainText('Maßstab 1:440 bei Druck in Originalgröße (A3 quer)');
     await expect(page.getByTestId('legend')).toContainText('Grundfläche');
     await expect(page.getByTestId('legend')).toContainText('Freifläche');
     expect(errors).toEqual([]);
@@ -162,6 +163,9 @@ test.describe('M7: Blatt und Papier-Elemente', () => {
     // Inhalt so groß, dass das angepasste Blatt nach Cmd/Strg+0 ganz im Fenster liegt
     await seed(page, { areas: [{ id: 'G', cx: 0, cy: 0, w: 100, d: 60 }] });
     await fitView(page);
+    // Seit M8 hält „an Seite anpassen“ Platz für die Papier-Elemente frei; das Blatt ist größer als der Inhalt.
+    // Eine Stufe herauszoomen, damit es ganz im Fenster liegt (angepasst vom Entwickler, siehe Abschluss M8)
+    await page.keyboard.press(`${MOD}+-`);
     const frame = (await page.getByTestId('sheet-frame').boundingBox())!;
     await page.keyboard.press('t');
     await page.mouse.click(frame.x + 15, frame.y + 15);
@@ -258,7 +262,8 @@ test.describe('M7: Dateiformat Version 4', () => {
     const { readFileSync } = await import('node:fs');
     const { unzipSync, strFromU8 } = await import('fflate');
     const json = JSON.parse(strFromU8(unzipSync(new Uint8Array(readFileSync(path)))['project.json']!));
-    expect(json.schemaVersion).toBe(4);
+    // Seit M8 Formatversion 5 (Speichern schreibt die aktuelle Version), angepasst vom Entwickler (vorher 4)
+    expect(json.schemaVersion).toBe(5);
     expect(json.project.pages[0]).not.toHaveProperty('titleBlockPos');
     expect(json.project.pages[0].legend).toEqual({ visible: true, corner: 'bl', dx: 10, dy: 10 });
   });

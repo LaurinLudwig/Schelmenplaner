@@ -1,0 +1,19 @@
+npm notice run schelmeplaner@0.1.0 npx
+npm notice run 'vitest' run --reporter=dot
+
+ RUN  v5.0.3 /Users/laurin/Desktop/Schelmeplaner
+
+(node:23102) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+·······················································································································································································································(node:23107) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+········································································································stderr | src/core/pdf/writePdf.test.ts > PDF: Hintergrund als Vektor > PDF-Plan 1:1000 wird als Form-XObject eingebettet (kein Bild) und bei 1:500 doppelt so groß gezeichnet
+Warning: UnknownErrorException: Ensure that the `standardFontDataUrl` API parameter is provided.
+
+···········
+
+ Test Files  26 passed (26)
+      Tests  330 passed (330)
+   Start at  08:22:26
+   Duration  4.78s (tests 82%, transform 12%, import 6%, worker 1%)
+

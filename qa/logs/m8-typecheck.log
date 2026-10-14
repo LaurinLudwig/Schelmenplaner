@@ -1,0 +1,2 @@
+npm notice run schelmeplaner@0.1.0 typecheck
+npm notice run tsc --noEmit && tsc --noEmit -p src/core

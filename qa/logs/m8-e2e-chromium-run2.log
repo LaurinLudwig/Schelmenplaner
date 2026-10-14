@@ -1,0 +1,21 @@
+npm notice run schelmeplaner@0.1.0 npx
+npm notice run 'playwright' test --project=chromium --reporter=dot
+[WebServer] npm notice run schelmeplaner@0.1.0 predev
+[WebServer] npm notice run node scripts/copy-pdfjs-assets.mjs
+[WebServer] npm notice run schelmeplaner@0.1.0 dev
+[WebServer] npm notice run vite
+
+Running 338 tests using 5 workers
+···········°····································································
+·················································[WebServer] 8:26:12 AM [vite] (client) [console.warn] PDF-Fehler InvalidPDFException: Invalid PDF structure.
+[WebServer] 8:26:12 AM [vite] (client) [console.warn] Warning: Indexing all PDF objects
+·······························
+················································································
+························································[WebServer] 8:26:55 AM [vite] (client) [console.error] Received NaN for the `x` attribute. If this is expected, cast the value to a string.
+[WebServer] 8:26:55 AM [vite] (client) [console.error] Received NaN for the `y` attribute. If this is expected, cast the value to a string.
+[WebServer] 8:26:55 AM [vite] (client) [console.error] Received NaN for the `width` attribute. If this is expected, cast the value to a string.
+[WebServer] 8:26:55 AM [vite] (client) [console.error] Received NaN for the `height` attribute. If this is expected, cast the value to a string.
+························
+··················
+  1 skipped
+  337 passed (1.4m)

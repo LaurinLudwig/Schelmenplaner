@@ -1,0 +1,619 @@
+npm notice run schelmeplaner@0.1.0 test:e2e
+npm notice run playwright test --reporter=dot
+
+Running 688 tests using 5 workers
+···········°····································································
+················································································
+················································································
+················································································
+····················Warning: UnknownErrorException: Ensure that the `standardFontDataUrl` API parameter is provided.
+·Warning: UnknownErrorException: Ensure that the `standardFontDataUrl` API parameter is provided.
+·Warning: UnknownErrorException: Ensure that the `standardFontDataUrl` API parameter is provided.
+Warning: UnknownErrorException: Ensure that the `standardFontDataUrl` API parameter is provided.
+······Warning: UnknownErrorException: Ensure that the `standardFontDataUrl` API parameter is provided.
+····°···············································
+·········°°··········°···°···································F········°·········
+················································································
+·································F··············································
+·····················F·F··········FFFFFFFFFFFFFF
+
+  1) [webkit] › tests/e2e/m2-nacharbeit.spec.ts:142:3 › Nacharbeit M2: Dateien › QA-M2-03: große Rasterbilder werden als Übersicht plus Kacheln gezeichnet 
+
+    Error: expect(locator).toHaveCount(expected) failed
+
+    Locator:  locator('.raster-tile')
+    Expected: 0
+    Received: 5
+    Timeout:  5000ms
+
+    Call log:
+      - Expect "toHaveCount" locator('.raster-tile') with timeout 5000ms
+      - waiting for locator('.raster-tile')
+        14 × locator resolved to 5 elements
+           - unexpected value "5"
+
+
+      157 |     await importFile(page, { name: 'breit.png', mimeType: 'image/png', buffer: Buffer.from(png) });
+      158 |     await expect(page.locator('.raster-overview')).toHaveCount(1);
+    > 159 |     await expect(page.locator('.raster-tile')).toHaveCount(0);
+          |                                                ^
+      160 |     for (let i = 0; i < 12; i++) await page.keyboard.press(`${MOD}+Equal`);
+      161 |     await expect.poll(() => page.locator('.raster-tile').count(), { timeout: 5000 }).toBeGreaterThan(0);
+      162 |   });
+        at /Users/laurin/Desktop/Schelmeplaner/tests/e2e/m2-nacharbeit.spec.ts:159:48
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/m2-nacharbeit-Nacharbeit-M-db42c-cht-plus-Kacheln-gezeichnet-webkit/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/m2-nacharbeit-Nacharbeit-M-db42c-cht-plus-Kacheln-gezeichnet-webkit/error-context.md
+
+    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results/m2-nacharbeit-Nacharbeit-M-db42c-cht-plus-Kacheln-gezeichnet-webkit/trace.zip
+    Usage:
+
+        npx playwright show-trace test-results/m2-nacharbeit-Nacharbeit-M-db42c-cht-plus-Kacheln-gezeichnet-webkit/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  2) [webkit] › tests/e2e/m4-qa.spec.ts:880:3 › QA M4-22: Dateiformat › Version-1-Datei (echte M3-Datei) öffnen: migriert, Warnungen aktiv; Speichern schreibt Version 2 
+
+    Error: expect(received).toEqual(expected) // deep equality
+
+    - Expected  - 1
+    + Received  + 3
+
+    - Array []
+    + Array [
+    +   "ResizeObserver loop completed with undelivered notifications.",
+    + ]
+
+      898 |     // Seit M8 Formatversion 5 (Speichern schreibt die aktuelle Version), angepasst vom Entwickler (vorher 4), siehe qa/M4.md
+      899 |     expect(json.schemaVersion).toBe(5);
+    > 900 |     expect(errors).toEqual([]);
+          |                    ^
+      901 |   });
+      902 |
+      903 |   test('Datei einer neueren Version wird mit deutscher Meldung abgewiesen, das offene Projekt bleibt', async ({ page }, info) => {
+        at /Users/laurin/Desktop/Schelmeplaner/tests/e2e/m4-qa.spec.ts:900:20
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/m4-qa-QA-M4-22-Dateiformat-47ad9-peichern-schreibt-Version-2-webkit/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/m4-qa-QA-M4-22-Dateiformat-47ad9-peichern-schreibt-Version-2-webkit/error-context.md
+
+    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results/m4-qa-QA-M4-22-Dateiformat-47ad9-peichern-schreibt-Version-2-webkit/trace.zip
+    Usage:
+
+        npx playwright show-trace test-results/m4-qa-QA-M4-22-Dateiformat-47ad9-peichern-schreibt-Version-2-webkit/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  3) [webkit] › tests/e2e/m7-qa.spec.ts:140:3 › M7-QA: Legende aktualisiert sich live › Neue Kategorie mit Stand ergänzt die Legende; Löschen des Stands entfernt den Eintrag wieder 
+
+    Error: browserContext.close: ENOENT: no such file or directory, open '/Users/laurin/Desktop/Schelmeplaner/test-results/.playwright-artifacts-11/traces/c90cdfa9e13757dce408-5525056f3bf070a0fa4e-recording24.network'
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/m7-qa-M7-QA-Legende-aktual-1a60a-entfernt-den-Eintrag-wieder-webkit/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/m7-qa-M7-QA-Legende-aktual-1a60a-entfernt-den-Eintrag-wieder-webkit/error-context.md
+
+    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results/m7-qa-M7-QA-Legende-aktual-1a60a-entfernt-den-Eintrag-wieder-webkit/trace.zip
+    Usage:
+
+        npx playwright show-trace test-results/m7-qa-M7-QA-Legende-aktual-1a60a-entfernt-den-Eintrag-wieder-webkit/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  4) [webkit] › tests/e2e/m7-qa.spec.ts:152:3 › M7-QA: Papier-Elemente sind nicht kopierbar und nicht Teil der Mehrfachauswahl › Ausgewähltes Schriftfeld: Cmd/Strg+C erzeugt keinen Zwischenablage-Inhalt (Einfügen bleibt wirkungslos) 
+
+    Error: browserContext.close: ENOENT: no such file or directory, open '/Users/laurin/Desktop/Schelmeplaner/test-results/.playwright-artifacts-10/traces/c90cdfa9e13757dce408-7ac56d773f5b10b1481d-recording86.network'
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/m7-qa-M7-QA-Papier-Element-c4a13-infügen-bleibt-wirkungslos--webkit/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/m7-qa-M7-QA-Papier-Element-c4a13-infügen-bleibt-wirkungslos--webkit/error-context.md
+
+    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results/m7-qa-M7-QA-Papier-Element-c4a13-infügen-bleibt-wirkungslos--webkit/trace.zip
+    Usage:
+
+        npx playwright show-trace test-results/m7-qa-M7-QA-Papier-Element-c4a13-infügen-bleibt-wirkungslos--webkit/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  5) [webkit] › tests/e2e/m8-export-profile-delete.spec.ts:13:1 › eigenes Profil löschen: Rückfrage, danach weg, bleibt auch nach Neuladen weg 
+
+    Error: page.reload: Could not connect to the server.
+    Call log:
+      - waiting for navigation until "load"
+
+
+      35 |
+      36 |   await page.keyboard.press('Escape');
+    > 37 |   await page.reload();
+         |              ^
+      38 |   await page.keyboard.press(`${MOD}+p`);
+      39 |   await expect(dialog(page)).toBeVisible();
+      40 |   await expect(dialog(page).getByLabel('Profil', { exact: true }).locator('option', { hasText: 'Zum Löschen' })).toHaveCount(0);
+        at /Users/laurin/Desktop/Schelmeplaner/tests/e2e/m8-export-profile-delete.spec.ts:37:14
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/m8-export-profile-delete-e-e5625-eibt-auch-nach-Neuladen-weg-webkit/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/m8-export-profile-delete-e-e5625-eibt-auch-nach-Neuladen-weg-webkit/error-context.md
+
+    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results/m8-export-profile-delete-e-e5625-eibt-auch-nach-Neuladen-weg-webkit/trace.zip
+    Usage:
+
+        npx playwright show-trace test-results/m8-export-profile-delete-e-e5625-eibt-auch-nach-Neuladen-weg-webkit/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  6) [webkit] › tests/e2e/m8-export-snapshot.spec.ts:39:1 › Standname während des laufenden Exports geändert: PDF zeigt den Stand der Vorlage zum Startzeitpunkt 
+
+    Error: expect(locator).toBeVisible() failed
+
+    Locator: locator('header.tabbar')
+    Expected: visible
+    Timeout: 5000ms
+    Error: element(s) not found
+
+    Call log:
+      - Expect "toBeVisible" locator('header.tabbar') with timeout 5000ms
+      - waiting for locator('header.tabbar')
+
+
+       at helpers.ts:19
+
+      17 | export async function openApp(page: Page) {
+      18 |   await page.goto('/');
+    > 19 |   await expect(page.locator('header.tabbar')).toBeVisible();
+         |                                               ^
+      20 | }
+      21 |
+      22 | export const tabbar = (page: Page) => page.locator('header.tabbar');
+        at openApp (/Users/laurin/Desktop/Schelmeplaner/tests/e2e/helpers.ts:19:47)
+        at /Users/laurin/Desktop/Schelmeplaner/tests/e2e/m8-export-snapshot.spec.ts:41:3
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/m8-export-snapshot-Standna-9f9b8--Vorlage-zum-Startzeitpunkt-webkit/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/m8-export-snapshot-Standna-9f9b8--Vorlage-zum-Startzeitpunkt-webkit/error-context.md
+
+    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results/m8-export-snapshot-Standna-9f9b8--Vorlage-zum-Startzeitpunkt-webkit/trace.zip
+    Usage:
+
+        npx playwright show-trace test-results/m8-export-snapshot-Standna-9f9b8--Vorlage-zum-Startzeitpunkt-webkit/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  7) [webkit] › tests/e2e/m8-export.spec.ts:44:3 › M8: PDF-Export › Cmd/Strg+P: Dialog mit echter Vorschau; Gesamtplan „Intern“ mit Anhang, Seiten exakt in mm 
+
+    Error: page.goto: Could not connect to the server.
+    Call log:
+      - navigating to "http://localhost:1420/", waiting until "load"
+
+
+       at helpers.ts:18
+
+      16 |
+      17 | export async function openApp(page: Page) {
+    > 18 |   await page.goto('/');
+         |              ^
+      19 |   await expect(page.locator('header.tabbar')).toBeVisible();
+      20 | }
+      21 |
+        at openApp (/Users/laurin/Desktop/Schelmeplaner/tests/e2e/helpers.ts:18:14)
+        at openFixture (/Users/laurin/Desktop/Schelmeplaner/tests/e2e/m8-export.spec.ts:20:9)
+        at /Users/laurin/Desktop/Schelmeplaner/tests/e2e/m8-export.spec.ts:46:11
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/m8-export-M8-PDF-Export-Cm-ab4c3-t-Anhang-Seiten-exakt-in-mm-webkit/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/m8-export-M8-PDF-Export-Cm-ab4c3-t-Anhang-Seiten-exakt-in-mm-webkit/error-context.md
+
+    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results/m8-export-M8-PDF-Export-Cm-ab4c3-t-Anhang-Seiten-exakt-in-mm-webkit/trace.zip
+    Usage:
+
+        npx playwright show-trace test-results/m8-export-M8-PDF-Export-Cm-ab4c3-t-Anhang-Seiten-exakt-in-mm-webkit/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  8) [webkit] › tests/e2e/m8-export.spec.ts:69:3 › M8: PDF-Export › „Sanität/Ordnungsamt“: kein Eigentümer im PDF; Dateiname ohne Schrägstrich 
+
+    Error: page.goto: Could not connect to the server.
+    Call log:
+      - navigating to "http://localhost:1420/", waiting until "load"
+
+
+       at helpers.ts:18
+
+      16 |
+      17 | export async function openApp(page: Page) {
+    > 18 |   await page.goto('/');
+         |              ^
+      19 |   await expect(page.locator('header.tabbar')).toBeVisible();
+      20 | }
+      21 |
+        at openApp (/Users/laurin/Desktop/Schelmeplaner/tests/e2e/helpers.ts:18:14)
+        at openFixture (/Users/laurin/Desktop/Schelmeplaner/tests/e2e/m8-export.spec.ts:20:9)
+        at /Users/laurin/Desktop/Schelmeplaner/tests/e2e/m8-export.spec.ts:70:11
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/m8-export-M8-PDF-Export-„S-5ac4a-Dateiname-ohne-Schrägstrich-webkit/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/m8-export-M8-PDF-Export-„S-5ac4a-Dateiname-ohne-Schrägstrich-webkit/error-context.md
+
+    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results/m8-export-M8-PDF-Export-„S-5ac4a-Dateiname-ohne-Schrägstrich-webkit/trace.zip
+    Usage:
+
+        npx playwright show-trace test-results/m8-export-M8-PDF-Export-„S-5ac4a-Dateiname-ohne-Schrägstrich-webkit/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  9) [webkit] › tests/e2e/m8-export.spec.ts:83:3 › M8: PDF-Export › Profile verwalten: Kopie ohne Name, bleibt nach Neuladen; Auswahl einer Page mit Festplatz im Dateinamen 
+
+    Error: page.goto: Could not connect to the server.
+    Call log:
+      - navigating to "http://localhost:1420/", waiting until "load"
+
+
+       at helpers.ts:18
+
+      16 |
+      17 | export async function openApp(page: Page) {
+    > 18 |   await page.goto('/');
+         |              ^
+      19 |   await expect(page.locator('header.tabbar')).toBeVisible();
+      20 | }
+      21 |
+        at openApp (/Users/laurin/Desktop/Schelmeplaner/tests/e2e/helpers.ts:18:14)
+        at openFixture (/Users/laurin/Desktop/Schelmeplaner/tests/e2e/m8-export.spec.ts:20:9)
+        at /Users/laurin/Desktop/Schelmeplaner/tests/e2e/m8-export.spec.ts:84:11
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/m8-export-M8-PDF-Export-Pr-ff3cb-mit-Festplatz-im-Dateinamen-webkit/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/m8-export-M8-PDF-Export-Pr-ff3cb-mit-Festplatz-im-Dateinamen-webkit/error-context.md
+
+    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results/m8-export-M8-PDF-Export-Pr-ff3cb-mit-Festplatz-im-Dateinamen-webkit/trace.zip
+    Usage:
+
+        npx playwright show-trace test-results/m8-export-M8-PDF-Export-Pr-ff3cb-mit-Festplatz-im-Dateinamen-webkit/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  10) [webkit] › tests/e2e/m8-export.spec.ts:112:3 › M8: PDF-Export › Blatt im Dialog ändern gilt für die Page und ist ein Undo-Schritt 
+
+    Error: page.goto: Could not connect to the server.
+    Call log:
+      - navigating to "http://localhost:1420/", waiting until "load"
+
+
+       at helpers.ts:18
+
+      16 |
+      17 | export async function openApp(page: Page) {
+    > 18 |   await page.goto('/');
+         |              ^
+      19 |   await expect(page.locator('header.tabbar')).toBeVisible();
+      20 | }
+      21 |
+        at openApp (/Users/laurin/Desktop/Schelmeplaner/tests/e2e/helpers.ts:18:14)
+        at openFixture (/Users/laurin/Desktop/Schelmeplaner/tests/e2e/m8-export.spec.ts:20:9)
+        at /Users/laurin/Desktop/Schelmeplaner/tests/e2e/m8-export.spec.ts:113:11
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/m8-export-M8-PDF-Export-Bl-7c9e8-ge-und-ist-ein-Undo-Schritt-webkit/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/m8-export-M8-PDF-Export-Bl-7c9e8-ge-und-ist-ein-Undo-Schritt-webkit/error-context.md
+
+    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results/m8-export-M8-PDF-Export-Bl-7c9e8-ge-und-ist-ein-Undo-Schritt-webkit/trace.zip
+    Usage:
+
+        npx playwright show-trace test-results/m8-export-M8-PDF-Export-Bl-7c9e8-ge-und-ist-ein-Undo-Schritt-webkit/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  11) [webkit] › tests/e2e/m8-export.spec.ts:123:3 › M8: PDF-Export › Fortschritt, Abbrechen; die Oberfläche bleibt währenddessen bedienbar 
+
+    Error: page.goto: Could not connect to the server.
+    Call log:
+      - navigating to "http://localhost:1420/", waiting until "load"
+
+
+       at helpers.ts:18
+
+      16 |
+      17 | export async function openApp(page: Page) {
+    > 18 |   await page.goto('/');
+         |              ^
+      19 |   await expect(page.locator('header.tabbar')).toBeVisible();
+      20 | }
+      21 |
+        at openApp (/Users/laurin/Desktop/Schelmeplaner/tests/e2e/helpers.ts:18:14)
+        at openFixture (/Users/laurin/Desktop/Schelmeplaner/tests/e2e/m8-export.spec.ts:20:9)
+        at /Users/laurin/Desktop/Schelmeplaner/tests/e2e/m8-export.spec.ts:124:11
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/m8-export-M8-PDF-Export-Fo-37a63-ibt-währenddessen-bedienbar-webkit/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/m8-export-M8-PDF-Export-Fo-37a63-ibt-währenddessen-bedienbar-webkit/error-context.md
+
+    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results/m8-export-M8-PDF-Export-Fo-37a63-ibt-währenddessen-bedienbar-webkit/trace.zip
+    Usage:
+
+        npx playwright show-trace test-results/m8-export-M8-PDF-Export-Fo-37a63-ibt-währenddessen-bedienbar-webkit/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  12) [webkit] › tests/e2e/m8-export.spec.ts:172:3 › M8: Maßstabsbalken und Nordpfeil › sichtbar auf dem Blatt, ziehen rastet an der Blattecke, Entf blendet aus, Bereich „Blatt“ blendet ein 
+
+    Error: page.goto: Could not connect to the server.
+    Call log:
+      - navigating to "http://localhost:1420/", waiting until "load"
+
+
+       at helpers.ts:18
+
+      16 |
+      17 | export async function openApp(page: Page) {
+    > 18 |   await page.goto('/');
+         |              ^
+      19 |   await expect(page.locator('header.tabbar')).toBeVisible();
+      20 | }
+      21 |
+        at openApp (/Users/laurin/Desktop/Schelmeplaner/tests/e2e/helpers.ts:18:14)
+        at /Users/laurin/Desktop/Schelmeplaner/tests/e2e/m8-export.spec.ts:173:11
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/m8-export-M8-Maßstabsbalke-af166-Bereich-„Blatt“-blendet-ein-webkit/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/m8-export-M8-Maßstabsbalke-af166-Bereich-„Blatt“-blendet-ein-webkit/error-context.md
+
+    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results/m8-export-M8-Maßstabsbalke-af166-Bereich-„Blatt“-blendet-ein-webkit/trace.zip
+    Usage:
+
+        npx playwright show-trace test-results/m8-export-M8-Maßstabsbalke-af166-Bereich-„Blatt“-blendet-ein-webkit/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  13) [webkit] › tests/e2e/m8-export.spec.ts:210:3 › M8: Dateiformat Version 5 › echte Datei Version 4 öffnen: Anker ergänzt; Speichern schreibt Version 5 ohne exportProfiles 
+
+    Error: page.goto: Could not connect to the server.
+    Call log:
+      - navigating to "http://localhost:1420/", waiting until "load"
+
+
+       at helpers.ts:18
+
+      16 |
+      17 | export async function openApp(page: Page) {
+    > 18 |   await page.goto('/');
+         |              ^
+      19 |   await expect(page.locator('header.tabbar')).toBeVisible();
+      20 | }
+      21 |
+        at openApp (/Users/laurin/Desktop/Schelmeplaner/tests/e2e/helpers.ts:18:14)
+        at openFixture (/Users/laurin/Desktop/Schelmeplaner/tests/e2e/m8-export.spec.ts:20:9)
+        at /Users/laurin/Desktop/Schelmeplaner/tests/e2e/m8-export.spec.ts:211:11
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/m8-export-M8-Dateiformat-V-b1aa9-rsion-5-ohne-exportProfiles-webkit/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/m8-export-M8-Dateiformat-V-b1aa9-rsion-5-ohne-exportProfiles-webkit/error-context.md
+
+    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results/m8-export-M8-Dateiformat-V-b1aa9-rsion-5-ohne-exportProfiles-webkit/trace.zip
+    Usage:
+
+        npx playwright show-trace test-results/m8-export-M8-Dateiformat-V-b1aa9-rsion-5-ohne-exportProfiles-webkit/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  14) [webkit] › tests/e2e/m8-pdf-rotation.spec.ts:48:5 › QA M8 (E-56): gedrehte PDF-Hintergründe › /Rotate 90: Hintergrund als Vektor, Marke wandert mit der Drehung statt an fester Stelle zu bleiben 
+
+    Error: page.goto: Could not connect to the server.
+    Call log:
+      - navigating to "http://localhost:1420/", waiting until "load"
+
+
+       at helpers.ts:18
+
+      16 |
+      17 | export async function openApp(page: Page) {
+    > 18 |   await page.goto('/');
+         |              ^
+      19 |   await expect(page.locator('header.tabbar')).toBeVisible();
+      20 | }
+      21 |
+        at openApp (/Users/laurin/Desktop/Schelmeplaner/tests/e2e/helpers.ts:18:14)
+        at /Users/laurin/Desktop/Schelmeplaner/tests/e2e/m8-pdf-rotation.spec.ts:50:13
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/m8-pdf-rotation-QA-M8-E-56-9e5ba-an-fester-Stelle-zu-bleiben-webkit/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/m8-pdf-rotation-QA-M8-E-56-9e5ba-an-fester-Stelle-zu-bleiben-webkit/error-context.md
+
+    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results/m8-pdf-rotation-QA-M8-E-56-9e5ba-an-fester-Stelle-zu-bleiben-webkit/trace.zip
+    Usage:
+
+        npx playwright show-trace test-results/m8-pdf-rotation-QA-M8-E-56-9e5ba-an-fester-Stelle-zu-bleiben-webkit/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  15) [webkit] › tests/e2e/m8-pdf-rotation.spec.ts:48:5 › QA M8 (E-56): gedrehte PDF-Hintergründe › /Rotate 180: Hintergrund als Vektor, Marke wandert mit der Drehung statt an fester Stelle zu bleiben 
+
+    Error: page.goto: Could not connect to the server.
+    Call log:
+      - navigating to "http://localhost:1420/", waiting until "load"
+
+
+       at helpers.ts:18
+
+      16 |
+      17 | export async function openApp(page: Page) {
+    > 18 |   await page.goto('/');
+         |              ^
+      19 |   await expect(page.locator('header.tabbar')).toBeVisible();
+      20 | }
+      21 |
+        at openApp (/Users/laurin/Desktop/Schelmeplaner/tests/e2e/helpers.ts:18:14)
+        at /Users/laurin/Desktop/Schelmeplaner/tests/e2e/m8-pdf-rotation.spec.ts:50:13
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/m8-pdf-rotation-QA-M8-E-56-0e568-an-fester-Stelle-zu-bleiben-webkit/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/m8-pdf-rotation-QA-M8-E-56-0e568-an-fester-Stelle-zu-bleiben-webkit/error-context.md
+
+    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results/m8-pdf-rotation-QA-M8-E-56-0e568-an-fester-Stelle-zu-bleiben-webkit/trace.zip
+    Usage:
+
+        npx playwright show-trace test-results/m8-pdf-rotation-QA-M8-E-56-0e568-an-fester-Stelle-zu-bleiben-webkit/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  16) [webkit] › tests/e2e/m8-pdf-rotation.spec.ts:48:5 › QA M8 (E-56): gedrehte PDF-Hintergründe › /Rotate 270: Hintergrund als Vektor, Marke wandert mit der Drehung statt an fester Stelle zu bleiben 
+
+    Error: page.goto: Could not connect to the server.
+    Call log:
+      - navigating to "http://localhost:1420/", waiting until "load"
+
+
+       at helpers.ts:18
+
+      16 |
+      17 | export async function openApp(page: Page) {
+    > 18 |   await page.goto('/');
+         |              ^
+      19 |   await expect(page.locator('header.tabbar')).toBeVisible();
+      20 | }
+      21 |
+        at openApp (/Users/laurin/Desktop/Schelmeplaner/tests/e2e/helpers.ts:18:14)
+        at /Users/laurin/Desktop/Schelmeplaner/tests/e2e/m8-pdf-rotation.spec.ts:50:13
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/m8-pdf-rotation-QA-M8-E-56-764b5-an-fester-Stelle-zu-bleiben-webkit/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/m8-pdf-rotation-QA-M8-E-56-764b5-an-fester-Stelle-zu-bleiben-webkit/error-context.md
+
+    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results/m8-pdf-rotation-QA-M8-E-56-764b5-an-fester-Stelle-zu-bleiben-webkit/trace.zip
+    Usage:
+
+        npx playwright show-trace test-results/m8-pdf-rotation-QA-M8-E-56-764b5-an-fester-Stelle-zu-bleiben-webkit/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  17) [webkit] › tests/e2e/m8-pdf-rotation.spec.ts:59:3 › QA M8 (E-56): gedrehte PDF-Hintergründe › 0° vs. 90°: dieselbe Quelle an unterschiedlicher Stelle im PDF (Drehung wirkt, wird nicht ignoriert) 
+
+    Error: page.goto: Could not connect to the server.
+    Call log:
+      - navigating to "http://localhost:1420/", waiting until "load"
+
+
+       at helpers.ts:18
+
+      16 |
+      17 | export async function openApp(page: Page) {
+    > 18 |   await page.goto('/');
+         |              ^
+      19 |   await expect(page.locator('header.tabbar')).toBeVisible();
+      20 | }
+      21 |
+        at openApp (/Users/laurin/Desktop/Schelmeplaner/tests/e2e/helpers.ts:18:14)
+        at /Users/laurin/Desktop/Schelmeplaner/tests/e2e/m8-pdf-rotation.spec.ts:60:11
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/m8-pdf-rotation-QA-M8-E-56-9f070-wirkt-wird-nicht-ignoriert--webkit/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/m8-pdf-rotation-QA-M8-E-56-9f070-wirkt-wird-nicht-ignoriert--webkit/error-context.md
+
+    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results/m8-pdf-rotation-QA-M8-E-56-9f070-wirkt-wird-nicht-ignoriert--webkit/trace.zip
+    Usage:
+
+        npx playwright show-trace test-results/m8-pdf-rotation-QA-M8-E-56-9f070-wirkt-wird-nicht-ignoriert--webkit/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  18) [webkit] › tests/e2e/smoke.spec.ts:4:3 › Smoke › App startet ohne Fehler und zeigt die Tab-Leiste 
+
+    Error: page.goto: Could not connect to the server.
+    Call log:
+      - navigating to "http://localhost:1420/", waiting until "load"
+
+
+       9 |     });
+      10 |
+    > 11 |     await page.goto('/');
+         |                ^
+      12 |
+      13 |     const tabbar = page.locator('header.tabbar');
+      14 |     await expect(tabbar).toBeVisible();
+        at /Users/laurin/Desktop/Schelmeplaner/tests/e2e/smoke.spec.ts:11:16
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/smoke-Smoke-App-startet-ohne-Fehler-und-zeigt-die-Tab-Leiste-webkit/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/smoke-Smoke-App-startet-ohne-Fehler-und-zeigt-die-Tab-Leiste-webkit/error-context.md
+
+    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results/smoke-Smoke-App-startet-ohne-Fehler-und-zeigt-die-Tab-Leiste-webkit/trace.zip
+    Usage:
+
+        npx playwright show-trace test-results/smoke-Smoke-App-startet-ohne-Fehler-und-zeigt-die-Tab-Leiste-webkit/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  18 failed
+    [webkit] › tests/e2e/m2-nacharbeit.spec.ts:142:3 › Nacharbeit M2: Dateien › QA-M2-03: große Rasterbilder werden als Übersicht plus Kacheln gezeichnet 
+    [webkit] › tests/e2e/m4-qa.spec.ts:880:3 › QA M4-22: Dateiformat › Version-1-Datei (echte M3-Datei) öffnen: migriert, Warnungen aktiv; Speichern schreibt Version 2 
+    [webkit] › tests/e2e/m7-qa.spec.ts:140:3 › M7-QA: Legende aktualisiert sich live › Neue Kategorie mit Stand ergänzt die Legende; Löschen des Stands entfernt den Eintrag wieder 
+    [webkit] › tests/e2e/m7-qa.spec.ts:152:3 › M7-QA: Papier-Elemente sind nicht kopierbar und nicht Teil der Mehrfachauswahl › Ausgewähltes Schriftfeld: Cmd/Strg+C erzeugt keinen Zwischenablage-Inhalt (Einfügen bleibt wirkungslos) 
+    [webkit] › tests/e2e/m8-export-profile-delete.spec.ts:13:1 › eigenes Profil löschen: Rückfrage, danach weg, bleibt auch nach Neuladen weg 
+    [webkit] › tests/e2e/m8-export-snapshot.spec.ts:39:1 › Standname während des laufenden Exports geändert: PDF zeigt den Stand der Vorlage zum Startzeitpunkt 
+    [webkit] › tests/e2e/m8-export.spec.ts:44:3 › M8: PDF-Export › Cmd/Strg+P: Dialog mit echter Vorschau; Gesamtplan „Intern“ mit Anhang, Seiten exakt in mm 
+    [webkit] › tests/e2e/m8-export.spec.ts:69:3 › M8: PDF-Export › „Sanität/Ordnungsamt“: kein Eigentümer im PDF; Dateiname ohne Schrägstrich 
+    [webkit] › tests/e2e/m8-export.spec.ts:83:3 › M8: PDF-Export › Profile verwalten: Kopie ohne Name, bleibt nach Neuladen; Auswahl einer Page mit Festplatz im Dateinamen 
+    [webkit] › tests/e2e/m8-export.spec.ts:112:3 › M8: PDF-Export › Blatt im Dialog ändern gilt für die Page und ist ein Undo-Schritt 
+    [webkit] › tests/e2e/m8-export.spec.ts:123:3 › M8: PDF-Export › Fortschritt, Abbrechen; die Oberfläche bleibt währenddessen bedienbar 
+    [webkit] › tests/e2e/m8-export.spec.ts:172:3 › M8: Maßstabsbalken und Nordpfeil › sichtbar auf dem Blatt, ziehen rastet an der Blattecke, Entf blendet aus, Bereich „Blatt“ blendet ein 
+    [webkit] › tests/e2e/m8-export.spec.ts:210:3 › M8: Dateiformat Version 5 › echte Datei Version 4 öffnen: Anker ergänzt; Speichern schreibt Version 5 ohne exportProfiles 
+    [webkit] › tests/e2e/m8-pdf-rotation.spec.ts:48:5 › QA M8 (E-56): gedrehte PDF-Hintergründe › /Rotate 90: Hintergrund als Vektor, Marke wandert mit der Drehung statt an fester Stelle zu bleiben 
+    [webkit] › tests/e2e/m8-pdf-rotation.spec.ts:48:5 › QA M8 (E-56): gedrehte PDF-Hintergründe › /Rotate 180: Hintergrund als Vektor, Marke wandert mit der Drehung statt an fester Stelle zu bleiben 
+    [webkit] › tests/e2e/m8-pdf-rotation.spec.ts:48:5 › QA M8 (E-56): gedrehte PDF-Hintergründe › /Rotate 270: Hintergrund als Vektor, Marke wandert mit der Drehung statt an fester Stelle zu bleiben 
+    [webkit] › tests/e2e/m8-pdf-rotation.spec.ts:59:3 › QA M8 (E-56): gedrehte PDF-Hintergründe › 0° vs. 90°: dieselbe Quelle an unterschiedlicher Stelle im PDF (Drehung wirkt, wird nicht ignoriert) 
+    [webkit] › tests/e2e/smoke.spec.ts:4:3 › Smoke › App startet ohne Fehler und zeigt die Tab-Leiste 
+  7 skipped
+  663 passed (7.7m)
