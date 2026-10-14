@@ -5,7 +5,9 @@ import { MOD, openApp } from './helpers';
 /**
  * Lasttest PDF-Export (M8-10, Abnahmekriterium spec.md §9): 8 Pages A1 quer mit je einem JPEG-Hintergrund
  * 8000 × 6000 px, 500 Stände, Profil „Intern“ mit Anhang, 300 dpi. Median aus 3 Läufen höchstens 60 s, während des
- * Exports kein Bild der Oberfläche über 200 ms, Datei höchstens 200 MB.
+ * Exports kein Bild der Oberfläche über 200 ms, Datei höchstens 200 MB. Dazu (M8-Nacharbeit) ein Lauf mit Qualität
+ * „E-Mail“: Datei unter 20 MB; die im Dialog geschätzte Größe liegt jeweils zwischen der Hälfte und dem Doppelten der
+ * echten.
  */
 
 const store = (page: Page, fn: string) => page.evaluate(`(() => { const s = window.__schelmeStore.getState(); return ${fn}; })()`);
@@ -94,12 +96,13 @@ async function withFrames<T>(page: Page, action: () => Promise<T>): Promise<{ re
 test('PDF-Export: 8 × A1 mit großen Hintergründen, 500 Stände, „Intern“ mit Anhang, 300 dpi', async ({ page }, info) => {
   test.setTimeout(600_000);
   await setup(page);
-  const runs: { ms: number; maxFrame: number; bytes: number }[] = [];
+  const runs: { ms: number; maxFrame: number; bytes: number; estimate: number }[] = [];
   for (let i = 0; i < 3; i++) {
     await page.keyboard.press(`${MOD}+p`);
     const dlg = page.getByRole('dialog', { name: 'Als PDF exportieren' });
     await expect(dlg).toBeVisible();
     await dlg.getByLabel('Auflösung der Rasterhintergründe').selectOption('300');
+    const estimate = Number(await page.getByTestId('export-size-estimate').getAttribute('data-bytes'));
     const { result, maxFrame } = await withFrames(page, async () => {
       const t0 = Date.now();
       const download = page.waitForEvent('download', { timeout: 300_000 });
@@ -113,16 +116,35 @@ test('PDF-Export: 8 × A1 mit großen Hintergründen, 500 Stände, „Intern“ 
       const head = readFileSync(result.path).subarray(0, 5).toString();
       expect(head).toBe('%PDF-');
     }
-    runs.push({ ms: result.ms, maxFrame, bytes: result.bytes });
+    runs.push({ ms: result.ms, maxFrame, bytes: result.bytes, estimate });
   }
+  // Qualität „E-Mail“
+  await page.keyboard.press(`${MOD}+p`);
+  const dlg = page.getByRole('dialog', { name: 'Als PDF exportieren' });
+  await dlg.getByLabel('Auflösung der Rasterhintergründe').selectOption('email');
+  const emailEstimate = Number(await page.getByTestId('export-size-estimate').getAttribute('data-bytes'));
+  const download = page.waitForEvent('download', { timeout: 300_000 });
+  await dlg.getByRole('button', { name: 'Exportieren' }).click();
+  const emailBytes = statSync((await (await download).path())!).size;
   const median = runs.map((r) => r.ms).toSorted((a, b) => a - b)[1]!;
   const worstFrame = Math.max(...runs.map((r) => r.maxFrame));
   const mb = runs[0]!.bytes / 1e6;
-  const report = `${info.project.name}: Median ${(median / 1000).toFixed(1)} s (${runs.map((r) => (r.ms / 1000).toFixed(1)).join(' / ')}), längstes Bild ${worstFrame.toFixed(0)} ms, Datei ${mb.toFixed(1)} MB`;
+  const emailMb = emailBytes / 1e6;
+  const report =
+    `${info.project.name}: Median ${(median / 1000).toFixed(1)} s (${runs.map((r) => (r.ms / 1000).toFixed(1)).join(' / ')}), längstes Bild ${worstFrame.toFixed(0)} ms, ` +
+    `Datei ${mb.toFixed(1)} MB (geschätzt ${(runs[0]!.estimate / 1e6).toFixed(1)} MB); E-Mail ${emailMb.toFixed(1)} MB (geschätzt ${(emailEstimate / 1e6).toFixed(1)} MB)`;
   info.annotations.push({ type: 'Messung', description: report });
   mkdirSync('test-artifacts/logs', { recursive: true });
   writeFileSync(`test-artifacts/logs/perf-m8-export-${info.project.name}.txt`, report);
   expect.soft(median, 'Exportdauer (Median) ≤ 60 s').toBeLessThanOrEqual(60_000);
   expect.soft(worstFrame, 'längstes Bild während des Exports ≤ 200 ms').toBeLessThanOrEqual(200);
   expect.soft(mb, 'Dateigröße ≤ 200 MB').toBeLessThanOrEqual(200);
+  expect.soft(emailMb, 'Dateigröße „E-Mail“ < 20 MB').toBeLessThan(20);
+  for (const [est, real, name] of [
+    [runs[0]!.estimate, runs[0]!.bytes, '300 dpi'],
+    [emailEstimate, emailBytes, 'E-Mail'],
+  ] as const) {
+    expect.soft(est / real, `Schätzung ${name} zwischen 50 % und 200 % der echten Größe`).toBeGreaterThan(0.5);
+    expect.soft(est / real, `Schätzung ${name} zwischen 50 % und 200 % der echten Größe`).toBeLessThan(2);
+  }
 });

@@ -74,7 +74,7 @@ QA-Befunde und sein Abschluss nach `docs/archiv/Mx.md`; erledigte Eingang-Eintr�
 | `npm run lint` | Linter (oxlint, Warnungen gelten als Fehler) |
 | `npm test` | Unit-Tests (Vitest, `src/**/*.test.ts`) |
 | `npm run test:watch` | Unit-Tests im Watch-Modus |
-| `npm run test:e2e` | E2E-Tests (Playwright, `tests/e2e/`, Chromium + WebKit; startet den Dev-Server selbst). Ohne Lasttests |
+| `npm run test:e2e` | E2E-Tests (Playwright, `tests/e2e/`, Chromium + WebKit; startet den Dev-Server selbst). Ohne Lasttests. Lokal höchstens 4 Worker, WebKit höchstens 2 (QA-M8-02, sonst wackeln WebKit-Gesten-Tests) |
 | `npm run test:perf` | Lasttests (`tests/e2e/*perf.spec.ts`, Abnahmekriterium siehe spec.md NFA: 500 Stände, Plan 8000 × 6000 px, Median aus 5 Läufen ≥ 50 Bilder/s, kein Bild über 100 ms) seriell mit einem Worker, getrennt von `test:e2e` (parallele Browser verfälschen die Bildrate). Nur ohne macOS-Stromsparmodus messen (WebKit drosselt dort auf 30 Bilder/s) und ohne rechenintensive Programme im Hintergrund |
 | `npx playwright install chromium webkit` | Browser für die E2E-Tests installieren (einmalig) |
 | `npm run build` | Typecheck + Produktions-Build nach `dist/` |

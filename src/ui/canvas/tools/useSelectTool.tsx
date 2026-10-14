@@ -95,17 +95,17 @@ export function useSelectTool(ctx: ToolContext, active: boolean): ToolHandlers {
   const paperBox = (element: PaperElement): Bounds | null => {
     const pp = ctx.paper;
     if (element === 'sheet') return pp.frame.bounds;
-    const el = element === 'titleBlock' ? (ctx.page.titleBlock.visible ? pp.titleBlock : null) : ctx.page.legend.visible ? pp.legend : null;
+    const el = ctx.page[element].visible ? pp[element] : null;
     if (!el) return null;
     const k = mmToM(1, pp.frame.scale);
     return { minX: el.topLeft.x, minY: el.topLeft.y, maxX: el.topLeft.x + el.layout.w * k, maxY: el.topLeft.y + el.layout.h * k };
   };
-  /** Treffer auf Papier-Elemente (liegen über allen Objekten): Schriftfeld, Legende, Rand oder Marke des Blatts. */
+  /** Treffer auf Papier-Elemente (liegen über allen Objekten; das oberste zuerst), Rand oder Marke des Blatts. */
   const pickPaper = (w: Vec): PaperElement | null => {
     const L = ctx.page.layers.sheet;
     if (!L.visible || L.locked) return null;
     const inside = (b: Bounds | null, tol = 0) => !!b && w.x >= b.minX - tol && w.x <= b.maxX + tol && w.y >= b.minY - tol && w.y <= b.maxY + tol;
-    for (const el of ['titleBlock', 'legend'] as const) if (inside(paperBox(el))) return el;
+    for (const el of ['titleBlock', 'legend', 'northArrow', 'scaleBar'] as const) if (inside(paperBox(el))) return el;
     const f = ctx.paper.frame.bounds;
     const tol = LINE_HIT_PX / ctx.view.scale;
     const onEdge = inside(f, tol) && !inside({ minX: f.minX + tol, minY: f.minY + tol, maxX: f.maxX - tol, maxY: f.maxY - tol });
@@ -217,7 +217,7 @@ export function useSelectTool(ctx: ToolContext, active: boolean): ToolHandlers {
         const c = { x: (g.box0.minX + g.box0.maxX) / 2 + g.delta.x, y: (g.box0.minY + g.box0.maxY) / 2 + g.delta.y };
         setSheet(pageId, { cx: Math.round(c.x * 100) / 100, cy: Math.round(c.y * 100) / 100 });
       } else {
-        const el = g.element === 'titleBlock' ? pp.titleBlock : pp.legend;
+        const el = pp[g.element];
         if (el && g.target) setPaperAnchor(pageId, g.element, paperToAnchor(g.target, el.layout, pp.frame.paper));
       }
       return;
@@ -265,11 +265,26 @@ export function useSelectTool(ctx: ToolContext, active: boolean): ToolHandlers {
       }
 
       const paperHit = !handle ? pickPaper(p.world) : null;
+      const paperSelected = st.ui.selection?.kind === 'paper' && st.ui.selection.element === paperHit;
+      // Ein angepasstes Blatt folgt dem Inhalt und lässt sich nicht ziehen
+      const fixedPaper = paperHit === 'sheet' && ctx.page.sheet.scale === null;
+      if (paperHit && (!paperSelected || fixedPaper)) {
+        // Papier-Elemente und Blatt stören die Arbeit nicht (M8-Nacharbeit, §8): wie bei Grundflächen wählt ein Klick
+        // aus, Ziehen auf einem nicht ausgewählten Element zieht ein Auswahlrechteck auf
+        startGesture({
+          kind: 'pending',
+          start: p.screen,
+          startWorld: p.world,
+          shift: p.shiftKey,
+          grab: null,
+          onDrag: 'marquee',
+          onClick: () => st.setUi({ selection: { kind: 'paper', element: paperHit } }),
+        });
+        return true;
+      }
       if (paperHit) {
         st.setUi({ selection: { kind: 'paper', element: paperHit } });
         const box0 = paperBox(paperHit)!;
-        // Ein angepasstes Blatt folgt dem Inhalt und lässt sich nicht ziehen
-        if (paperHit === 'sheet' && ctx.page.sheet.scale === null) return true;
         startGesture({ kind: 'paper', element: paperHit, startWorld: p.world, box0, start: p.screen, moved: false, delta: { x: 0, y: 0 }, target: null });
         return true;
       }
@@ -402,9 +417,9 @@ export function useSelectTool(ctx: ToolContext, active: boolean): ToolHandlers {
           g.delta = { x: p.world.x - g.startWorld.x, y: p.world.y - g.startWorld.y };
           let min = { x: g.box0.minX + g.delta.x, y: g.box0.minY + g.delta.y };
           const pp = ctx.paper;
-          const el = g.element === 'titleBlock' ? pp.titleBlock : g.element === 'legend' ? pp.legend : null;
+          const el = g.element === 'sheet' ? null : pp[g.element];
           if (el) {
-            // Schriftfeld und Legende: Fang an den Blattecken (Cmd/Strg aus), nie über den Blattrand (QA-M7-01)
+            // Papier-Elemente: Fang an den Blattecken (Cmd/Strg aus), nie über den Blattrand (QA-M7-01)
             const tolMm = p.modKey ? -1 : mToMm(SNAP_PX / ctx.view.scale, pp.frame.scale);
             g.target = snapToPaperCorners(worldToPaper(pp.frame, min), el.layout, pp.frame.paper, tolMm).p;
             min = paperToWorld(pp.frame, g.target);

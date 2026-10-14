@@ -53,7 +53,7 @@ Erledigte Einträge stehen in `docs/archiv/eingang-erledigt.md` bzw. im Archiv d
 - E-45 (Idee, aus M7-Planung) Einzelne Einträge der Legende ausblenden oder umbenennen.
 - E-46 (Idee, aus M7-Planung) Mehrere Blätter pro Festplatz-Page (z. B. Übersicht 1:1000 und Ausschnitt 1:200).
 - E-47 (Hinweis, aus M7) Die Beschriftung eines Infrastruktur-Objekts kann sich mit der Grundflächen-Beschriftung überdecken (z. B. Toilettenwagen direkt an der Vorderseite); wie E-30 wird nichts gekürzt oder verschoben.
-- E-48 (Idee, aus M7) „An Fenster anpassen“ (Cmd/Strg+0) passt an die Objekte an; das Blatt kann darüber hinausragen. Ein zweiter Befehl „Blatt in Fenster einpassen“ wie in Illustrator wäre möglich.
+- E-48 (Idee, aus M7; erledigt mit M8-12, Archiv nach Abnahme) „An Fenster anpassen“ (Cmd/Strg+0) passt an die Objekte an; das Blatt kann darüber hinausragen. Ein zweiter Befehl „Blatt in Fenster einpassen“ wie in Illustrator wäre möglich.
 - E-49 (Hinweis, aus M7, umgesetzt in M8-04; Archiv nach Abnahme) Bei „an Seite anpassen“ füllt der Inhalt das Blatt bis auf 10 mm Rand; Schriftfeld und Legende können dann Teile des Plans überdecken. Der Planer verschiebt sie oder wählt einen festen Maßstab. Möglich wäre, beim Anpassen Platz für die Papier-Elemente freizuhalten.
 - E-50 (Idee, aus M7) Beim Ziehen von Blatt, Schriftfeld und Legende zeigt die Zeichenfläche nur einen Umriss; das Element springt beim Loslassen an die neue Stelle (Objekte bewegen sich dagegen live).
 - E-51 (Idee, aus M7) Infrastrukturliste der Start-Page mit Zellnavigation per Pfeiltasten wie die Geschäftstabelle (bisher Eingabefelder je Zeile, spec.md §7 angepasst).
@@ -67,7 +67,7 @@ Erledigte Einträge stehen in `docs/archiv/eingang-erledigt.md` bzw. im Archiv d
 - E-08 (Hinweis) Browser-Autosave nutzt localStorage (ca. 5 MB). Mit eingebetteten Hintergründen (M2) reicht das nicht; betrifft nur den Browser-Dev-Modus.
 - [QA] QA-M1-11 (gering, Dokumentation/Prozess) Die Entwicklung hat QA-Artefakte geändert: Abschnitt „Behoben“ an `qa/M1.md` angehängt und die Erwartung des QA-Tests „M1-24: Zwei-Finger-Wischen“ umgedreht (`tests/e2e/m1-canvas.spec.ts:104-107`, begründet). Dazu Widersprüche: QA-M1-02 steht hier als „erledigt“, in `qa/M1.md` als „teilweise“; die Einträge QA-M1-03/-04 nennen noch `test.fail`, obwohl die Markierungen entfernt sind.
 - [QA] QA-M5-05 (gering, Prozess, wiederholt QA-M1-11) Die Entwicklung hat in den Commits `68ab8cb`/`da424cd` bei M5-01, M5-02, M5-08, M5-14, QA-M5-03 und QA-M5-04 selbst den Vermerk „(QA ✓ M5 Nachtest 2026-10-12)“ in `BACKLOG.md` eingetragen, bevor die QA den Nachtest durchgeführt hat. Der Nachtest (`qa/M5.md`, Abschnitt „Nachtest“) hat die Vermerke inhaltlich bestätigt, trotzdem sollte nur die QA „(QA ✓ …)“ setzen. Siehe `qa/M5.md`.
-- [QA] QA-M8-02 (gering, Prozess/Testinfrastruktur, kein Produktfehler) `npm run test:e2e` (Chromium + WebKit, 5 Worker parallel, 688 Tests inkl. der neuen, mit großen Rasterbildern arbeitenden M8-Tests) ließ gegen Ende des WebKit-Laufs den Dev-Server abstürzen („Could not connect to the server“), was 18 WebKit-Tests kaskadierend scheitern ließ (u. a. unbeteiligte M2/M4/M7-Tests). Isolierter Nachlauf derselben Testdateien in WebKit mit 2 Workern: alle grün (siehe `qa/M8.md`, Abschnitt „Automatisierte Suite“). Vermutlich Ressourcenerschöpfung durch mehrere parallele große Canvas-/Worker-Operationen auf dieser Maschine; die CI (`build.yml`) läuft `test:e2e` nur mit Chromium und ist davon nicht betroffen. Ggf. Worker-Zahl für lokale volle Läufe senken oder besonders speicherintensive Tests (`m8-export*.spec.ts`) mit reduzierter Parallelität kennzeichnen.
+- [x] [QA] QA-M8-02 (erledigt mit M8-14: WebKit-Projekt in `playwright.config.ts` auf 2 Worker begrenzt, lokal insgesamt 4; Archiv nach Abnahme) (gering, Prozess/Testinfrastruktur, kein Produktfehler) `npm run test:e2e` (Chromium + WebKit, 5 Worker parallel, 688 Tests inkl. der neuen, mit großen Rasterbildern arbeitenden M8-Tests) ließ gegen Ende des WebKit-Laufs den Dev-Server abstürzen („Could not connect to the server“), was 18 WebKit-Tests kaskadierend scheitern ließ (u. a. unbeteiligte M2/M4/M7-Tests). Isolierter Nachlauf derselben Testdateien in WebKit mit 2 Workern: alle grün (siehe `qa/M8.md`, Abschnitt „Automatisierte Suite“). Vermutlich Ressourcenerschöpfung durch mehrere parallele große Canvas-/Worker-Operationen auf dieser Maschine; die CI (`build.yml`) läuft `test:e2e` nur mit Chromium und ist davon nicht betroffen. Ggf. Worker-Zahl für lokale volle Läufe senken oder besonders speicherintensive Tests (`m8-export*.spec.ts`) mit reduzierter Parallelität kennzeichnen.
 
 ---
 
@@ -100,6 +100,17 @@ Testdatei der Vorgängerversion: `tests/fixtures/format-v4-m7.schelme` (mit der 
 - [x] M8-08 Umfang Gesamtplan/Auswahl, gemischte Formate; Anhang mit Stand-, Freiflächen- und Infrastrukturliste (§9) (QA ✓ M8)
 - [x] M8-09 Export-Dialog mit Profil, Umfang, Blatt je Page und echter PDF-Vorschau; Export im Web Worker mit Fortschritt und Abbrechen; Speichern per Dialog/Download; Dateiname-Vorschlag; Cmd/Strg+P (§9, Tastaturkürzel) (QA ✓ M8; Snapshot-Verhalten während laufenden Exports ergänzend getestet)
 - [x] M8-10 Tests: PDFs mit pdf.js geprüft (Seitenzahl/-größen, Maßstab, Text je Profil, Datenschutz mit Kanarienwerten in Textlayer, Metadaten, Lesezeichen und Rohdaten); Lasttest Export als Abnahmekriterium (§9) (QA ✓ M8)
+
+
+**Nacharbeit vor der Abnahme** (Laurin, 2026-10-14):
+- [x] M8-11 Papier-Elemente stören die Arbeit nicht: Klick wählt aus, nur ein ausgewähltes wird gezogen, Ziehen auf
+  einem nicht ausgewählten zieht ein Auswahlrechteck auf (wie Grundflächen); Anpassung in `m3-qa.spec.ts:904`
+  zurücknehmen (§8)
+- [x] M8-12 Cmd/Strg+0 passt das ganze Blatt samt Papier-Elementen ins Fenster (E-48); Anpassung in
+  `m7-sheet.spec.ts:166` zurücknehmen (Layout)
+- [x] M8-13 Dateigröße: JPEG-Qualität in Chromium und WebKit angleichen; Qualitätsstufe „E-Mail“ (100 dpi, JPEG 60,
+  unter 20 MB für 8 × A1); geschätzte Dateigröße im Export-Dialog (§9)
+- [x] M8-14 QA-M8-02: Worker für WebKit in der Playwright-Konfiguration begrenzen (WebKit 2, lokal insgesamt 4), voller lokaler Lauf zuverlässig grün
 
 ### Abschluss M8 (2026-10-12)
 **Umgesetzt** (spec.md §8, §9, §10, Tastaturkürzel):
@@ -158,6 +169,42 @@ WKWebView/WebView2). Bitte einmal mit `npm run tauri dev` exportieren.
 **Bekannte Bugs / Grenzen:** E-54 bis E-58.
 
 **Offene Fragen:** keine.
+
+#### Abschluss M8, Nacharbeit (2026-10-14)
+- **M8-11** Papier-Elemente: Ein Klick wählt aus, nur ein ausgewähltes Element wird gezogen, Ziehen auf einem nicht
+  ausgewählten zieht ein Auswahlrechteck auf (wie Grundflächen). Das gilt auch für Rahmen und Marke des Blatts; ein
+  angepasstes Blatt zieht immer ein Auswahlrechteck auf. Ursache des Fehlers in `m3-qa.spec.ts:904` war neben dem
+  Maßstabsbalken auch die Marke des angepassten Blatts, die den Zug verschluckte. Die Anpassung dort ist
+  zurückgenommen; der Test besteht in seiner Originalform.
+- **M8-12** Cmd/Strg+0 nimmt das ganze Blatt samt Marke und Papier-Elementen dazu, solange die Ebene „Blatt“ sichtbar
+  ist (E-48). Die Anpassung in `m7-sheet.spec.ts:166` ist zurückgenommen; Originalform besteht.
+- **M8-13** Ursache der 101 MB in WebKit: Beide Browser kodieren JPEG mit 4:2:0, aber WebKit deutet den
+  Qualitätswert anders (bei 0,85 Quantisierungstabelle 1 statt 5, entspricht libjpeg ≈ 97). Der Export kalibriert
+  jetzt einmal je Browser den Wert, dessen Tabelle der libjpeg-Tabelle für Qualität 85 bzw. 60 entspricht (WebKit:
+  0,577 bzw. 0,374); danach sind die Dateien in beiden Browsern gleich groß. Neue Stufe „E-Mail“ (100 dpi, alles als
+  JPEG 60) und geschätzte Dateigröße im Dialog (Pixelzahl × Bytes je Pixel der Quelle, umgerechnet über deren
+  Qualität aus der Quantisierungstabelle).
+- **M8-14** WebKit in `playwright.config.ts` mit höchstens 2 Workern (QA-M8-02).
+- Messwerte Lasttest Export (8 × A1, 500 Stände, „Intern“ mit Anhang): 300 dpi Chromium Median 4,2 s, 63,1 MB
+  (geschätzt 61,2 MB); WebKit Median 6,1 s, 62,0 MB (geschätzt 65,2 MB, vorher 101 MB). „E-Mail“: Chromium 9,6 MB
+  (geschätzt 7,8 MB), WebKit 10,8 MB (geschätzt 8,2 MB). Längstes Bild der Oberfläche höchstens 100 ms.
+- E2E: `npm run test:e2e` (beide Browser) dreimal hintereinander auf diesem Mac grün (je 685 bestanden, 7 übersprungen).
+  Mit nur der WebKit-Grenze (2 Worker) liefen noch Chromium (5) und WebKit (2) gleichzeitig; dabei fiel je Lauf ein
+  anderer WebKit-Gesten-Test aus (`m4-freespace.spec.ts:124`, `m4-qa.spec.ts:974`; isoliert 20/20 grün). Deshalb
+  lokal zusätzlich höchstens 4 Worker insgesamt (`workers` in `playwright.config.ts`, CI unverändert).
+- `npm run test:perf`: 12 von 14 grün im ersten Lauf. Zwei Ausfälle fielen in eine Phase mit Lastdurchschnitt 54
+  (Autodesk Fusion, Spotify, Chrome u. a. im Hintergrund, Akkubetrieb): M4-21 Chromium „Ziehen“ mit einem Bild von
+  100,1 ms und ein WebKit-Exportlauf mit 190 s und einem Bild von 2,4 s. Bei Last unter 8 wiederholt: beide grün
+  (M4-21 Chromium ≥ 58,1 Bilder/s, längstes Bild 100 ms = genau an der Grenze; WebKit-Export Median 5,5 s, längstes
+  Bild 97 ms). Hinweis für die QA: Lasttests nur ohne rechenintensive Programme im Hintergrund (CLAUDE.md).
+- **Geänderte Tests in `tests/e2e/`** (durch die neue Auswahlregel nachweislich überholt, jeweils mit Kommentar): Sie
+  zogen ein nicht ausgewähltes Papier-Element direkt; jetzt klicken sie es vorher an:
+  - `m7-sheet.spec.ts:74` („Schriftfeld ziehen …“) und `m7-sheet.spec.ts:99` (QA-M7-01, Hilfsfunktion `dragBy`);
+  - `m8-export.spec.ts` (Maßstabsbalken ziehen).
+  - Typfehler in den QA-Tests `m8-pdf-rotation.spec.ts` und `m8-export-profile-delete.spec.ts` korrigiert (ohne
+    Änderung des Prüfverhaltens), sonst scheitert `npm run check`.
+- Neue Tests: `m8-export.spec.ts` (Auswahlrechteck auf einem Papier-Element, Cmd/Strg+0 mit ganzem Blatt),
+  `pdfBackground.test.ts` (libjpeg-Tabellen, DQT, „E-Mail“, Schätzung), Lasttest um „E-Mail“ und Schätzung erweitert.
 
 ## M9 – Phase 2: Händler-Import, Jahresvorlage, CSV/XLSX
 - [ ] M9-01 Händlerliste aus CSV/XLSX importieren mit Spaltenzuordnung (§10)

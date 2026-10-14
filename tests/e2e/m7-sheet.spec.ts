@@ -78,6 +78,8 @@ test.describe('M7: Blatt und Papier-Elemente', () => {
     await fitView(page);
     const tb = await centerOf(page, 'title-block');
     const frame = (await page.getByTestId('sheet-frame').boundingBox())!;
+    // Seit der M8-Nacharbeit (spec.md §8) wird nur ein ausgewähltes Papier-Element gezogen: erst klicken (angepasst vom Entwickler)
+    await page.mouse.click(tb.x, tb.y);
     await page.mouse.move(tb.x, tb.y);
     await page.mouse.down();
     await page.mouse.move(frame.x + 40, frame.y + 30, { steps: 12 });
@@ -105,6 +107,8 @@ test.describe('M7: Blatt und Papier-Elemente', () => {
     const dragBy = async (dx: number, dy: number, mod = false) => {
       const box = (await page.getByTestId('title-block').locator('.paper-box').boundingBox())!;
       const from = { x: box.x + box.width / 2, y: box.y + box.height / 2 };
+      // Seit der M8-Nacharbeit (spec.md §8) wird nur ein ausgewähltes Papier-Element gezogen: erst klicken (angepasst vom Entwickler)
+      await page.mouse.click(from.x, from.y);
       await page.mouse.move(from.x, from.y);
       if (mod) await page.keyboard.down('ControlOrMeta');
       await page.mouse.down();
@@ -163,9 +167,6 @@ test.describe('M7: Blatt und Papier-Elemente', () => {
     // Inhalt so groß, dass das angepasste Blatt nach Cmd/Strg+0 ganz im Fenster liegt
     await seed(page, { areas: [{ id: 'G', cx: 0, cy: 0, w: 100, d: 60 }] });
     await fitView(page);
-    // Seit M8 hält „an Seite anpassen“ Platz für die Papier-Elemente frei; das Blatt ist größer als der Inhalt.
-    // Eine Stufe herauszoomen, damit es ganz im Fenster liegt (angepasst vom Entwickler, siehe Abschluss M8)
-    await page.keyboard.press(`${MOD}+-`);
     const frame = (await page.getByTestId('sheet-frame').boundingBox())!;
     await page.keyboard.press('t');
     await page.mouse.click(frame.x + 15, frame.y + 15);

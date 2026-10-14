@@ -185,7 +185,8 @@ test.describe('M8: Maßstabsbalken und Nordpfeil', () => {
     // Maßstabsbalken in die Nähe der Ecke oben rechts ziehen: rastet dort ein (Anker „oben rechts“)
     const bar = (await page.getByTestId('scale-bar').boundingBox())!;
     const frame = (await page.getByTestId('sheet-frame').boundingBox())!;
-    await page.mouse.move(bar.x + bar.width / 2, bar.y + bar.height / 2);
+    // Nur ein ausgewähltes Papier-Element wird gezogen (§8): erst klicken
+    await page.mouse.click(bar.x + bar.width / 2, bar.y + bar.height / 2);
     await page.mouse.down();
     await page.mouse.move(frame.x + frame.width - bar.width / 2 - 2, frame.y + bar.height / 2 + 30, { steps: 12 });
     await page.mouse.up();
@@ -203,6 +204,50 @@ test.describe('M8: Maßstabsbalken und Nordpfeil', () => {
     await expect(page.getByTestId('north-arrow')).toHaveCount(0);
     await page.keyboard.press(`${MOD}+z`);
     await expect(page.getByTestId('north-arrow')).toBeVisible();
+  });
+});
+
+test.describe('M8-Nacharbeit: Papier-Elemente stören nicht, Cmd/Strg+0 zeigt das ganze Blatt', () => {
+  test('Ziehen auf einem nicht ausgewählten Papier-Element zieht ein Auswahlrechteck auf; Klick wählt es aus', async ({ page }) => {
+    await openApp(page);
+    await page.evaluate(() => {
+      const s = (window as any).__schelmeStore.getState();
+      const base = { nr: '', nrLocked: false, name: '', owner: '', ware: '', powerKw: 0, connection: null, note: '', categoryId: null, color: null, suppressOutsideWarning: false, suppressOverlapWarning: false, suppressDuplicateWarning: false, suppressInfraWarning: false, rot: 0 };
+      s.change('Testdaten', (p: any) => {
+        p.pages[0].areas.push({ id: 'G', name: '', cx: 0, cy: 0, w: 100, d: 60, rot: 0 });
+        p.pages[0].stands.push({ ...base, id: 's1', cx: -40, cy: -20, w: 4, d: 4 });
+      });
+    });
+    await page.keyboard.press(`${MOD}+0`);
+    // Rechteck beginnt auf dem Maßstabsbalken (oben links) und umschließt den Stand
+    const bar = (await page.getByTestId('scale-bar').boundingBox())!;
+    const s1 = (await page.locator('.stand[data-id="s1"]').boundingBox())!;
+    await page.mouse.move(bar.x + 5, bar.y + 5);
+    await page.mouse.down();
+    await page.mouse.move(s1.x + s1.width + 10, s1.y + s1.height + 10, { steps: 10 });
+    await page.mouse.up();
+    expect(await store(page, 's.ui.selection')).toEqual({ kind: 'objects', ids: ['s1'] });
+    expect((await activePg(page)).scaleBar).toMatchObject({ corner: 'tl', dx: 10, dy: 10 });
+    // Klick ohne Ziehen wählt den Maßstabsbalken aus
+    await page.mouse.click(bar.x + 5, bar.y + 5);
+    expect(await store(page, 's.ui.selection')).toEqual({ kind: 'paper', element: 'scaleBar' });
+  });
+
+  test('Cmd/Strg+0: ganzes Blatt mit Marke und Papier-Elementen im Fenster', async ({ page }) => {
+    await openApp(page);
+    await page.evaluate(() => {
+      const s = (window as any).__schelmeStore.getState();
+      s.change('Testdaten', (p: any) => void p.pages[0].areas.push({ id: 'G', name: '', cx: 0, cy: 0, w: 30, d: 10, rot: 0 }));
+    });
+    await page.keyboard.press(`${MOD}+0`);
+    const stage = (await page.locator('svg.canvas').boundingBox())!;
+    for (const id of ['sheet-frame', 'sheet-label', 'title-block', 'legend', 'scale-bar', 'north-arrow']) {
+      const b = (await page.getByTestId(id).boundingBox())!;
+      expect(b.x, id).toBeGreaterThanOrEqual(stage.x - 1);
+      expect(b.y, id).toBeGreaterThanOrEqual(stage.y - 1);
+      expect(b.x + b.width, id).toBeLessThanOrEqual(stage.x + stage.width + 1);
+      expect(b.y + b.height, id).toBeLessThanOrEqual(stage.y + stage.height + 1);
+    }
   });
 });
 

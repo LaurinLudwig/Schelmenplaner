@@ -13,6 +13,9 @@ export default defineConfig({
   testIgnore: PERF_TESTS,
   outputDir: 'test-results',
   fullyParallel: true,
+  // QA-M8-02: lokal höchstens 4 Browser gleichzeitig (WebKit davon höchstens 2, siehe Projekt). Mehr Last lässt
+  // WebKit beim Ziehen Bilder auslassen; die Gesten-Tests (Fang, Vorschau) werden dann unzuverlässig. CI: Standard.
+  workers: process.env.CI ? undefined : 4,
   forbidOnly: !!process.env.CI,
   retries: process.env.CI ? 1 : 0,
   reporter: process.env.CI ? 'github' : [['list'], ['html', { open: 'never' }]],
@@ -25,7 +28,9 @@ export default defineConfig({
   },
   projects: [
     { name: 'chromium', use: { ...devices['Desktop Chrome'], viewport: { width: 1280, height: 800 } } },
-    { name: 'webkit', use: { ...devices['Desktop Safari'], viewport: { width: 1280, height: 800 } } },
+    // QA-M8-02: Mehr als zwei parallele WebKit-Instanzen mit großen Rasterbildern (M8) erschöpfen auf einem Mac den
+    // Speicher, der Dev-Server bricht ab. WebKit ist für die Mac-App maßgeblich und muss lokal zuverlässig laufen.
+    { name: 'webkit', workers: 2, use: { ...devices['Desktop Safari'], viewport: { width: 1280, height: 800 } } },
   ],
   webServer: {
     command: 'npm run dev',

@@ -131,6 +131,18 @@ export const browserPlatform: Platform = {
     void idbDelete(slot).catch(() => undefined);
   },
 
+  async readAppSetting(key) {
+    try {
+      return localStorage.getItem(`schelmeplaner.${key}`);
+    } catch {
+      return null;
+    }
+  },
+
+  async writeAppSetting(key, json) {
+    localStorage.setItem(`schelmeplaner.${key}`, json);
+  },
+
   setWindowTitle(title) {
     document.title = title;
   },

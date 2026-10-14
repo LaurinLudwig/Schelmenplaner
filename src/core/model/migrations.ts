@@ -16,10 +16,12 @@
  *      `label`, `note`, Strom, `suppressWidthWarning`; Geschäft `suppressInfraWarning`; Einstellungen `warnInfra`,
  *      `warnPassageWidth`, `minPassageWidth`; Page `sheet`, `titleBlock` (Anker, ersetzt `titleBlockPos`), `legend`,
  *      Ebene `sheet`.
+ *   5  M8: Page `scaleBar` und `northArrow` (Anker der Papier-Elemente Maßstabsbalken und Nordpfeil); das nie
+ *      genutzte Feld `exportProfiles` entfällt (Export-Profile gelten seit M8 pro Rechner).
  */
 import { UserError } from '../errors';
 
-export const CURRENT_SCHEMA_VERSION = 4;
+export const CURRENT_SCHEMA_VERSION = 5;
 
 type Obj = Record<string, unknown>;
 type Migration = (project: Obj) => Obj;
@@ -69,6 +71,25 @@ export const MIGRATIONS: Record<number, Migration> = {
           }),
         };
       }),
+    };
+  },
+  /**
+   * 4 → 5 (M8): Maßstabsbalken (oben links) und Nordpfeil (oben rechts) als Papier-Elemente, je 10 mm Abstand,
+   * sichtbar. `exportProfiles` war in jeder Datei leer (keine Oberfläche bis M7) und entfällt.
+   */
+  4: (p) => {
+    const { exportProfiles: _profiles, ...rest } = p;
+    return {
+      ...rest,
+      pages: mapList(p.pages, (pg) =>
+        isObj(pg)
+          ? {
+              scaleBar: { visible: true, corner: 'tl', dx: 10, dy: 10 },
+              northArrow: { visible: true, corner: 'tr', dx: 10, dy: 10 },
+              ...pg,
+            }
+          : pg,
+      ),
     };
   },
 };

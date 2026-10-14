@@ -2,7 +2,7 @@ import { runCommand } from '../../app/commands';
 import { fmt } from '../../core/format';
 import { PAPER_FORMATS, type FestplatzPage, type PaperFormat } from '../../core/model/types';
 import { SCALE_LIMITS } from '../../core/model/schema';
-import { pagePaper } from '../../core/paper';
+import { PAPER_KIND_LABEL, pagePaper } from '../../core/paper';
 import { anchorToPaper, scaleText, shownOnPaper, TITLE_BLOCK_MAX_TEXT_LINES } from '../../core/sheet';
 import { fixSheetScale, setPaperVisible, setSheet, setTitleBlockField, setTitleBlockText, todayText } from '../../state/paper';
 import { useStore, type PaperElement } from '../../state/store';
@@ -14,7 +14,7 @@ const CORNER_LABEL = { tl: 'oben links', tr: 'oben rechts', bl: 'unten links', b
 
 /**
  * Bereich „Blatt“ der Festplatz-Page (M7, spec.md §8): Papierformat, Ausrichtung, Maßstab (fest oder an Seite
- * anpassen), Schriftfeld und Legende ein-/ausblenden. Jede Änderung ist ein Undo-Schritt.
+ * anpassen), Schriftfeld, Legende, Maßstabsbalken und Nordpfeil ein-/ausblenden. Jede Änderung ist ein Undo-Schritt.
  */
 export function SheetPanel({ page }: { page: FestplatzPage }) {
   const project = useStore((s) => s.project);
@@ -72,7 +72,7 @@ export function SheetPanel({ page }: { page: FestplatzPage }) {
         />
         <p className="hint">
           {fit
-            ? 'Das Blatt umschließt den Inhalt mit 10 mm Rand. Ein fester Maßstab lässt das Blatt per Ziehen am Rahmen verschieben.'
+            ? 'Das Blatt umschließt den Inhalt mit 10 mm Rand und lässt Platz für die eingeblendeten Papier-Elemente. Ein fester Maßstab lässt das Blatt per Ziehen am Rahmen verschieben.'
             : 'Blatt verschieben: Rahmen oder Marke mit dem Auswahlwerkzeug ziehen.'}
         </p>
         <label className="check">
@@ -83,6 +83,14 @@ export function SheetPanel({ page }: { page: FestplatzPage }) {
           <input type="checkbox" checked={page.legend.visible} onChange={(e) => setPaperVisible(page.id, 'legend', e.target.checked)} />
           Legende {keyLabel('view.legend') && <kbd>{keyLabel('view.legend')}</kbd>}
         </label>
+        <label className="check">
+          <input type="checkbox" checked={page.scaleBar.visible} onChange={(e) => setPaperVisible(page.id, 'scaleBar', e.target.checked)} />
+          Maßstabsbalken
+        </label>
+        <label className="check">
+          <input type="checkbox" checked={page.northArrow.visible} onChange={(e) => setPaperVisible(page.id, 'northArrow', e.target.checked)} />
+          Nordpfeil
+        </label>
         {page.legend.visible && !paper.legend && <p className="hint">Die Legende erscheint, sobald es Objekte auf der Page gibt.</p>}
         {!page.layers.sheet.visible && <p className="hint">Die Ebene „Blatt“ ist ausgeblendet.</p>}
       </div>
@@ -90,15 +98,15 @@ export function SheetPanel({ page }: { page: FestplatzPage }) {
   );
 }
 
-/** Seitenleiste bei ausgewähltem Papier-Element (M7): Lage, Felder des Schriftfelds, Hinweise zur Legende. */
+/** Seitenleiste bei ausgewähltem Papier-Element (M7, M8): Lage, Felder des Schriftfelds, Hinweise. */
 export function PaperElementPanel({ page, element }: { page: FestplatzPage; element: PaperElement }) {
   const project = useStore((s) => s.project);
   if (element === 'sheet') return <SheetPanel page={page} />;
   const anchor = page[element];
-  const title = element === 'titleBlock' ? 'Schriftfeld' : 'Legende';
+  const title = PAPER_KIND_LABEL[element];
   // Passt der gespeicherte Abstand nach einem Formatwechsel nicht mehr, steht das Element am Blattrand (QA-M7-01)
   const pp = pagePaper(page, project);
-  const el = element === 'titleBlock' ? pp.titleBlock : pp.legend;
+  const el = pp[element];
   const raw = el && anchorToPaper(anchor, el.layout, pp.frame.paper);
   const shown = el && shownOnPaper(anchor, el.layout, pp.frame.paper);
   const atEdge = !!raw && !!shown && (Math.abs(raw.x - shown.x) > 0.01 || Math.abs(raw.y - shown.y) > 0.01);
@@ -127,6 +135,8 @@ export function PaperElementPanel({ page, element }: { page: FestplatzPage; elem
           </>
         )}
         {element === 'legend' && <p className="hint">Die Einträge entstehen automatisch aus dem, was auf der Page sichtbar ist (Ebenen).</p>}
+        {element === 'scaleBar' && <p className="hint">Länge und Einteilung folgen dem Maßstab des Blatts.</p>}
+        {element === 'northArrow' && <p className="hint">Der Pfeil folgt der Nordrichtung der Page (Bereich „Festplatz“).</p>}
         <button type="button" className="btn" onClick={() => setPaperVisible(page.id, element, false)} {...tip({ shortcut: element === 'legend' ? 'view.legend' : undefined, label: `${title} ausblenden`, ariaLabel: false })}>
           {title} ausblenden
         </button>

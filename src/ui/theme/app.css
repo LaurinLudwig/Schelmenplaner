@@ -725,6 +725,15 @@ kbd {
 /* Farbfelder der Legende in Papierfarben (unabhängig vom Design der Oberfläche) */
 .world .sw-area { fill: #e3e6e9; stroke: #6b7178; stroke-width: 0.3; stroke-dasharray: 1 0.6; }
 .world .sw-free { fill: #d6f0d2; stroke: #6bb562; stroke-width: 0.3; }
+.world .sw-stand { fill: currentColor; stroke: #555; stroke-width: 0.2; }
+.world .sw-infra-body { fill: currentColor; fill-opacity: 0.3; stroke: currentColor; stroke-width: 0.3; }
+.world .sw-infra-line { stroke: currentColor; stroke-width: 0.8; }
+.world .paper-el .infra-icon { fill: currentColor; }
+.world .paper-ink { fill: #1a1a1a; }
+.world .paper-white { fill: #ffffff; }
+.world .paper-shade { fill: #eef0f2; }
+.world rect.paper-rule { fill: none; }
+.world .paper-el.selected > .paper-white:first-child { stroke: var(--select); stroke-width: 1; }
 .world .infra { fill: currentColor; stroke: currentColor; }
 .world .infra-body { fill-opacity: 0.3; stroke-width: 1.5; vector-effect: non-scaling-stroke; }
 .world .infra-icon { stroke: none; }
@@ -833,3 +842,32 @@ kbd {
 .stat-infra { display: flex; flex-wrap: wrap; gap: 4px 10px; font: 11px var(--f-num); }
 .stat-infra > span { display: inline-flex; align-items: center; gap: 3px; }
 .stat-warn-row { display: flex; flex-wrap: wrap; gap: 4px; }
+
+/* ---------- PDF-Export (M8) ---------- */
+.dialog.export-dialog { width: min(1100px, calc(100vw - 32px)); max-height: calc(100vh - 32px); display: flex; flex-direction: column; }
+.export-body { display: grid; grid-template-columns: minmax(380px, 1fr) minmax(320px, 1.1fr); gap: 16px; padding: 10px 16px 0; min-height: 0; overflow: auto; }
+.export-form { display: grid; gap: 10px; align-content: start; }
+.export-row { display: flex; gap: 8px; align-items: center; }
+.export-row select { flex: 1; height: 24px; }
+.export-group { border: 1px solid var(--border-soft); border-radius: 3px; padding: 6px 10px 8px; margin: 0; display: grid; gap: 4px; }
+.export-group legend { color: var(--muted); font-size: 11px; padding: 0 4px; }
+.export-group legend.sub { padding: 6px 0 0; }
+.export-pages { display: grid; gap: 3px; margin-top: 4px; max-height: 220px; overflow: auto; }
+.export-page { display: grid; grid-template-columns: auto minmax(80px, 1fr) 56px 64px auto 92px; gap: 6px; align-items: center; }
+.export-page select { height: 22px; }
+.export-page .field { display: flex; align-items: center; gap: 4px; }
+.export-page.previewed .export-page-name { color: var(--accent); }
+.export-page-name { border: 0; background: none; text-align: left; padding: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: var(--text); }
+.export-page-name:hover { text-decoration: underline; }
+.profile-editor { border: 1px solid var(--border-soft); border-radius: 3px; padding: 8px 10px; display: grid; gap: 8px; background: var(--panel-sunken); }
+.profile-cols { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; }
+.export-preview { display: grid; grid-template-rows: auto minmax(0, 1fr); gap: 4px; min-height: 360px; }
+.export-preview-head { color: var(--muted); font-size: 11px; }
+.export-preview-box { position: relative; display: grid; place-items: center; background: var(--canvas); border-radius: 3px; min-height: 340px; overflow: hidden; }
+.export-preview-box canvas { box-shadow: var(--shadow); background: #fff; }
+.export-preview-busy { position: absolute; }
+.dialog p.export-file { padding: 8px 16px 6px; }
+.export-progress { position: fixed; left: 12px; bottom: 12px; z-index: 70; display: flex; align-items: center; gap: 10px; padding: 6px 10px; background: var(--panel-raised); border: 1px solid var(--border); border-radius: 4px; box-shadow: var(--shadow); }
+.export-bar { width: 160px; height: 6px; border-radius: 3px; background: var(--panel-sunken); overflow: hidden; }
+.export-bar > span { display: block; height: 100%; background: var(--accent); transition: width 0.2s; }
+.export-dialog .export-form p, .export-dialog .export-preview p { padding: 0; }

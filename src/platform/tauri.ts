@@ -18,6 +18,13 @@ async function autosavePath(projectPath: string | null, slot: AutosaveSlot = 'cu
   return join(dir, `unbenannt.${FILE_EXTENSION}${suffix}`);
 }
 
+/** Einstellungen dieses Rechners (M8): eine JSON-Datei je Schlüssel im App-Datenordner. */
+async function settingPath(key: string): Promise<string> {
+  const dir = await appLocalDataDir();
+  if (!(await exists(dir))) await mkdir(dir, { recursive: true });
+  return join(dir, `${key.replace(/[^a-z0-9-]/gi, '_')}.json`);
+}
+
 export const tauriPlatform: Platform = {
   kind: 'tauri',
 
@@ -67,6 +74,16 @@ export const tauriPlatform: Platform = {
     } catch {
       /* Eine übrig gebliebene Sicherung ist harmlos */
     }
+  },
+
+  async readAppSetting(key) {
+    const p = await settingPath(key);
+    if (!(await exists(p))) return null;
+    return new TextDecoder().decode(await readFile(p));
+  },
+
+  async writeAppSetting(key, json) {
+    await writeFile(await settingPath(key), new TextEncoder().encode(json));
   },
 
   setWindowTitle(title) {

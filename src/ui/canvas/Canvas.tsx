@@ -173,6 +173,10 @@ export function Canvas({ page: storedPage }: { page: FestplatzPage }) {
     () => pagePaper(page, { name: projectName, categories, infraTypes, titleBlock: titleFields, settings: { minFreeWidth } }, page.layers, freeShown),
     [page, projectName, categories, infraTypes, titleFields, minFreeWidth, freeShown],
   );
+  const paperVisible = useMemo(
+    () => ({ titleBlock: page.titleBlock.visible, legend: page.legend.visible, scaleBar: page.scaleBar.visible, northArrow: page.northArrow.visible }),
+    [page.titleBlock.visible, page.legend.visible, page.scaleBar.visible, page.northArrow.visible],
+  );
   const infraWarnObjects = useMemo(() => new Set(page.infra.filter((o) => activeNarrow(o, infraWarnings, warnSettings)).map((o) => o.id)), [page.infra, infraWarnings, warnSettings]);
   // Von der laufenden Geste bewegte Objekte (gleiche Menge über die ganze Geste, siehe ObjectsLayer)
   const movingKey =
@@ -509,8 +513,7 @@ export function Canvas({ page: storedPage }: { page: FestplatzPage }) {
             <PaperLayer
               paper={paper}
               sheet={page.sheet}
-              showTitleBlock={page.titleBlock.visible}
-              showLegend={page.legend.visible}
+              visible={paperVisible}
               selected={selection?.kind === 'paper' ? selection.element : null}
               locked={page.layers.sheet.locked}
             />

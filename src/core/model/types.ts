@@ -214,6 +214,9 @@ export interface FestplatzPage {
   /** Freitext des Schriftfelds dieser Page. */
   titleBlockText: string;
   legend: PaperAnchor;
+  /** Maßstabsbalken und Nordpfeil (seit M8, Formatversion 5). */
+  scaleBar: PaperAnchor;
+  northArrow: PaperAnchor;
   /** Zuletzt verwendete Ansicht; wird beim Speichern geschrieben, gehört nicht zur Undo-Historie. */
   view: View | null;
 }
@@ -237,13 +240,6 @@ export interface ProjectSettings {
   snap: { front: boolean; grid: boolean; neighbors: boolean };
 }
 
-export interface ExportProfile {
-  id: Id;
-  name: string;
-  layers: LayerId[];
-  hiddenFields: (keyof Stand)[];
-}
-
 export interface Vendor {
   id: Id;
   name: string;
@@ -264,7 +260,6 @@ export interface Project {
   pages: FestplatzPage[];
   categories: Category[];
   infraTypes: InfraTypeDef[];
-  exportProfiles: ExportProfile[];
   /** Projektweite Felder des Schriftfelds (§8). */
   titleBlock: { dateText: string; version: string };
   unplaced: Vendor[];

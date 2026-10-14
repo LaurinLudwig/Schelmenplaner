@@ -52,14 +52,66 @@ export function contentBounds(page: Pick<FestplatzPage, 'areas' | 'stands' | 'in
 
 /** Maßstab, bei dem `b` mit Papierrand auf das Papier passt, auf volle 10 aufgerundet (1:440). */
 export function fitScale(b: Bounds, paper: { w: number; h: number }): number {
-  const usableW = paper.w - 2 * FIT_MARGIN_MM;
-  const usableH = paper.h - 2 * FIT_MARGIN_MM;
-  const n = Math.max(((b.maxX - b.minX) * 1000) / usableW, ((b.maxY - b.minY) * 1000) / usableH);
-  return Math.min(SCALE_LIMITS.max, Math.max(SCALE_LIMITS.min, Math.ceil(n / 10 - 1e-9) * 10));
+  return roundScale(scaleFor(b, paper.w - 2 * FIT_MARGIN_MM, paper.h - 2 * FIT_MARGIN_MM));
 }
 
-/** Lage des Blatts: bei festem Maßstab aus Mitte und n, sonst aus dem Inhalt (§8). */
-export function sheetFrame(page: Pick<FestplatzPage, 'sheet' | 'areas' | 'stands' | 'infra'>, background: Bounds | null): SheetFrame {
+/** Maßstabszahl n, bei der `b` genau in w × h mm passt (ungerundet). */
+const scaleFor = (b: Bounds, wMm: number, hMm: number) => Math.max(((b.maxX - b.minX) * 1000) / wMm, ((b.maxY - b.minY) * 1000) / hMm);
+const roundScale = (n: number) => Math.min(SCALE_LIMITS.max, Math.max(SCALE_LIMITS.min, Math.ceil(n / 10 - 1e-9) * 10));
+
+/** Achsenparalleles Rechteck auf dem Papier in mm (x, y = linke obere Ecke). */
+export interface PaperRect {
+  x: number;
+  y: number;
+  w: number;
+  h: number;
+}
+
+/** Abstand des Inhalts zu Papier-Elementen beim Anpassen (mm). */
+export const FIT_GAP_MM = 3;
+/** Ist der freie Bereich kleiner als dieser Anteil des Papiers, gilt das ganze Papier (§8). */
+const FIT_MIN_SHARE = 0.25;
+
+/**
+ * „An Seite anpassen“ mit freigehaltenen Papier-Elementen (M8, E-49): das freie achsenparallele Rechteck des
+ * Papiers (ohne 10 mm Rand, ohne die Elemente mit 3 mm Abstand), in dem der Inhalt am größten erscheint. Kandidaten
+ * sind alle Rechtecke, deren Kanten auf Rändern des nutzbaren Bereichs oder der Elemente liegen. Liefert die
+ * ungerundete Maßstabszahl und das Rechteck in mm.
+ */
+export function fitIntoFreeArea(content: Bounds, paper: { w: number; h: number }, obstacles: readonly PaperRect[]): { n: number; rect: PaperRect } {
+  const m = FIT_MARGIN_MM;
+  const usable: PaperRect = { x: m, y: m, w: paper.w - 2 * m, h: paper.h - 2 * m };
+  const whole = { n: scaleFor(content, usable.w, usable.h), rect: usable };
+  const g = FIT_GAP_MM;
+  const obs = obstacles
+    .map((o) => ({ x0: o.x - g, y0: o.y - g, x1: o.x + o.w + g, y1: o.y + o.h + g }))
+    .filter((o) => o.x1 > usable.x && o.x0 < usable.x + usable.w && o.y1 > usable.y && o.y0 < usable.y + usable.h);
+  if (!obs.length) return whole;
+  const clampX = (v: number) => Math.min(usable.x + usable.w, Math.max(usable.x, v));
+  const clampY = (v: number) => Math.min(usable.y + usable.h, Math.max(usable.y, v));
+  const xs = [...new Set([usable.x, usable.x + usable.w, ...obs.flatMap((o) => [clampX(o.x0), clampX(o.x1)])])].toSorted((a, b) => a - b);
+  const ys = [...new Set([usable.y, usable.y + usable.h, ...obs.flatMap((o) => [clampY(o.y0), clampY(o.y1)])])].toSorted((a, b) => a - b);
+  const eps = 1e-9;
+  let best: { n: number; rect: PaperRect; area: number } | null = null;
+  for (let i = 0; i < xs.length; i++)
+    for (let j = i + 1; j < xs.length; j++)
+      for (let k = 0; k < ys.length; k++)
+        for (let l = k + 1; l < ys.length; l++) {
+          const r = { x: xs[i]!, y: ys[k]!, w: xs[j]! - xs[i]!, h: ys[l]! - ys[k]! };
+          if (obs.some((o) => o.x0 < r.x + r.w - eps && o.x1 > r.x + eps && o.y0 < r.y + r.h - eps && o.y1 > r.y + eps)) continue;
+          const n = scaleFor(content, r.w, r.h);
+          const area = r.w * r.h;
+          if (!best || n < best.n - eps || (Math.abs(n - best.n) <= eps && area > best.area)) best = { n, rect: r, area };
+        }
+  if (!best || best.area < FIT_MIN_SHARE * paper.w * paper.h) return whole;
+  return { n: best.n, rect: best.rect };
+}
+
+/**
+ * Lage des Blatts: bei festem Maßstab aus Mitte und n, sonst aus dem Inhalt (§8). `obstacles` = sichtbare
+ * Papier-Elemente auf dem Papier (mm); beim Anpassen bleibt ihr Bereich frei (M8, E-49).
+ */
+export function sheetFrame(page: Pick<FestplatzPage, 'sheet' | 'areas' | 'stands' | 'infra'>, background: Bounds | null, obstacles: readonly PaperRect[] = []): SheetFrame {
   const paper = paperSize(page.sheet);
   let scale: number;
   let c: Vec;
@@ -69,8 +121,12 @@ export function sheetFrame(page: Pick<FestplatzPage, 'sheet' | 'areas' | 'stands
   } else {
     const h = EMPTY_SIZE_M / 2;
     const b = contentBounds(page, background) ?? { minX: -h, minY: -h, maxX: h, maxY: h };
-    scale = fitScale(b, paper);
-    c = { x: (b.minX + b.maxX) / 2, y: (b.minY + b.maxY) / 2 };
+    const fit = fitIntoFreeArea(b, paper, obstacles);
+    scale = roundScale(fit.n);
+    // Inhalt mittig im freien Rechteck: Blattmitte = Inhaltsmitte − Versatz des Rechtecks zur Papiermitte
+    const offX = mmToM(fit.rect.x + fit.rect.w / 2 - paper.w / 2, scale);
+    const offY = mmToM(fit.rect.y + fit.rect.h / 2 - paper.h / 2, scale);
+    c = { x: (b.minX + b.maxX) / 2 - offX, y: (b.minY + b.maxY) / 2 - offY };
   }
   const hw = mmToM(paper.w, scale) / 2;
   const hh = mmToM(paper.h, scale) / 2;
@@ -203,9 +259,14 @@ export interface TitleBlockFields {
   freeText: string;
 }
 
-/** Inhalt der dritten Zeile: „Maßstab 1:500 · A1 quer · 12.10.2026 · Version 3“; leere Angaben entfallen. */
+/**
+ * Inhalt der dritten Zeile: „Maßstab 1:500 bei Druck in Originalgröße (A1 quer) · 12.10.2026 · Version 3“; leere
+ * Angaben entfallen. Der Zusatz warnt davor, im Druckdialog „an Seite anpassen“ zu wählen (M8, §8).
+ */
 export function titleBlockMeta(f: Pick<TitleBlockFields, 'scale' | 'sheet' | 'dateText' | 'version'>): string {
-  return [`Maßstab ${scaleText(f.scale)}`, FORMAT_TEXT(f.sheet), f.dateText.trim(), f.version.trim() && `Version ${f.version.trim()}`].filter(Boolean).join(' · ');
+  return [`Maßstab ${scaleText(f.scale)} bei Druck in Originalgröße (${FORMAT_TEXT(f.sheet)})`, f.dateText.trim(), f.version.trim() && `Version ${f.version.trim()}`]
+    .filter(Boolean)
+    .join(' · ');
 }
 
 /** Einheitliches Layout des Schriftfelds (§8): drei feste Zeilen, darunter bis zu 4 Zeilen Freitext. */

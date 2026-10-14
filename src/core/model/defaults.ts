@@ -40,6 +40,8 @@ export const DEFAULT_INFRA_TYPES: InfraTypeDef[] = [
 export const DEFAULT_SHEET: Sheet = { format: 'A3', orientation: 'landscape', scale: null, cx: 0, cy: 0 };
 export const DEFAULT_TITLE_BLOCK_ANCHOR: PaperAnchor = { visible: true, corner: 'br', dx: 10, dy: 10 };
 export const DEFAULT_LEGEND_ANCHOR: PaperAnchor = { visible: true, corner: 'bl', dx: 10, dy: 10 };
+export const DEFAULT_SCALE_BAR_ANCHOR: PaperAnchor = { visible: true, corner: 'tl', dx: 10, dy: 10 };
+export const DEFAULT_NORTH_ARROW_ANCHOR: PaperAnchor = { visible: true, corner: 'tr', dx: 10, dy: 10 };
 
 export function defaultLayers(): Record<LayerId, LayerState> {
   return Object.fromEntries(LAYER_IDS.map((id) => [id, { visible: true, locked: false }])) as Record<
@@ -67,6 +69,8 @@ export function createPage(name: string): FestplatzPage {
     titleBlock: { ...DEFAULT_TITLE_BLOCK_ANCHOR },
     titleBlockText: '',
     legend: { ...DEFAULT_LEGEND_ANCHOR },
+    scaleBar: { ...DEFAULT_SCALE_BAR_ANCHOR },
+    northArrow: { ...DEFAULT_NORTH_ARROW_ANCHOR },
     view: null,
   };
 }
@@ -79,7 +83,6 @@ export function createProject(name = 'Neues Projekt'): Project {
     pages: [createPage('Festplatz 1')],
     categories: [],
     infraTypes: structuredClone(DEFAULT_INFRA_TYPES),
-    exportProfiles: [],
     titleBlock: { dateText: '', version: '' },
     unplaced: [],
   };

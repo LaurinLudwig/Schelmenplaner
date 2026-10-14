@@ -98,8 +98,8 @@ describe('Schriftfeld', () => {
   const fields = { projectName: 'Schelmenmarkt 2027', pageName: 'Obermarkt', scale: 500, sheet: { format: 'A1' as const, orientation: 'landscape' as const }, dateText: '12.10.2026', version: '3', freeText: '' };
 
   it('dritte Zeile: Maßstab, Format, Datum, Version; leere Angaben entfallen', () => {
-    expect(titleBlockMeta(fields)).toBe('Maßstab 1:500 · A1 quer · 12.10.2026 · Version 3');
-    expect(titleBlockMeta({ ...fields, dateText: ' ', version: '', scale: 1000 })).toBe('Maßstab 1:1.000 · A1 quer');
+    expect(titleBlockMeta(fields)).toBe('Maßstab 1:500 bei Druck in Originalgröße (A1 quer) · 12.10.2026 · Version 3');
+    expect(titleBlockMeta({ ...fields, dateText: ' ', version: '', scale: 1000 })).toBe('Maßstab 1:1.000 bei Druck in Originalgröße (A1 quer)');
   });
 
   it('festes Layout 180 mm breit; Freitext bis 4 Zeilen, Höhe wächst mit', () => {
@@ -108,7 +108,7 @@ describe('Schriftfeld', () => {
     expect(a.texts.map((t) => [t.text, t.size])).toEqual([
       ['Schelmenmarkt 2027', 5],
       ['Obermarkt', 3.5],
-      ['Maßstab 1:500 · A1 quer · 12.10.2026 · Version 3', 2.5],
+      ['Maßstab 1:500 bei Druck in Originalgröße (A1 quer) · 12.10.2026 · Version 3', 2.5],
     ]);
     const b = titleBlockLayout({ ...fields, freeText: 'Zeile 1\nZeile 2\n' });
     expect(b.texts).toHaveLength(5);

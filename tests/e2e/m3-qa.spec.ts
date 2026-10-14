@@ -900,9 +900,6 @@ test.describe('QA M3-14/M3-15/M3-16/M3-18: Auswahl, Ebenen, Kopieren', () => {
     await page.keyboard.press(`${MOD}+a`);
     expect(await selIds(page)).toEqual(['s1']);
     await page.keyboard.press('Escape');
-    // Seit M8 liegt oben links auf dem Blatt der Maßstabsbalken (Papier-Element, fängt den Klick); Ebene „Blatt“
-    // ausblenden, damit das Rechteck auf leerer Fläche beginnt (angepasst vom Entwickler, siehe Abschluss M8)
-    await page.getByRole('button', { name: 'Blatt ausblenden' }).click();
     await drag(page, await w2s(page, { x: -20, y: -8 }), await w2s(page, { x: 25, y: 25 }));
     expect(await selIds(page)).toEqual(['s1']);
     // Messen: Ecke des Stands fängt, nach Ausblenden nicht mehr

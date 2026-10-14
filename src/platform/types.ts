@@ -58,6 +58,13 @@ export interface Platform {
   readAutosave(projectPath: string | null, slot?: AutosaveSlot): Promise<AutosaveInfo | null>;
   removeAutosave(projectPath: string | null, slot?: AutosaveSlot): Promise<void>;
 
+  /**
+   * Einstellungen dieses Rechners, die nicht ins Projekt gehören (M8: Export-Profile, Raster-Auflösung). Ein Eintrag
+   * je Schlüssel als JSON-Text; null = noch nie gespeichert. Desktop: Datei im App-Datenordner, Browser: localStorage.
+   */
+  readAppSetting(key: string): Promise<string | null>;
+  writeAppSetting(key: string, json: string): Promise<void>;
+
   setWindowTitle(title: string): void;
   /**
    * Schützt vor versehentlichem Schließen. `isDirty` wird beim Schließen abgefragt;

@@ -24,8 +24,13 @@ function values(s: Stand, categoryName: string): Record<string, string> {
   };
 }
 
-export function formatLabel(template: string, stand: Stand, categoryName = ''): string[] {
+/**
+ * Zeilen der Standbeschriftung. `blank` = Platzhalter, die leer bleiben (Export-Profil ohne dieses Feld, M8): Sie
+ * zählen wie ein leerer Wert, eine Zeile nur aus ihnen entfällt also.
+ */
+export function formatLabel(template: string, stand: Stand, categoryName = '', blank?: ReadonlySet<string>): string[] {
   const v = values(stand, categoryName);
+  if (blank) for (const k of blank) if (k in v) v[k] = '';
   const out: string[] = [];
   for (const line of template.split(/\r?\n/)) {
     let used = 0;

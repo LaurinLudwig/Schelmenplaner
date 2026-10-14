@@ -4,6 +4,7 @@ import type { Preview } from '../core/derive';
 import type { Assets, ProjectBundle } from '../core/fileFormat';
 import { createProject } from '../core/model/defaults';
 import type { Id, Project, Vec, View } from '../core/model/types';
+import type { PaperKind } from '../core/paper';
 import type { Bounds } from '../core/viewport';
 import * as H from './history';
 
@@ -16,7 +17,7 @@ export type ToolId = 'select' | 'hand' | 'zoom' | 'measure' | 'calibrate' | 'are
  * Auswahl auf der aktiven Page: der Hintergrund, Objekte (Grundflächen, Geschäfte, Infrastruktur gemischt) oder ein
  * Element des Blatts (M7: Rahmen, Schriftfeld, Legende; nie zusammen mit Objekten).
  */
-export type PaperElement = 'sheet' | 'titleBlock' | 'legend';
+export type PaperElement = 'sheet' | PaperKind;
 export type Selection = { kind: 'background' } | { kind: 'objects'; ids: Id[] } | { kind: 'paper'; element: PaperElement } | null;
 export type Theme = 'dark' | 'light';
 

@@ -1,12 +1,11 @@
 import { memo, useMemo } from 'react';
-import { hatchPath } from '../../../core/geometry/polygon';
-import { fromLocal, rectCorners } from '../../../core/geometry/rect';
 import type { AreaFreeSpaces, FreeSpace } from '../../../core/freeSpace';
-import { approxTextWidth, areaLabel, formatLabel, freeSpaceLabel } from '../../../core/label';
 import type { Area, Category, FestplatzPage, Id, InfraTypeDef, Stand, Vec } from '../../../core/model/types';
 import { DEFAULT_STAND_COLOR } from '../../../core/objects';
 import type { Bounds } from '../../../core/viewport';
+import { areaLabelPrim, areaPrims, freeLabelPrim, freePrims, overlapPrim, standLabelPrim, standPrim, warnIconPrims, warnKind, type WarnKind } from '../../../core/scene/objects';
 import { activeWarnings, type PageWarnings, type WarnSettings } from '../../../core/warnings';
+import { CM, PrimView, Prims } from '../scene/Prim';
 import { InfraLabelList, InfraList } from './InfraLayer';
 
 /**
@@ -19,6 +18,9 @@ import { InfraLabelList, InfraList } from './InfraLayer';
  *
  * Reihenfolge der Ebenen: Grundflächen → Freiflächen → Geschäfte → Infrastruktur (M7) →
  * Warnsymbole → Beschriftung (oberste Ebene).
+ *
+ * Geometrie und Text kommen aus den Bausteinen der gemeinsamen Szene (core/scene, M8); dieselben Bausteine
+ * zeichnet der PDF-Export.
  *
  * Freiflächen (M4) kommen aus einem Zwischenspeicher (core/freeSpace.ts): Das Ergebnis einer
  * Grundfläche behält seine Identität, solange sie nicht neu berechnet wurde; die memo-Komponenten
@@ -63,23 +65,6 @@ interface Props {
   infraWarnObjects: ReadonlySet<Id>;
 }
 
-/** Art der Markierung am Stand: rot bei Überlappung, sonst orange („außerhalb“ oder doppelte Nummer). */
-type WarnKind = 'outside' | 'overlap' | null;
-
-/**
- * Die Beschriftung rechnet in Zentimetern (Gruppe scale(0.01)). So bleiben die Schriftgrößen im
- * SVG zweistellig; sehr kleine font-size-Werte unter großem Skalierungsfaktor werden in WebKit
- * sonst ungenau gesetzt.
- */
-const CM = 100;
-const LINE = 1.2;
-/** Versatz der Grundlinie, damit eine Zeile optisch auf ihrer Mittellinie sitzt (statt dominant-baseline, das WebKit an tspan ignoriert). */
-const BASELINE = 0.35;
-
-const pts = (r: Area | Stand) =>
-  rectCorners(r)
-    .map((p) => `${p.x.toFixed(3)},${p.y.toFixed(3)}`)
-    .join(' ');
 
 export const standColor = (s: Stand, cat: Category | undefined) => s.color ?? cat?.color ?? DEFAULT_STAND_COLOR;
 
@@ -112,11 +97,7 @@ export const ObjectsLayer = memo(function ObjectsLayer({
   const unmoved = useMemo(() => baseStands.filter((s) => !movingIds.has(s.id)), [movingIds, baseStands]);
   const staticStands = movingIds.size ? unmoved : page.stands;
   const movingStands = movingIds.size ? page.stands.filter((s) => movingIds.has(s.id)) : NO_STANDS;
-  const kindOf = (s: Stand): WarnKind => {
-    const a = activeWarnings(warnings.byStand.get(s.id), s, warnSettings, duplicates.has(s.id), infraWarnStands.has(s.id));
-    // Infrastruktur (M7) ist rot wie die Überlappung
-    return a.overlap || a.infra ? 'overlap' : a.outside || a.duplicate ? 'outside' : null;
-  };
+  const kindOf = (s: Stand): WarnKind => warnKind(activeWarnings(warnings.byStand.get(s.id), s, warnSettings, duplicates.has(s.id), infraWarnStands.has(s.id)));
   // Warnungen der unbewegten Stände: nur eine neue Map, wenn sich eine Warnung wirklich ändert
   const kindsKey = staticStands.map((s) => kindOf(s) ?? '').join(',');
   const staticKinds = useMemo(() => {
@@ -190,7 +171,7 @@ const StandList = memo(function StandList({ stands, catById, selected, warnKinds
 const OverlapRegions = memo(function OverlapRegions({ regions, warnKinds }: { regions: PageWarnings['regions']; warnKinds: Map<Id, WarnKind> }) {
   return regions
     .filter((r) => warnKinds.get(r.a) === 'overlap' || warnKinds.get(r.b) === 'overlap')
-    .map((r) => <polygon key={`${r.a}|${r.b}`} className="overlap-region" points={polyPts(r.polygon)} />);
+    .map((r) => <PrimView key={`${r.a}|${r.b}`} p={overlapPrim(r.polygon)} />);
 });
 
 const WarnIcons = memo(function WarnIcons({ stands, warnKinds, size }: { stands: Stand[]; warnKinds: Map<Id, WarnKind>; size: number }) {
@@ -210,29 +191,18 @@ const StandLabelList = memo(function StandLabelList({ stands, template, fontSize
 });
 
 const AreaShape = memo(function AreaShape({ area, selected }: { area: Area; selected: boolean }) {
-  const c = rectCorners(area);
+  const [body, front] = areaPrims(area);
   return (
     <g className={`area${selected ? ' selected' : ''}`} data-id={area.id}>
-      <polygon className="area-body" points={pts(area)} />
-      {/* Vorderseite = Kante 2 (Ecke 2 → Ecke 3) */}
-      <line className="area-front" x1={c[2]!.x} y1={c[2]!.y} x2={c[3]!.x} y2={c[3]!.y} />
+      <PrimView p={body} />
+      <PrimView p={front} />
     </g>
   );
 });
 
 const StandShape = memo(function StandShape({ stand, color, selected, warn }: { stand: Stand; color: string; selected: boolean; warn: WarnKind }) {
-  return (
-    <polygon
-      className={`stand${selected ? ' selected' : ''}${warn ? ` warn-${warn}` : ''}`}
-      data-id={stand.id}
-      data-warning={warn ?? undefined}
-      points={pts(stand)}
-      fill={color}
-    />
-  );
+  return <PrimView p={standPrim(stand, color, warn)} className={selected ? 'selected' : undefined} data-id={stand.id} data-warning={warn ?? undefined} />;
 });
-
-const polyPts = (poly: readonly Vec[]) => poly.map((p) => `${p.x.toFixed(3)},${p.y.toFixed(3)}`).join(' ');
 
 /**
  * Freiflächen einer Grundfläche: hellgrün getönt und schraffiert. Die Schraffur sind echte Linien in
@@ -240,16 +210,14 @@ const polyPts = (poly: readonly Vec[]) => poly.map((p) => `${p.x.toFixed(3)},${p
  * und Verschieben bis zu 25 Bilder/s (Lasttest M4-21).
  */
 const FreeArea = memo(function FreeArea({ result, spacing }: { result: AreaFreeSpaces; spacing: number }) {
-  if (!result.free.length) return null;
-  const hatch = result.free.flatMap((f) => f.polygons.map((poly) => hatchPath(poly, spacing))).join('');
-  return (
-    <>
-      {result.free.map((f) =>
-        f.polygons.map((poly, i) => <polygon key={`${f.key}:${i}`} className="free-space" data-key={f.key} data-area={result.areaId} points={polyPts(poly)} />),
-      )}
-      <path className="free-hatch" d={hatch} />
-    </>
-  );
+  const prims = freePrims(result, spacing);
+  let i = 0;
+  const keys = result.free.flatMap((f) => f.polygons.map((_, k) => ({ key: `${f.key}:${k}`, fkey: f.key })));
+  return prims.map((p) => {
+    if (p.s !== 'free-space') return <PrimView key="hatch" p={p} />;
+    const k = keys[i++]!;
+    return <PrimView key={k.key} p={p} data-key={k.fkey} data-area={result.areaId} />;
+  });
 });
 
 /** „Frei 20 × 10 m“: horizontal, mittig, feste Schriftgröße wie die Standbeschriftung. */
@@ -258,68 +226,26 @@ const FreeLabels = memo(function FreeLabels({ result, fontSize, window: win }: {
   return result.free.filter((f) => inside(f.center)).map((f) => <FreeLabel key={f.key} space={f} fontSize={fontSize} />);
 });
 
-/** Beschriftungstext je Freifläche nur einmal formatieren (`fmt` ist teuer, QA-M4-03). */
-const labelText = new WeakMap<FreeSpace, string>();
-const textOf = (f: FreeSpace) => {
-  let t = labelText.get(f);
-  if (t === undefined) labelText.set(f, (t = freeSpaceLabel(f.width, f.depth)));
-  return t;
-};
-
 const FreeLabel = memo(function FreeLabel({ space: f, fontSize }: { space: FreeSpace; fontSize: number }) {
-  return (
-    <text className="free-label" data-key={f.key} textAnchor="middle" x={f.center.x * CM} y={(f.center.y + BASELINE * fontSize) * CM}>
-      {textOf(f)}
-    </text>
-  );
+  return <PrimView p={freeLabelPrim(f, fontSize)} unit={CM} data-key={f.key} />;
 });
 
 /** Warndreieck an der Ecke oben rechts des Stands (Weltgröße, an die Schriftgröße gekoppelt). */
 const WarnIcon = memo(function WarnIcon({ stand, kind, size }: { stand: Stand; kind: 'outside' | 'overlap'; size: number }) {
-  const c = fromLocal(stand, { x: stand.w / 2, y: -stand.d / 2 });
-  const r = size / 2;
   return (
-    <g className="warn-icon-group" transform={`translate(${c.x} ${c.y})`}>
-      <path className={`warn-icon ${kind}`} d={`M0 ${-r} L${r * 1.1} ${r * 0.85} L${-r * 1.1} ${r * 0.85} Z`} />
-      <rect className="warn-icon-mark" x={-r * 0.09} y={-r * 0.45} width={r * 0.18} height={r * 0.75} />
-      <rect className="warn-icon-mark" x={-r * 0.09} y={r * 0.42} width={r * 0.18} height={r * 0.18} />
+    <g className="warn-icon-group">
+      <Prims prims={warnIconPrims(stand, kind, size)} />
     </g>
   );
 });
 
 /** Standbeschriftung: horizontal, mittig, feste Schriftgröße; darf über den Stand hinausragen. */
 const StandLabel = memo(function StandLabel({ stand, template, fontSize, categoryName }: { stand: Stand; template: string; fontSize: number; categoryName: string }) {
-  const lines = formatLabel(template, stand, categoryName);
-  if (!lines.length) return null;
-  const x = stand.cx * CM;
-  const top = stand.cy - ((lines.length - 1) * LINE * fontSize) / 2 + BASELINE * fontSize;
-  return (
-    <text className="stand-label" data-id={stand.id} textAnchor="middle">
-      {lines.map((line, i) => (
-        <tspan key={i} x={x} y={(top + i * LINE * fontSize) * CM}>
-          {line}
-        </tspan>
-      ))}
-    </text>
-  );
+  const p = standLabelPrim(stand, template, fontSize, categoryName);
+  return p ? <PrimView p={p} unit={CM} data-id={stand.id} /> : null;
 });
 
-/**
- * Grundflächen-Beschriftung: horizontal, außerhalb der Fläche vor der Mitte der Vorderseite.
- * Der Textblock wird entlang der Außennormalen so weit hinausgeschoben, dass er die Fläche nicht berührt.
- */
+/** Grundflächen-Beschriftung: horizontal, außerhalb der Fläche vor der Mitte der Vorderseite. */
 const AreaLabel = memo(function AreaLabel({ area, fontSize }: { area: Area; fontSize: number }) {
-  const text = areaLabel(area);
-  const mid = fromLocal(area, { x: 0, y: area.d / 2 });
-  const rad = (area.rot * Math.PI) / 180;
-  const n = { x: -Math.sin(rad), y: Math.cos(rad) };
-  const hw = approxTextWidth(text, fontSize) / 2;
-  const hh = (LINE * fontSize) / 2;
-  const reach = Math.abs(n.x) * hw + Math.abs(n.y) * hh + 0.35 * fontSize;
-  const c = { x: mid.x + n.x * reach, y: mid.y + n.y * reach };
-  return (
-    <text className="area-label" data-id={area.id} textAnchor="middle" x={c.x * CM} y={(c.y + BASELINE * fontSize) * CM}>
-      {text}
-    </text>
-  );
+  return <PrimView p={areaLabelPrim(area, fontSize)} unit={CM} data-id={area.id} />;
 });

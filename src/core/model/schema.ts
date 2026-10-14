@@ -1,7 +1,7 @@
 import { normAngle } from '../geometry/rect';
 import { newId } from '../id';
 import { UserError } from '../errors';
-import { createPage, defaultLayers, DEFAULT_INFRA_TYPES, DEFAULT_LEGEND_ANCHOR, DEFAULT_SETTINGS, DEFAULT_SHEET, DEFAULT_TITLE_BLOCK_ANCHOR } from './defaults';
+import { createPage, defaultLayers, DEFAULT_INFRA_TYPES, DEFAULT_LEGEND_ANCHOR, DEFAULT_NORTH_ARROW_ANCHOR, DEFAULT_SCALE_BAR_ANCHOR, DEFAULT_SETTINGS, DEFAULT_SHEET, DEFAULT_TITLE_BLOCK_ANCHOR } from './defaults';
 import { clampToLimits, GEOMETRIES, INFRA_LIMITS, isInfraIcon } from '../infra';
 import { CURRENT_SCHEMA_VERSION, migrate } from './migrations';
 import { clampDigits, clampStart } from '../numbering';
@@ -103,7 +103,6 @@ function normalizeProject(p: Obj): Project {
     pages: p.pages.map((pg, i) => normalizePage(pg, i, ids, objectIds, categoryIds, infraTypes)),
     categories,
     infraTypes,
-    exportProfiles: arr(p.exportProfiles),
     titleBlock: { dateText: str(tb.dateText, ''), version: str(tb.version, '') },
     unplaced: arr(p.unplaced),
   };
@@ -147,6 +146,8 @@ function normalizePage(raw: unknown, index: number, ids: Set<string>, objectIds:
     titleBlock: normalizeAnchor(raw.titleBlock, DEFAULT_TITLE_BLOCK_ANCHOR),
     titleBlockText: str(raw.titleBlockText, ''),
     legend: normalizeAnchor(raw.legend, DEFAULT_LEGEND_ANCHOR),
+    scaleBar: normalizeAnchor(raw.scaleBar, DEFAULT_SCALE_BAR_ANCHOR),
+    northArrow: normalizeAnchor(raw.northArrow, DEFAULT_NORTH_ARROW_ANCHOR),
     view: view ? { scale: num(view.scale, 10), tx: num(view.tx, 0), ty: num(view.ty, 0) } : null,
   };
 }

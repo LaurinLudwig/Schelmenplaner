@@ -174,7 +174,7 @@ describe('Migration 3 → 4 (M7: Infrastruktur, Blatt, Schriftfeld, Legende)', (
     expect(project.pages.reduce((n, p) => n + p.stands.length, 0)).toBe(500);
     project.pages.forEach((p, i) => {
       const rp = raw.project.pages[i];
-      const { infra, sheet, titleBlock, legend, layers, stands, ...rest } = p;
+      const { infra, sheet, titleBlock, legend, layers, stands, scaleBar: _sb, northArrow: _na, ...rest } = p;
       const { titleBlockPos: _pos, layers: rawLayers, stands: rawStands, infra: rawInfra, ...rawRest } = rp;
       expect(rest).toEqual(rawRest);
       expect(layers).toEqual({ ...rawLayers, sheet: { visible: true, locked: false } });
@@ -187,5 +187,50 @@ describe('Migration 3 → 4 (M7: Infrastruktur, Blatt, Schriftfeld, Legende)', (
     expect(project.pages[0]!.powerLimitKw).toBe(100);
     expect(project.pages[0]!.stands[0]!.nr).toBe('A-07');
     expect(project.pages[1]!.clockwise).toEqual({ center: { x: 50, y: 40 }, startAngle: 90 });
+  });
+});
+
+describe('Migration 4 → 5 (M8: Maßstabsbalken, Nordpfeil, Export-Profile pro Rechner)', () => {
+  it('ergänzt die Anker, behält vorhandene und entfernt exportProfiles', () => {
+    const v4 = {
+      id: 'p',
+      exportProfiles: [{ id: 'x', name: 'alt', layers: [], hiddenFields: ['owner'] }],
+      pages: [{ id: 'a' }, { id: 'b', scaleBar: { visible: false, corner: 'br', dx: 5, dy: 6 } }],
+    };
+    const before = structuredClone(v4);
+    const v5 = MIGRATIONS[4]!(v4) as any;
+    expect(v4).toEqual(before);
+    expect(v5).not.toHaveProperty('exportProfiles');
+    expect(v5.pages[0].scaleBar).toEqual({ visible: true, corner: 'tl', dx: 10, dy: 10 });
+    expect(v5.pages[0].northArrow).toEqual({ visible: true, corner: 'tr', dx: 10, dy: 10 });
+    expect(v5.pages[1].scaleBar).toEqual({ visible: false, corner: 'br', dx: 5, dy: 6 });
+    expect((MIGRATIONS[4]!({ id: 'x', pages: 'kaputt' }) as any).pages).toBe('kaputt');
+  });
+
+  it('echte Datei aus M7 (Version 4, tests/fixtures/format-v4-m7.schelme) wird vollständig migriert', () => {
+    const bytes = new Uint8Array(readFileSync(join(process.cwd(), 'tests', 'fixtures', 'format-v4-m7.schelme')));
+    const raw = JSON.parse(strFromU8(unzipSync(bytes)['project.json']!));
+    expect(raw.schemaVersion).toBe(4);
+    expect(raw.project.exportProfiles).toEqual([]);
+    expect(raw.project.pages[0]).not.toHaveProperty('scaleBar');
+
+    const { project } = decodeProjectFile(bytes);
+    expect(project).not.toHaveProperty('exportProfiles');
+    const { exportProfiles: _p, pages: _pages, ...rawRest } = raw.project;
+    const { pages, ...rest } = project;
+    expect(rest).toEqual(rawRest);
+    pages.forEach((p, i) => {
+      const { scaleBar, northArrow, ...pageRest } = p;
+      expect(pageRest).toEqual(raw.project.pages[i]);
+      expect(scaleBar).toEqual({ visible: true, corner: 'tl', dx: 10, dy: 10 });
+      expect(northArrow).toEqual({ visible: true, corner: 'tr', dx: 10, dy: 10 });
+    });
+    // Werte, die in der Datei gezielt gesetzt waren
+    expect(pages[0]!.sheet).toMatchObject({ format: 'A1', orientation: 'landscape', scale: 500 });
+    expect(pages[0]!.legend).toEqual({ visible: true, corner: 'tr', dx: 12, dy: 15 });
+    expect(pages[0]!.infra).toHaveLength(4);
+    expect(pages[0]!.stands[0]!.owner).toBe('Jürgen Müller');
+    expect(pages[1]!.titleBlock.visible).toBe(false);
+    expect(project.titleBlock).toEqual({ dateText: '12.10.2026', version: '2' });
   });
 });

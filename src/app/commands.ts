@@ -9,6 +9,7 @@ import { canRenumber, openRenumber } from './renumber';
 import { newProject, openProject, saveProject } from './fileActions';
 import { fitView, visibleBounds, zoomBy } from './view';
 import { exportCurrentList } from './exportCsv';
+import { openExportDialog, useExportUi } from './pdfExport';
 import { openStartTab } from './startPageNav';
 import { useStartPage } from '../state/startPage';
 import { nudgePaper, setPaperVisible } from '../state/paper';
@@ -41,11 +42,11 @@ const nudgeCmd = (dx: number, dy: number): Command => ({
   enabled: () => hasObjects() || !!paperSelection(),
 });
 
-/** Entf: Objekte löschen; ein ausgewähltes Schriftfeld bzw. eine Legende ausblenden (M7). */
+/** Entf: Objekte löschen; ein ausgewähltes Papier-Element ausblenden (M7, M8). */
 function deleteOrHide() {
   const el = paperSelection();
   const page = activePage();
-  if (el === 'titleBlock' || el === 'legend') {
+  if (el && el !== 'sheet') {
     if (page) setPaperVisible(page.id, el, false);
   } else deleteSelection();
 }
@@ -90,6 +91,11 @@ export const COMMANDS: Record<string, Command> = {
   'file.open': { run: () => void openProject() },
   'file.save': { run: () => void saveProject(false) },
   'file.saveAs': { run: () => void saveProject(true) },
+  'file.exportPdf': {
+    run: openExportDialog,
+    enabled: () => s().project.pages.length > 0 && !useExportUi.getState().job,
+    disabledMessage: 'PDF-Export: Es gibt noch keinen Festplatz, oder ein Export läuft gerade.',
+  },
 
   'edit.undo': { run: () => s().undo(), enabled: () => selectCanUndo(s()) },
   'edit.redo': { run: () => s().redo(), enabled: () => selectCanRedo(s()) },
@@ -97,7 +103,7 @@ export const COMMANDS: Record<string, Command> = {
   'edit.copy': { run: copySelection, enabled: hasObjects },
   'edit.paste': { run: () => paste(visibleBounds()), enabled: () => onDrawingPage() && hasClipboard() },
   'edit.duplicate': { run: duplicateSelection, enabled: hasObjects },
-  'edit.delete': { run: deleteOrHide, enabled: () => hasObjects() || paperSelection() === 'titleBlock' || paperSelection() === 'legend' },
+  'edit.delete': { run: deleteOrHide, enabled: () => hasObjects() || (!!paperSelection() && paperSelection() !== 'sheet') },
   'edit.selectAll': { run: selectAll, enabled: onDrawingPage },
   'edit.deselect': { run: () => s().setUi({ selection: null }), enabled: () => onDrawingPage() && !!s().ui.selection },
   'edit.nudgeLeft': nudgeCmd(-0.1, 0),

@@ -43,8 +43,10 @@ Freiflächen-Logik wurde bereits erfolgreich getestet (prototype/freiflaechen.ht
   der Zeichenfläche als Rahmen sichtbar (§8).
 - **Schriftfeld**: Planbeschriftung pro Festplatz-Page, ein Papier-Element des Blatts (§8).
 - **Legende**: automatisch erzeugte Zeichenerklärung pro Festplatz-Page, ein Papier-Element des Blatts (§8).
-- **Papier-Elemente** (Schriftfeld, Legende; ab M8 Nordpfeil und Maßstabsbalken): Maße und Schriftgrößen in mm auf
-  dem Papier, Position relativ zu einer Ecke des Blatts. Sie sind in jedem Maßstab gleich groß.
+- **Papier-Elemente** (Schriftfeld, Legende, Maßstabsbalken, Nordpfeil; die beiden letzten seit M8): Maße und
+  Schriftgrößen in mm auf dem Papier, Position relativ zu einer Ecke des Blatts. Sie sind in jedem Maßstab gleich groß.
+- **Export-Profil**: legt fest, was ein PDF zeigt (Ebenen, Warnungen, Felder, Anhang). Gilt pro Rechner, nicht in der
+  Projektdatei (§9).
 
 ## Funktionen
 
@@ -322,9 +324,14 @@ Papier festgelegt, nicht in Metern auf dem Plan. Damit sind sie im PDF bei jedem
 - **Fester Maßstab 1:n:** Der Rahmen ist Papiermaß × n groß (A1 quer bei 1:500 = 420,5 × 297 m). Seine Lage (Mitte
   in Metern) ändert man, indem man Rahmen oder Marke mit dem Auswahlwerkzeug zieht (Undo-Schritt). n ist eine ganze
   Zahl von 10 bis 100.000.
-- **An Seite anpassen:** Der Rahmen umschließt alle Grundflächen, Geschäfte und Infrastruktur-Objekte der Page mit
-  10 mm Papierrand. Gibt es keine, umschließt er den Hintergrund; gibt es den auch nicht, sind es 100 × 100 m um den
-  Ursprung.
+- **An Seite anpassen:** Der Inhalt sind alle Grundflächen, Geschäfte und Infrastruktur-Objekte der Page. Gibt es
+  keine, ist es der Hintergrund; gibt es den auch nicht, sind es 100 × 100 m um den Ursprung.
+  - Der Inhalt wird in den Bereich des Papiers eingepasst, den die sichtbaren Papier-Elemente frei lassen
+    (Entscheidung 2026-10-12, M8-Planung, E-49): Papier minus 10 mm Rand, minus jedes sichtbare Papier-Element mit
+    3 mm Abstand. Gewählt wird das freie achsenparallele Rechteck, in dem der Inhalt am größten erscheint; darin steht
+    er mittig. Ist dieses Rechteck kleiner als 25 % des Papiers, gilt wie zuvor das ganze Papier mit 10 mm Rand.
+  - Da die Legende von den sichtbaren Ebenen abhängt, kann das angepasste Blatt im PDF (Ebenen des Profils) leicht von
+    der Zeichenfläche (Ebenen der Page) abweichen; die Vorschau im Export-Dialog zeigt das PDF.
   - n wird auf volle 10 aufgerundet, damit ein lesbarer Maßstab entsteht (z. B. 1:440).
   - Der Rahmen folgt dem Inhalt und lässt sich nicht ziehen.
   - Beim Umschalten auf einen festen Maßstab werden die aktuelle Mitte und n (auf volle 10) übernommen.
@@ -339,8 +346,15 @@ Papier festgelegt, nicht in Metern auf dem Plan. Damit sind sie im PDF bei jedem
   einem kleineren Format nicht, steht das Element am Blattrand; gespeichert bleibt der Abstand, bei einem größeren
   Format steht es wieder an seiner Stelle. Die Seitenleiste weist darauf hin.
 - Auf der Zeichenfläche wird es in Planeinheiten gezeichnet (1 mm = n/1000 m).
-- **Verschieben** (Entscheidung 2026-10-12, QA-M7-01): Schriftfeld und Legende sind frei verschiebbar, Ziehen mit dem
-  Auswahlwerkzeug (ein Klick wählt aus). Beim Ziehen dienen die Blattecken als Fangpunkte: Eine Ecke des Elements
+- **Auswählen und Verschieben** (Entscheidung 2026-10-12, QA-M7-01; Regel geändert 2026-10-14, Laurin, M8-Nacharbeit):
+  Papier-Elemente dürfen die Arbeit auf der Zeichenfläche nicht stören. Wie bei Grundflächen (§2) gilt:
+  - Ein Klick (ohne Ziehen) auf ein Papier-Element wählt es aus.
+  - Nur ein bereits ausgewähltes Papier-Element wird per Ziehen verschoben.
+  - Ziehen, das auf einem nicht ausgewählten Papier-Element beginnt, zieht ein Auswahlrechteck auf wie auf leerer
+    Fläche.
+  - Dasselbe gilt für Rahmen und Marke des Blatts (bei festem Maßstab ziehbar, wenn das Blatt ausgewählt ist); ein
+    angepasstes Blatt lässt sich nicht ziehen, dort zieht Ziehen immer ein Auswahlrechteck auf.
+  Beim Ziehen dienen die Blattecken als Fangpunkte: Eine Ecke des Elements
   rastet in 8 Bildschirm-Pixeln an der Blattecke ein, bündig (0 mm) oder mit dem Standardrand von 10 mm;
   Cmd/Strg schaltet den Fang aus. Beim Loslassen wird die nächstgelegene Ecke zur gewählten Ecke; gespeichert
   werden Ecke und Abstand in mm (auf 1 mm gerundet), begrenzt auf das Blatt. Das Format von `project.json` ändert
@@ -349,15 +363,18 @@ Papier festgelegt, nicht in Metern auf dem Plan. Damit sind sie im PDF bei jedem
   - Jede Verschiebung ist ein Undo-Schritt.
 - Einschränkungen: Papier-Elemente kommen nicht in Auswahlrechteck oder Mehrfachauswahl und sind nicht kopierbar.
   Entf blendet ein ausgewähltes Element aus (Undo-Schritt).
-- Sichtbarkeit: Pro Page sind Schriftfeld und Legende ein-/ausblendbar (Bereich „Blatt“; Legende auch mit Shift+L).
+- Sichtbarkeit: Pro Page sind Schriftfeld, Legende, Maßstabsbalken und Nordpfeil ein-/ausblendbar (Bereich „Blatt“;
+  Legende auch mit Shift+L). Sie gilt auch für das PDF; das Export-Profil ändert sie nicht.
+- Alles zum Verschieben, Fangen, Begrenzen und Ausblenden gilt für alle vier Papier-Elemente gleich (seit M8).
 - Ebene „Blatt“: Rahmen und Papier-Elemente liegen auf dieser eigenen Ebene. Sie ist ein-/ausblendbar und sperrbar.
 
 **Schriftfeld:**
 - Auf jeder Festplatz-Page, einheitliches festes Layout auf allen Pages, 180 mm breit (nach ISO 7200):
   - Zeile 1: Projektname (5 mm Schrifthöhe).
   - Zeile 2: Festplatz (3,5 mm).
-  - Zeile 3: „Maßstab 1:n · Format · Datum · Version“ (2,5 mm). Leere Angaben entfallen. Der Maßstab kommt aus dem
-    Blatt.
+  - Zeile 3: „Maßstab 1:500 bei Druck in Originalgröße (A1 quer) · Datum · Version“ (2,5 mm). Leere Angaben
+    entfallen. Maßstab und Format kommen aus dem Blatt. Der Zusatz steht da, weil „an Seite anpassen“ im Druckdialog
+    den Maßstab zerstört (Entscheidung 2026-10-12, M8-Planung).
   - Darunter der optionale Freitext der Page: bis zu 4 Zeilen à 2,5 mm, weitere Zeilen werden abgeschnitten (mit
     Hinweis in der Seitenleiste). Die Höhe wächst mit dem Freitext.
 - Standardposition: unten rechts, 10 mm Abstand.
@@ -385,13 +402,115 @@ Papier festgelegt, nicht in Metern auf dem Plan. Damit sind sie im PDF bei jedem
 - Standardposition: unten links, 10 mm Abstand.
 - Eine Legende ohne Einträge wird nicht gezeichnet; die Seitenleiste zeigt dann einen Hinweis.
 
+**Maßstabsbalken** (seit M8, Entscheidung 2026-10-12): Papier-Element mit dem Anker-Modell oben.
+- Länge 1, 2 oder 5 × 10^k m: die längste, die höchstens 80 mm auf dem Papier ergibt (damit mindestens 32 mm; bei
+  1:500 also 20 m = 40 mm). Bei 2 × 10^k vier Felder, sonst fünf, abwechselnd schwarz und weiß. Beschriftung „0“,
+  Mitte und Endwert mit „m“ (2,5 mm), darunter „1:n“.
+- Feste Größe 92 × 14 mm auf weißem Grund, damit die Lage auf dem Papier nicht vom Maßstab abhängt.
+- Standardposition: oben links, 10 mm Abstand.
+
+**Nordpfeil** (seit M8, Entscheidung 2026-10-12): Papier-Element, 20 × 20 mm, gestaltet wie der Nordpfeil der
+Zeichenfläche (Kreis, Nadel), gedreht um die Nordrichtung der Page (§1). Das „N“ steht aufrecht an der Spitze.
+Standardposition: oben rechts, 10 mm Abstand.
+
 ### 9. PDF-Export
-- Gesamtplan (alle Festplatz-Pages, optional mit Start-Page-Listen als Anhang) oder einzelne Pages.
-- Papierformat A4–A0, Hoch/Quer, Maßstab wählbar (z. B. 1:200, 1:500) oder „an Seite anpassen“. Diese Werte sind das
-  Blatt der Page (§8, seit M7). Der Export-Dialog zeigt sie und kann sie ändern; die Änderung gilt dann für die Page.
-- Mit Maßstabsbalken, Nordpfeil, Legende. Vektor-PDF mit durchsuchbarem Text.
-- Ebenen beim Export ein-/ausblendbar und als Export-Profile speicherbar, z. B.
-  „Sanität/Ordnungsamt“ (ohne Eigentümer und Strom) oder „intern“ (alles).
+Entscheidungen 2026-10-12 (M8-Planung).
+
+**Gleiche Darstellung wie die Zeichenfläche.** Zeichenfläche und PDF entstehen aus derselben Szenenbeschreibung
+(`src/core/scene/`): Bausteine je Objekt liefern Grundformen (Polygon, Pfad, Linie, Text, Symbol, Bild) mit
+Stilschlüssel. Die Zeichenfläche setzt die Stilschlüssel als CSS-Klassen um (Design hell/dunkel), das PDF über eine
+feste Papier-Stiltabelle (Farben des hellen Designs, Strichstärken in mm). Nur auf dem Bildschirm: Auswahl, Griffe,
+Fang-Hilfslinien, Blattrahmen und -marke, Fadenkreuz der Nummerierung, Bildratenanzeige, Ausblenden zu kleiner
+Schrift.
+
+**Blatt und Maßstab.**
+- Jede Page wird als eine PDF-Seite exportiert, genau ihr Blatt (§8): Format A4–A0, Hoch/Quer, Maßstab 1:n oder „an
+  Seite anpassen“. Der Export-Dialog zeigt und ändert diese Werte; die Änderung gilt für die Page (Undo-Schritt).
+- Seitengröße exakt in mm (1 pt = 25,4/72 mm; A1 quer = 841 × 594 mm). Bei 1:500 ist 1 cm auf dem Papier exakt 5 m.
+- Inhalt außerhalb des Blatts wird abgeschnitten.
+
+**Inhalt einer Seite** in dieser Reihenfolge, jeweils gemäß Export-Profil: Hintergrund, Raster, Grundflächen,
+Freiflächen, Geschäfte, Infrastruktur, Warnungen, Beschriftung; darüber die sichtbaren Papier-Elemente der Page
+(Schriftfeld, Legende, Maßstabsbalken, Nordpfeil). Die Ebenen-Sichtbarkeit der Zeichenfläche spielt keine Rolle. Die
+Legende entsteht aus den Ebenen des Profils.
+- Raster: in der Rasterweite der Page, kräftige Linien alle 10; Linien mit weniger als 2 mm Abstand auf dem Papier
+  entfallen. Ob es erscheint, entscheidet nur das Profil („Raster ein/aus“ der Zeichenfläche zählt nicht).
+- Objekte, die das Blatt nicht berühren, kommen nicht ins PDF.
+
+**Hintergrund.**
+- PDF-Hintergründe werden als Vektor übernommen (Originalseite eingebettet, je Datei nur einmal), mit Lage, Drehung,
+  Maßstab und Deckkraft wie auf der Zeichenfläche.
+- Rasterbilder (PNG, JPEG): nur der Ausschnitt auf dem Blatt; heruntergerechnet, wenn sie feiner sind als die
+  Ziel-Auflösung, nie hochgerechnet. Qualität im Export-Dialog: „E-Mail“, 150, 200, 300 dpi oder Original; Standard
+  200 dpi, die zuletzt gewählte merkt sich der Rechner. JPEG bleibt JPEG (Qualität 85 nach libjpeg-Skala; unverändert,
+  wenn weder beschnitten noch verkleinert), PNG bleibt PNG.
+- **„E-Mail“** (Nacharbeit 2026-10-14, Laurin): 100 dpi, alle Rasterbilder (auch PNG und gerasterte SVG) als JPEG mit
+  Qualität 60. Ziel: 8 Pages A1 mit großem Rasterhintergrund unter 20 MB, in Chromium und WebKit.
+- **Gleiche Dateigröße in allen Browsern** (Nacharbeit 2026-10-14): Die Browser deuten den JPEG-Qualitätswert
+  unterschiedlich (WebKit 0,85 ≈ libjpeg 97). Der Export ermittelt deshalb je Browser einmal den Qualitätswert, dessen
+  Quantisierungstabelle der libjpeg-Tabelle für die gewünschte Qualität am nächsten kommt.
+- **Geschätzte Dateigröße**: Der Export-Dialog zeigt sie vor dem Export („geschätzt ca. 12 MB“), berechnet aus Umfang,
+  Profil, Qualität und den Hintergründen (Ausschnitt, Pixelzahl, Kompression der Quelldatei).
+- SVG-Hintergründe werden in M8 in der Ziel-Auflösung gerastert (PNG; Entscheidung Laurin, Vektor siehe Eingang).
+- Erwartete Größen: Seite ohne Hintergrund 50–300 KB; Gesamtplan 8 Pages ohne Hintergrund unter 2 MB; ein
+  A1-Rasterhintergrund (8000 × 6000 px JPEG) bei 200 dpi 8–15 MB, bei 300 dpi 12–25 MB je Seite.
+
+**Text und Symbole.** Schrift IBM Plex Sans (wie die Oberfläche), eingebettet als Teilmenge; Text ist durchsuchbar
+und kopierbar, Umlaute und ß korrekt. Beschriftungen haben im PDF immer einen weißen Rand (Lesbarkeit über dem
+Hintergrund; E-23). Symbole (Material Symbols) und alle Formen sind Vektoren.
+
+**Export-Profile** (pro Rechner, nicht in der Projektdatei; Entscheidung Laurin):
+- Ein Profil legt fest:
+  - Ebenen: Hintergrund, Raster, Grundflächen, Freiflächen, Geschäfte, Infrastruktur, Beschriftung (je an/aus);
+  - Warnungen: keine, „Rettungswege“ (nur „Infrastruktur“ = Stand in Freihaltefläche und „Durchfahrt zu eng“) oder
+    alle;
+  - erlaubte Felder für Standbeschriftung und Anhang: Nummer, Name, Eigentümer, Ware, Breite, Tiefe, Strom,
+    Anschlussart, Kategorie, Notiz. Platzhalter nicht erlaubter Felder werden in der Beschriftungsvorlage leer, Zeilen
+    entfallen wie in §3. Strom, Anschlussart und Notiz gelten auch für Infrastruktur-Objekte;
+  - Anhang: Standliste, Freiflächenliste, Infrastrukturliste (je an/aus).
+- Mitgeliefert (bearbeitbar, „Zurücksetzen“ stellt den Auslieferungsstand her, nicht löschbar):
+  - „Intern“: alles, alle Warnungen, Anhang mit allen drei Listen.
+  - „Sanität/Ordnungsamt“: alle Ebenen außer Raster, Warnungen „Rettungswege“, ohne Eigentümer, Strom,
+    Anschlussart und Notiz; Anhang Standliste und Infrastrukturliste.
+  - „Händler“: ohne Freiflächen, Raster und Warnungen; nur Nummer und Name; kein Anhang.
+- Eigene Profile im Export-Dialog über „Profile verwalten …“ anlegen (als Kopie des gewählten), umbenennen
+  („Profilname“), bearbeiten, löschen (mit Rückfrage). Kein Undo-Schritt, keine Änderungsmarkierung am Projekt.
+- Die Raster-Auflösung und das zuletzt gewählte Profil merkt sich der Rechner ebenfalls.
+- Fehlt in einem gespeicherten Profil eine Angabe, gilt sie als nicht erlaubt. Eine unlesbare Profildatei führt zu
+  den mitgelieferten Profilen mit deutscher Meldung.
+
+**Datenschutz.** Nicht erlaubte Felder kommen im PDF überhaupt nicht vor: nicht im sichtbaren Inhalt, nicht im
+Textlayer, nicht in ausgeblendeten Objekten, nicht in Lesezeichen und nicht in den Metadaten. Dazu wird vor dem
+Export eine Kopie des Projekts erzeugt, in der diese Felder geleert sind; nur sie wird verarbeitet. Die Liste
+„noch nicht platziert“ (§10) kommt nie in den Export. Das PDF enthält
+keine optionalen Inhalte (Ebenen), Anmerkungen, Formulare, Dateianhänge oder XMP-Metadaten; nicht gezeigte Ebenen
+werden nicht gezeichnet. Metadaten: Titel „Projektname – Profilname“, Ersteller „Schelmeplaner“, kein Autor.
+
+**Umfang.**
+- „Gesamtplan“: alle Festplatz-Pages in Tab-Reihenfolge. „Auswahl“: einzelne Pages per Häkchen.
+- Jede Seite hat das Format ihres Blatts; ein PDF kann verschiedene Formate enthalten.
+- Anhang gemäß Profil (im Dialog abwählbar): Standliste (sortiert nach Festplatz, dann Nummer natürlich; Spalten =
+  erlaubte Felder), Freiflächenliste (Festplatz, Grundfläche, Breite, Tiefe, Fläche), Infrastrukturliste (Festplatz,
+  Typ, Bezeichnung, Maße, erlaubte Felder). A4 quer, Kopfzeile auf jeder Seite, „Anhang – Seite 2 von 5“. Die Listen
+  enthalten nur Pages des Exports.
+- Lesezeichen je Page und je Liste des Anhangs.
+
+**Bedienung.**
+- „Als PDF exportieren …“ im Menü, Kurzbefehl Cmd/Strg+P, auch auf der Start-Page.
+- Dialog: Profil (mit „Profile verwalten …“), Umfang, Anhang, Raster-Auflösung, Blatt je Page, Vorschau.
+- Vorschau: das echte PDF der gewählten Page (Rasterbilder dafür mit 72 dpi), mit pdf.js gezeichnet, aktualisiert
+  kurz nach jeder Änderung.
+- Der Export läuft im Hintergrund auf einem Stand des Projekts zum Zeitpunkt des Starts; die Oberfläche bleibt
+  bedienbar. Fortschritt unten links, nicht modal („PDF: Page 3 von 8“, Balken, Prozent) mit „Abbrechen“.
+- Speichern über den Dateidialog (Desktop) bzw. als Download (Browser). Dateiname-Vorschlag
+  „{Projekt} – {Profil} – {JJJJ-MM-TT}.pdf“, bei genau einer Page „{Projekt} – {Festplatz} – {Profil} – {Datum}.pdf“;
+  im Dateinamen unzulässige Zeichen werden durch „-“ ersetzt.
+- Fehlt die Datei eines Hintergrunds, wird ohne ihn exportiert, mit Hinweis.
+
+**Abnahmekriterium Dauer** (M8): 8 Pages A1 quer mit je einem JPEG-Hintergrund 8000 × 6000 px, 500 Stände, Profil
+„Intern“ mit Anhang, 300 dpi: Median aus 3 Läufen höchstens 60 s in Chromium und WebKit, während des Exports kein
+Bild der Oberfläche über 200 ms, Datei höchstens 200 MB. Dasselbe mit Qualität „E-Mail“: Datei unter 20 MB in
+Chromium und WebKit. Geprüft mit `npm run test:perf`.
 
 ### 10. Daten
 - Projekt als eine Datei speichern (JSON-basiert, eigenes Dateiformat), Autosave, Undo/Redo.
@@ -401,7 +520,7 @@ Papier festgelegt, nicht in Metern auf dem Plan. Damit sind sie im PDF bei jedem
 - Das Dateiformat ist versioniert (`schemaVersion` in `project.json`). Jede Formatänderung erhöht die
   Version und bringt eine Migration mit, die ältere Dateien beim Öffnen umwandelt und fehlende Felder mit
   Standardwerten ergänzt. Dateien einer neueren Version, als die App kennt, werden mit einer
-  verständlichen Meldung abgewiesen (Entscheidung 2026-10-11; Version 2 seit M4, Version 3 seit M5, Version 4 seit M7).
+  verständlichen Meldung abgewiesen (Entscheidung 2026-10-11; Version 2 seit M4, Version 3 seit M5, Version 4 seit M7, Version 5 seit M8).
 - Projekt als Vorlage fürs nächste Jahr duplizieren.
 - Import einer Händlerliste aus CSV/XLSX (Spalten zuordnen). Importierte Händler landen in einer
   Liste „noch nicht platziert“ und können per Drag & Drop platziert werden. [Phase 2]
@@ -505,6 +624,8 @@ Löschen eines verwendeten Typs: Die App fragt nach und löscht seine Objekte mi
   Schriftfeld, sowie Umschalter für Fang (Vorderkante, Raster, Nachbarstände; einzeln
   schaltbar), Raster ein/aus.
 - **Mitte: Zeichenfläche** mit Zoom (Mausrad, Strg/Cmd + / −, „an Fenster anpassen“) und Pan
+  („An Fenster anpassen“, Strg/Cmd+0, Nacharbeit M8 2026-10-14: Objekte, Hintergrund und, solange die Ebene „Blatt“
+  sichtbar ist, das ganze Blatt samt Marke und Papier-Elementen; eine leere Page zeigt die Standardansicht)
   (Leertaste + Ziehen, Hand-Werkzeug). Trackpad: Pinch zoomt, Zwei-Finger-Wischen verschiebt, in
   der Richtung des Systems; im Menü umkehrbar („Wischrichtung umkehren“, pro Rechner).
 - **Rechts: Seitenleiste** mit Eigenschaften des ausgewählten Objekts und Ebenen-Panel.
@@ -529,6 +650,7 @@ Löschen eines verwendeten Typs: Die App fragt nach und löscht seine Objekte mi
 - Infrastruktur und Papier-Elemente (M7): I = Infrastruktur mit dem zuletzt genutzten Typ, Shift+I = nächster Typ
   der Gruppe (zyklisch, wie in Illustrator), T = Schriftfeld, Shift+L = Legende ein/aus. Der zuletzt genutzte Typ ist
   eine Ansichtseinstellung (kein Undo-Schritt, nur für die Sitzung).
+- PDF-Export (M8): Cmd/Strg+P öffnet den Export-Dialog (wie „Drucken“ in Illustrator), auf allen Pages.
 - Start-Page (M6): Tab und Shift+Tab springen dort zwischen Bedienelementen (Panels ausblenden gibt es nur auf
   Festplatz-Pages). Tasten der Geschäftstabelle siehe §7.
 - Textfelder (korrigiert 2026-10-12, Laurin): Solange ein Textfeld den Fokus hat, greifen nur Speichern, Speichern
@@ -590,6 +712,10 @@ GitHub Actions.
 Entschieden (2026-10-10): Zeichenfläche als SVG (Prototyp ist SVG; derselbe SVG-Baum dient dem
 Vektor-PDF-Export), Undo/Redo über Immer-Patches, ZIP über fflate, PDF-Hintergründe im Export
 als Vektor über pdf-lib.
+
+Präzisiert (2026-10-12, M8-Planung): Statt des SVG-Baums dient eine gemeinsame Szenenbeschreibung in `src/core/scene/`
+beiden Ausgaben (§9). Das PDF schreibt pdf-lib direkt (ohne jsPDF/svg2pdf.js), Schriften über `@pdf-lib/fontkit`; der
+Export läuft in einem Web Worker.
 
 ## Meilensteine
 1. Grundgerüst: Projekt, Pages-Tab-Leiste, Start-Page (leer), UI-Layout mit Icon-Werkzeugleiste,

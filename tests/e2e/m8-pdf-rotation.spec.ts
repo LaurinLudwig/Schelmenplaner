@@ -1,5 +1,5 @@
 import { expect, test, type Page } from '@playwright/test';
-import { PDFDocument, rgb, StandardFonts } from 'pdf-lib';
+import { degrees, PDFDocument, rgb, StandardFonts } from 'pdf-lib';
 import { readPdf } from '../../src/core/pdf/pdf.testutil';
 import { collectErrors, MOD, openApp } from './helpers';
 
@@ -18,7 +18,8 @@ async function rotatedPdf(angle: number): Promise<Buffer> {
   page.drawRectangle({ x: 180, y: 0, width: 20, height: 20, color: rgb(0, 1, 0) });
   page.drawRectangle({ x: 0, y: 80, width: 20, height: 20, color: rgb(0, 0, 1) });
   page.drawText('Marke-Blau-Ecke', { x: 30, y: 85, size: 8, font });
-  if (angle) page.setRotation({ type: 'degrees', angle });
+  // Typfehler korrigiert vom Entwickler (M8-Nacharbeit): pdf-lib erwartet den Helfer `degrees()`
+  if (angle) page.setRotation(degrees(angle));
   return Buffer.from(await doc.save());
 }
 

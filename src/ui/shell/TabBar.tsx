@@ -73,6 +73,7 @@ export function TabBar() {
         { label: 'Öffnen …', shortcut: 'file.open', onSelect: cmd('file.open') },
         { label: 'Speichern', shortcut: 'file.save', onSelect: cmd('file.save') },
         { label: 'Speichern unter …', shortcut: 'file.saveAs', onSelect: cmd('file.saveAs') },
+        { label: 'Als PDF exportieren …', shortcut: 'file.exportPdf', onSelect: cmd('file.exportPdf') },
         'separator',
         { label: 'Rückgängig', shortcut: 'edit.undo', onSelect: cmd('edit.undo'), disabled: !canUndo },
         { label: 'Wiederholen', shortcut: 'edit.redo', onSelect: cmd('edit.redo'), disabled: !canRedo },

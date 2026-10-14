@@ -1,11 +1,11 @@
-import { pagePaper, type PaperKind } from '../core/paper';
-import { mmToM, nudgeAnchor, sheetFrame, backgroundBounds } from '../core/sheet';
+import { PAPER_KIND_LABEL, pagePaper, type PaperKind } from '../core/paper';
+import { mmToM, nudgeAnchor } from '../core/sheet';
 import { SCALE_LIMITS } from '../core/model/schema';
 import type { Id, PaperAnchor, Project, Sheet } from '../core/model/types';
 import { useStore } from './store';
 
 /**
- * Befehle für Blatt, Schriftfeld und Legende (M7, spec.md §8). Jede Änderung ist ein Undo-Schritt.
+ * Befehle für Blatt und Papier-Elemente (M7, M8, spec.md §8). Jede Änderung ist ein Undo-Schritt.
  */
 
 const st = () => useStore.getState();
@@ -29,7 +29,7 @@ export function setSheet(pageId: Id, patch: Partial<Sheet>) {
   const next = { ...patch };
   if (next.scale !== undefined && next.scale !== null) next.scale = Math.round(Math.min(SCALE_LIMITS.max, Math.max(SCALE_LIMITS.min, next.scale)));
   if (page.sheet.scale === null && next.scale !== undefined && next.scale !== null) {
-    const f = sheetFrame(page, backgroundBounds(page));
+    const f = pagePaper(page, st().project).frame;
     next.cx = Math.round(((f.bounds.minX + f.bounds.maxX) / 2) * 100) / 100;
     next.cy = Math.round(((f.bounds.minY + f.bounds.maxY) / 2) * 100) / 100;
   }
@@ -44,10 +44,10 @@ export function setSheet(pageId: Id, patch: Partial<Sheet>) {
 export function fixSheetScale(pageId: Id) {
   const page = pageOf(st().project, pageId);
   if (!page || page.sheet.scale !== null) return;
-  setSheet(pageId, { scale: sheetFrame(page, backgroundBounds(page)).scale });
+  setSheet(pageId, { scale: pagePaper(page, st().project).frame.scale });
 }
 
-export function setPaperAnchor(pageId: Id, kind: PaperKind, anchor: Pick<PaperAnchor, 'corner' | 'dx' | 'dy'>, label = kind === 'titleBlock' ? 'Schriftfeld verschieben' : 'Legende verschieben', merge?: { mergeKey: string; mergeIntoPrevious: boolean }) {
+export function setPaperAnchor(pageId: Id, kind: PaperKind, anchor: Pick<PaperAnchor, 'corner' | 'dx' | 'dy'>, label = `${PAPER_KIND_LABEL[kind]} verschieben`, merge?: { mergeKey: string; mergeIntoPrevious: boolean }) {
   st().change(
     label,
     (p) => {
@@ -59,8 +59,7 @@ export function setPaperAnchor(pageId: Id, kind: PaperKind, anchor: Pick<PaperAn
 }
 
 export function setPaperVisible(pageId: Id, kind: PaperKind, visible: boolean) {
-  const name = kind === 'titleBlock' ? 'Schriftfeld' : 'Legende';
-  st().change(`${name} ${visible ? 'einblenden' : 'ausblenden'}`, (p) => {
+  st().change(`${PAPER_KIND_LABEL[kind]} ${visible ? 'einblenden' : 'ausblenden'}`, (p) => {
     const pg = pageOf(p, pageId);
     if (pg) pg[kind].visible = visible;
   });
@@ -109,7 +108,7 @@ export function nudgePaper(dxMm: number, dyMm: number, repeat = false) {
     return;
   }
   const paper = pagePaper(page, s.project);
-  const el = sel.element === 'titleBlock' ? paper.titleBlock : paper.legend;
+  const el = paper[sel.element];
   if (!el) return;
   setPaperAnchor(page.id, sel.element, nudgeAnchor(el.anchor, dxMm, dyMm, el.layout, paper.frame.paper), undefined, merge);
 }

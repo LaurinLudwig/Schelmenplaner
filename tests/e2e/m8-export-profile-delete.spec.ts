@@ -7,7 +7,6 @@ import { MOD, openApp } from './helpers';
  * `m8-export.spec.ts` („Profile verwalten …“), das nur Kopieren/Umbenennen und die mitgelieferten Profile prüft.
  */
 
-const store = (page: Page, fn: string) => page.evaluate(`(() => { const s = window.__schelmeStore.getState(); return ${fn}; })()`);
 const dialog = (page: Page) => page.getByRole('dialog', { name: 'Als PDF exportieren' });
 
 test('eigenes Profil löschen: Rückfrage, danach weg, bleibt auch nach Neuladen weg', async ({ page }) => {

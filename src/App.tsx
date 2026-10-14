@@ -9,6 +9,8 @@ import { ControlBar } from './ui/shell/ControlBar';
 import { DialogHost } from './ui/shell/DialogHost';
 import { PdfPagePicker } from './ui/shell/PdfPagePicker';
 import { RenumberDialog } from './ui/shell/RenumberDialog';
+import { ExportDialog } from './ui/export/ExportDialog';
+import { ExportProgress } from './ui/export/ExportProgress';
 import { ShortcutsOverlay } from './ui/shell/ShortcutsOverlay';
 import { Toasts } from './ui/shell/Toasts';
 import { Sidebar } from './ui/shell/Sidebar';
@@ -56,6 +58,8 @@ export function App() {
       <Toasts />
       <PdfPagePicker />
       <RenumberDialog />
+      <ExportDialog />
+      <ExportProgress />
       <DialogHost />
       <ShortcutsOverlay />
     </div>
